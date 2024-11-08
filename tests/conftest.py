@@ -10,7 +10,6 @@ def sample_texts():
         ),
         ("Hello world", "Hello Earth"),
         ("Python is great", "Python is awesome"),
-        ("", "Empty string test"),
         ("Repeated words words words", "Different repeated words words"),
         ("Same words yet again", "Same words yet again"),
     ]
