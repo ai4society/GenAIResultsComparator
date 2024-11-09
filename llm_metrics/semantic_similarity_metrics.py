@@ -17,6 +17,10 @@ class BERTScore(BaseMetric):
 
     :param model_type: The BERT model to use, defaults to "bert-base-uncased"
     :type model_type: str
+    :param output_val: The output value to return.
+        Should be one of "precision", "recall", or "f1" to return a single score.
+        Defaults to a dictionary of all scores: {"precision": P, "recall": R, "f1": F1}.
+    :type output_val: Optional[str], optional
     :param num_layers: Number of layers to use from BERT, defaults to 8
     :type num_layers: int
     :param batch_size: Batch size for processing, defaults to 64
@@ -32,6 +36,7 @@ class BERTScore(BaseMetric):
     def __init__(
         self,
         model_type="bert-base-uncased",
+        output_val: Optional[str] = None,
         num_layers=8,
         batch_size=64,
         additional_params: Optional[Dict[str, Any]] = None,
@@ -41,6 +46,10 @@ class BERTScore(BaseMetric):
             params.update(additional_params)
 
         self.scorer = BERTScorer(**params)
+
+        if output_val not in ["precision", "recall", "f1", None]:
+            raise ValueError("output_val must be one of 'precision', 'recall', 'f1', or None")
+        self.output_val = output_val
 
     def calculate(
         self,
@@ -61,12 +70,22 @@ class BERTScore(BaseMetric):
         :return: A dictionary containing precision, recall, and F1 scores
         :rtype: dict
         """
+
         params = {}
         if additional_params:
             params.update(additional_params)
 
         P, R, F1 = self.scorer.score([generated_text], [reference_text], **params)
-        return {"precision": P.item(), "recall": R.item(), "f1": F1.item()}
+
+        match self.output_val:
+            case "precision":
+                return P.item()
+            case "recall":
+                return R.item()
+            case "f1":
+                return F1.item()
+            case _:
+                return {"precision": P.item(), "recall": R.item(), "f1": F1.item()}
 
     def batch_calculate(
         self,

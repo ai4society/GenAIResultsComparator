@@ -9,9 +9,10 @@ repos:
 #      - id: double-quote-string-fixer
       - id: name-tests-test
   - repo: https://github.com/psf/black
-    rev: 23.3.0
+    rev: 23.12.1
     hooks:
       - id: black
+        args: ["--target-version", "py310"]
 #  - repo: https://github.com/PyCQA/flake8
 #    rev: 6.0.0
 #    hooks:
