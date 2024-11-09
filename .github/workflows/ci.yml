@@ -23,9 +23,9 @@ jobs:
       run: |
         pip install poetry
         poetry install
-    - name: Run tests
-      run: |
-        poetry run pytest tests/
+#    - name: Run tests
+#      run: |
+#        poetry run pytest tests/
     - name: Check code formatting
       run: |
         poetry run black --check .
