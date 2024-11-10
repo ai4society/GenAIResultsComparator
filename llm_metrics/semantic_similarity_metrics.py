@@ -10,28 +10,8 @@ from .utils import to_iterable
 
 class BERTScore(BaseMetric):
     """
-    BERTScore implementation for semantic similarity.
-
-    This class provides methods to calculate BERTScore for individual
-    sentence pairs and for batches of sentences.
-
-    :param model_type: The BERT model to use, defaults to "bert-base-uncased"
-    :type model_type: str
-    :param output_val: The output value to return.
-        Should be one of "precision", "recall", or "f1" to return a single score of type float.
-        Wrap in a list to return multiple scores of type dict.
-        Default is None, which returns a dictionary of all scores. Equivalent to passing ["precision", "recall", "f1"].
-    :type output_val: Optional[List[str]], optional
-    :param num_layers: Number of layers to use from BERT, defaults to 8
-    :type num_layers: int
-    :param batch_size: Batch size for processing, defaults to 64
-    :type batch_size: int
-    :param additional_params: Additional parameters to pass to BERTScorer,
-        defaults to None
-    :type additional_params: Dict[str, Any], optional
-
-    Attributes:
-        scorer (BERTScorer): The BERTScorer object used for calculations
+    This class provides methods to calculate BERTScore for individual sentence pairs and for batches of sentences.
+    It uses the BERTScore library to calculate precision, recall, and F1 scores.
     """
 
     def __init__(
@@ -42,6 +22,24 @@ class BERTScore(BaseMetric):
         batch_size=64,
         additional_params: Optional[Dict[str, Any]] = None,
     ):
+        """
+        Initialize the BERTScore metric.
+
+        :param model_type: The BERT model to use, defaults to "bert-base-uncased"
+        :type model_type: str
+        :param output_val: The output value to return, defaults to None
+            Should be one of "precision", "recall", or "f1" to return a single score of type float
+            Wrap in a list to return multiple scores of type dict
+            Default returns a dictionary of all scores. Equivalent to passing ["precision", "recall", "f1"]
+        :type output_val: Optional[List[str]], optional
+        :param num_layers: Number of layers to use from BERT, defaults to 8
+        :type num_layers: int
+        :param batch_size: Batch size for processing, defaults to 64
+        :type batch_size: int
+        :param additional_params: Additional parameters to pass to the BERTScorer class from the bert_score library, defaults to None
+            Default only passes the model_type, num_layers, and batch_size
+        :type additional_params: Dict[str, Any], optional
+        """
         params = {"model_type": model_type, "num_layers": num_layers, "batch_size": batch_size}
         if additional_params:
             params.update(additional_params)
@@ -51,10 +49,10 @@ class BERTScore(BaseMetric):
         # Check if output_val is valid
         if output_val:
             if not isinstance(output_val, list):  # Check if it is a list
-                raise ValueError("output_val must be a list")
+                raise ValueError("`output_val` must be a list")
 
             elif not all(val in ["precision", "recall", "f1"] for val in output_val):
-                raise ValueError("output_val must be one of ['precision', 'recall', 'f1']")
+                raise ValueError("`output_val` must be one of ['precision', 'recall', 'f1']")
 
         # Ensure output_val is a list
         self.output_val = output_val or ["precision", "recall", "f1"]
@@ -64,7 +62,7 @@ class BERTScore(BaseMetric):
         generated_text: str,
         reference_text: str,
         additional_params: Optional[Dict[str, Any]] = None,
-    ) -> dict:
+    ) -> Union[dict[str, float], float]:
         """
         Calculate the BERTScore for a pair of generated and reference texts.
 
@@ -72,13 +70,11 @@ class BERTScore(BaseMetric):
         :type generated_text: str
         :param reference_text: The reference text to compare against
         :type reference_text: str
-        :param additional_params: Additional parameters to pass to
-            the BERTScore calculation, defaults to None
+        :param additional_params: Additional parameters to pass to the score method of the BERTScorer class, defaults to None
         :type additional_params: Dict[str, Any], optional
-        :return: A dictionary containing precision, recall, and F1 scores
-        :rtype: dict
+        :return: Either a single score or a dictionary of scores containing precision, recall, and F1
+        :rtype: Union[dict[str, float], float]
         """
-
         params = {}
         if additional_params:
             params.update(additional_params)
@@ -92,7 +88,7 @@ class BERTScore(BaseMetric):
         # Else, if multiple values are requested, return all those values only
         # If no value is requested, return all values
         if len(self.output_val) == 1:
-            return out_dict[self.output_val[0]]
+            return out_dict.get(self.output_val[0], 0.0)
         else:
             return {key: out_dict[key] for key in self.output_val}
 
@@ -101,20 +97,20 @@ class BERTScore(BaseMetric):
         generated_texts: Union[Iterable, np.ndarray, pd.Series],
         reference_texts: Union[Iterable, np.ndarray, pd.Series],
         additional_params: Optional[Dict[str, Any]] = None,
-    ) -> Union[List[dict], np.ndarray, pd.Series]:
+    ) -> Union[List[float], List[dict], np.ndarray, pd.Series]:
         """
         Calculate BERTScores for a batch of generated and reference texts.
+        Supports iterables, numpy arrays, and pandas Series as input and output.
 
         :param generated_texts: Generated texts
         :type generated_texts: Union[Iterable, np.ndarray, pd.Series]
         :param reference_texts: Reference texts
         :type reference_texts: Union[Iterable, np.ndarray, pd.Series]
-        :param additional_params: Additional parameters to pass to
-            the BERTScore calculation, defaults to None
+        :param additional_params: Additional parameters to pass to the score method of the BERTScorer class, defaults to None
         :type additional_params: Dict[str, Any], optional
-        :return: A list, numpy array, or pandas Series of dictionaries
-            containing precision, recall, and F1 scores
-        :rtype: Union[List[dict], np.ndarray, pd.Series]
+        :return: A list, numpy array, or pandas Series of dictionaries containing precision, recall, and F1 scores.
+            If `output_val` is set to a single value, returns a list, numpy array, or pandas Series of that value.
+        :rtype: Union[List[float], List[dict], np.ndarray, pd.Series]
         """
         gen_texts = to_iterable(generated_texts)
         ref_texts = to_iterable(reference_texts)

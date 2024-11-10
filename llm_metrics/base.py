@@ -8,12 +8,15 @@ import pandas as pd
 class BaseMetric(ABC):
     """
     Abstract base class for all language model metrics.
-
     This class defines the interface that all metric classes should implement.
     """
 
     @abstractmethod
-    def calculate(self, generated_text: str, reference_text: str) -> Union[float, dict]:
+    def calculate(
+        self,
+        generated_text: str,
+        reference_text: str,
+    ) -> Union[float, dict]:
         """
         Calculate the metric for single pair of generated and reference texts.
 
@@ -31,7 +34,7 @@ class BaseMetric(ABC):
         self,
         generated_texts: Union[Iterable, np.ndarray, pd.Series],
         reference_texts: Union[Iterable, np.ndarray, pd.Series],
-    ) -> Union[List[float], List[dict], float, dict]:
+    ) -> Union[List[float], List[dict], np.ndarray, pd.Series]:
         """
         Calculate the metric for a batch of generated and reference texts.
 

@@ -1,4 +1,4 @@
-from typing import Any, Dict, Iterable, List, Optional, Union
+from typing import Any, Callable, Dict, Iterable, List, Optional, Union
 
 import nltk
 import numpy as np
@@ -14,38 +14,26 @@ from .utils import to_iterable
 class BLEU(BaseMetric):
     """
     BLEU (Bilingual Evaluation Understudy) score implementation.
-
-    This class provides methods to calculate BLEU scores for individual
-    sentence pairs and for batches of sentences. It supports both
-    sentence-level and corpus-level BLEU calculations.
-
-    :param n: The max n-gram order to use for BLEU calculation, defaults to 4
-    :type n: int
-    :param smoothing_function: The smoothing function to use
-        for BLEU calculation, defaults to None
-    :type smoothing_function: callable, optional
-    :param additional_params: Additional parameters to pass to the
-        BLEU calculation, defaults to None
-    :type additional_params: Dict[str, Any], optional
-
-    Attributes:
-        n (int): The maximum n-gram order used in BLEU calculation
-        weights (tuple): The weights for each n-gram order
-        smoothing_function (callable): The smoothing function to use for BLEU
-        additional_params (Dict[str, Any]): Additional parameters to
-            pass to BLEU calculation
+    This class provides methods to calculate BLEU scores for individual sentence pairs and for batches of sentences.
+    It uses the NLTK library to calculate BLEU scores.
     """
 
     def __init__(
         self,
         n: int = 4,
-        smoothing_function=None,
-        additional_params: Optional[Dict[str, Any]] = None,
+        smoothing_function: Union[Callable, SmoothingFunction] = SmoothingFunction.method1,
     ):
+        """
+        Initialize the BLEU scorer with the specified parameters.
+
+        :param n: The max n-gram order to use for BLEU calculation, defaults to 4
+        :type n: int
+        :param smoothing_function: The smoothing function to use for BLEU, defaults to SmoothingFunction.method1 from NLTK
+        :type smoothing_function: Union[Callable, SmoothingFunction], optional
+        """
         self.n = n
         self.weights = tuple([1 / n] * n)
-        self.smoothing_function = smoothing_function or SmoothingFunction().method1
-        self.additional_params = additional_params or {}
+        self.smoothing_function = smoothing_function
 
     def calculate(
         self,
@@ -60,13 +48,12 @@ class BLEU(BaseMetric):
         :type generated_text: str
         :param reference_text: The reference text to compare against
         :type reference_text: str
-        :param additional_params: Additional parameters to pass to the
-            BLEU calculation, defaults to None
+        :param additional_params: Additional parameters to pass to the BLEU calculation, defaults to None
         :type additional_params: Dict[str, Any], optional
         :return: The BLEU score for the text pair
         :rtype: float
         """
-        params = self.additional_params.copy()
+        params = {}
         if additional_params:
             params.update(additional_params)
 
@@ -93,22 +80,19 @@ class BLEU(BaseMetric):
 
         This method supports two modes of calculation:
         1. Corpus-level BLEU (default):
-            Calculates a single BLEU score for the entire corpus.
+            Calculates a single BLEU score for the entire corpus. Uses the `corpus_bleu` method from NLTK
         2. Sentence-level BLEU:
-            Calculates individual BLEU scores for each sentence pair.
+            Calculates individual BLEU scores for each sentence pair. Uses the `sentence_bleu` method from NLTK
 
         :param generated_texts: Generated texts
         :type generated_texts: Union[Iterable, np.ndarray, pd.Series]
         :param reference_texts: Reference texts
         :type reference_texts: Union[Iterable, np.ndarray, pd.Series]
-        :param use_corpus_bleu: Whether to use corpus-level BLEU calculation,
-            defaults to True
+        :param use_corpus_bleu: Whether to use corpus-level BLEU calculation, defaults to True
         :type use_corpus_bleu: bool
-        :param additional_params: Additional parameters to pass to BLEU,
-            defaults to None
+        :param additional_params: Additional parameters to pass to BLEU, defaults to None
         :type additional_params: Dict[str, Any], optional
-        :return: Either a single corpus-level BLEU score or
-            a list/array/series of sentence-level BLEU scores
+        :return: Either a single corpus-level BLEU score or a list/array/series of sentence-level BLEU scores
         :rtype: Union[float, List[float], np.ndarray, pd.Series]
         """
         # Convert inputs to appropriate iterable types,
@@ -116,7 +100,7 @@ class BLEU(BaseMetric):
         gen_texts = to_iterable(generated_texts)
         ref_texts = to_iterable(reference_texts)
 
-        params = self.additional_params.copy()
+        params = {}
         if additional_params:
             params.update(additional_params)
 
@@ -142,65 +126,134 @@ class BLEU(BaseMetric):
         else:
             # Calculate individual BLEU scores for each sentence pair
             if isinstance(gen_texts, np.ndarray) and isinstance(ref_texts, np.ndarray):
-                # Use numpy's vectorization for faster calculation
+                # Use numpy vectorization for faster calculation
                 return np.array(
                     [
-                        self.calculate(gen, ref, additional_params)
+                        self.calculate(gen, ref, additional_params=params)
                         for gen, ref in zip(gen_texts, ref_texts)
                     ]
                 )
             elif isinstance(gen_texts, pd.Series) and isinstance(ref_texts, pd.Series):
                 # Use pandas' apply method for Series
                 return gen_texts.combine(
-                    ref_texts, lambda g, r: self.calculate(g, r, additional_params)
+                    ref_texts, lambda g, r: self.calculate(g, r, additional_params=params)
                 )
             else:
                 # For other iterable types, use a list comprehension
                 return [
-                    self.calculate(gen, ref, additional_params)
+                    self.calculate(gen, ref, additional_params=params)
                     for gen, ref in zip(gen_texts, ref_texts)
                 ]
 
 
 class ROUGE(BaseMetric):
+    """
+    ROUGE (Recall-Oriented Understudy for Gisting Evaluation) score implementation using the `rouge_score` library.
+    """
+
     def __init__(
         self,
-        rouge_types=["rouge1", "rouge2", "rougeL"],
-        use_stemmer=True,
+        rouge_types: Optional[List[str]] = None,
+        use_stemmer: bool = True,
         additional_params: Optional[Dict[str, Any]] = None,
     ):
+        """
+        Initialize the ROUGE scorer with the specified ROUGE types and parameters.
+
+        :param rouge_types: The ROUGE types to calculate, defaults to None
+            Should be one of "rouge1", "rouge2", or "rougeL" in a list to return a single F1 score of that type.
+            If multiple types are provided in a list, the output will be a dictionary of F1 scores for each type.
+            Defaults is None which returns a dictionary of all scores. Equivalent of passing ["rouge1", "rouge2", "rougeL"]
+        :type rouge_types: Optional[List[str]]
+        :param use_stemmer: Whether to use stemming for ROUGE calculation, defaults to True
+        :type use_stemmer: bool
+        :param additional_params: Additional parameters to pass to the ROUGE calculation, defaults to None
+            Default only passes the `use_stemmer` parameter
+        :type additional_params: Dict[str, Any], optional
+        """
         params = {"use_stemmer": use_stemmer}
         if additional_params:
             params.update(additional_params)
 
-        self.scorer = rouge_scorer.RougeScorer(rouge_types, **params)
-        self.rouge_types = rouge_types
+        # Check if rouge_types is valid
+        if rouge_types:
+            if not isinstance(rouge_types, list):
+                raise ValueError("rouge_types must be a list")
+            elif not all(val in ["rouge1", "rouge2", "rougeL"] for val in rouge_types):
+                raise ValueError("rouge_types must be one of ['rouge1', 'rouge2', 'rougeL']")
 
-    def calculate(self, generated_text: str, reference_text: str) -> dict:
+        self.rouge_types = rouge_types or ["rouge1", "rouge2", "rougeL"]
+
+        self.scorer = rouge_scorer.RougeScorer(self.rouge_types, **params)
+
+    def calculate(
+        self,
+        generated_text: str,
+        reference_text: str,
+    ) -> Union[Dict[str, float], float]:
+        """
+        Calculate the ROUGE score for a pair of generated and reference texts.
+
+        :param generated_text: The generated text to evaluate
+        :type generated_text: str
+        :param reference_text: The reference text to compare against
+        :type reference_text: str
+        :return: Either a single score or a dictionary of scores containing ROUGE types
+        :rtype: Union[dict, float]
+        """
         scores = self.scorer.score(reference_text, generated_text)
-        return {k: v.fmeasure for k, v in scores.items()}
+        score_dict = {k: v.fmeasure for k, v in scores.items()}
+
+        # Return based on the supplied ROUGE types
+        if len(self.rouge_types) == 1:
+            return score_dict.get(self.rouge_types[0], 0.0)
+        return {key: score_dict[key] for key in self.rouge_types}
 
     def batch_calculate(
         self,
         generated_texts: Union[Iterable, np.ndarray, pd.Series],
         reference_texts: Union[Iterable, np.ndarray, pd.Series],
-    ) -> List[dict]:
+    ) -> Union[List[float], List[dict], np.ndarray, pd.Series]:
+        """
+        Calculate ROUGE scores for a batch of generated and reference texts.
+        Supports iterables, numpy arrays, and pandas Series as input and output.
+
+        :param generated_texts: Generated texts
+        :type generated_texts: Union[Iterable, np.ndarray, pd.Series]
+        :param reference_texts: Reference texts
+        :type reference_texts: Union[Iterable, np.ndarray, pd.Series]
+        :return: A list, numpy array, or pandas Series of Dictionary of ROUGE scores
+            If `rouge_types` is a single type, returns a list, numpy array, or pandas Series of that value.
+        :rtype: Union[List[dict], np.ndarray, pd.Series]
+        """
         gen_texts = to_iterable(generated_texts)
         ref_texts = to_iterable(reference_texts)
 
+        # `self.scorer` takes care of calculating ROUGE scores based on the supplied ROUGE types
+        scores = [self.calculate(gen, ref) for gen, ref in zip(gen_texts, ref_texts)]
+
         if isinstance(gen_texts, np.ndarray) and isinstance(ref_texts, np.ndarray):
-            return [self.calculate(gen, ref) for gen, ref in zip(gen_texts, ref_texts)]
+            return np.array(scores)
 
         elif isinstance(gen_texts, pd.Series) and isinstance(ref_texts, pd.Series):
-            return gen_texts.combine(ref_texts, self.calculate).tolist()
+            return pd.Series(scores, index=gen_texts.index)
 
         else:
-            return [self.calculate(gen, ref) for gen, ref in zip(gen_texts, ref_texts)]
+            return scores
 
 
 class JSDivergence(BaseMetric):
-    def __init__(self, additional_params: Optional[Dict[str, Any]] = None):
-        self.additional_params = additional_params or {}
+    """
+    Jensen-Shannon Divergence metric implementation using the `scipy` library.
+    """
+
+    def __init__(
+        self,
+    ):
+        """
+        Initialize the Jensen-Shannon Divergence metric.
+        """
+        pass
 
     def calculate(
         self,
@@ -208,7 +261,19 @@ class JSDivergence(BaseMetric):
         reference_text: str,
         additional_params: Optional[Dict[str, Any]] = None,
     ) -> float:
-        params = self.additional_params.copy()
+        """
+        Calculate the Jensen-Shannon Divergence between a pair of generated and reference texts.
+
+        :param generated_text: The generated text to evaluate
+        :type generated_text: str
+        :param reference_text: The reference text to compare against
+        :type reference_text: str
+        :param additional_params: Additional parameters to pass to the score method of the BERTScorer class, defaults to None
+        :type additional_params: Dict[str, Any], optional
+        :return: The Jensen-Shannon Divergence score for the text pair
+        :rtype: float
+        """
+        params = {}
         if additional_params:
             params.update(additional_params)
 
@@ -228,10 +293,22 @@ class JSDivergence(BaseMetric):
         reference_texts: Union[Iterable, np.ndarray, pd.Series],
         additional_params: Optional[Dict[str, Any]] = None,
     ) -> Union[np.ndarray, pd.Series, List[float]]:
+        """
+        Calculate Jensen-Shannon Divergence scores for a batch of generated and reference texts.
+        Supports iterables, numpy arrays, and pandas Series as input and output.
+
+        :param generated_texts: Generated texts
+        :type generated_texts: Union[Iterable, np.ndarray, pd.Series]
+        :param reference_texts: Reference texts
+        :type reference_texts: Union[Iterable, np.ndarray, pd.Series]
+        :param additional_params: Additional parameters to pass to the Jensen-Shannon Divergence calculation, defaults to None
+        :type additional_params: Dict[str, Any], optional
+        :return:
+        """
         gen_texts = to_iterable(generated_texts)
         ref_texts = to_iterable(reference_texts)
 
-        params = self.additional_params.copy()
+        params = {}
         if additional_params:
             params.update(additional_params)
 
