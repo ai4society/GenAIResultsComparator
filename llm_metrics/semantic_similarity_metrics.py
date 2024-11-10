@@ -18,9 +18,10 @@ class BERTScore(BaseMetric):
     :param model_type: The BERT model to use, defaults to "bert-base-uncased"
     :type model_type: str
     :param output_val: The output value to return.
-        Should be one of "precision", "recall", or "f1" to return a single score.
-        Defaults to a dictionary of all scores: {"precision": P, "recall": R, "f1": F1}.
-    :type output_val: Optional[str], optional
+        Should be one of "precision", "recall", or "f1" to return a single score of type float.
+        Wrap in a list to return multiple scores of type dict.
+        Default is None, which returns a dictionary of all scores. Equivalent to passing ["precision", "recall", "f1"].
+    :type output_val: Optional[List[str]], optional
     :param num_layers: Number of layers to use from BERT, defaults to 8
     :type num_layers: int
     :param batch_size: Batch size for processing, defaults to 64
@@ -36,7 +37,7 @@ class BERTScore(BaseMetric):
     def __init__(
         self,
         model_type="bert-base-uncased",
-        output_val: Optional[str] = None,
+        output_val: Optional[List[str]] = None,
         num_layers=8,
         batch_size=64,
         additional_params: Optional[Dict[str, Any]] = None,
@@ -47,8 +48,14 @@ class BERTScore(BaseMetric):
 
         self.scorer = BERTScorer(**params)
 
-        if output_val not in ["precision", "recall", "f1", None]:
-            raise ValueError("output_val must be one of 'precision', 'recall', 'f1', or None")
+        # Check if output_val is valid
+        if output_val:
+            if not isinstance(output_val, list):  # Check if it is a list
+                raise ValueError("output_val must be a list")
+
+            elif not all(val in ["precision", "recall", "f1"] for val in output_val):
+                raise ValueError("output_val must be one of ['precision', 'recall', 'f1']")
+
         self.output_val = output_val
 
     def calculate(
@@ -77,15 +84,19 @@ class BERTScore(BaseMetric):
 
         P, R, F1 = self.scorer.score([generated_text], [reference_text], **params)
 
-        match self.output_val:
-            case "precision":
-                return P.item()
-            case "recall":
-                return R.item()
-            case "f1":
-                return F1.item()
-            case _:
-                return {"precision": P.item(), "recall": R.item(), "f1": F1.item()}
+        out_dict = {"precision": P.item(), "recall": R.item(), "f1": F1.item()}
+
+        # Return based on output_val
+        # If a single value is requested, return that value
+        # Else, if multiple values are requested, return all those values only
+        # If no value is requested, return all values
+        if self.output_val:
+            if len(self.output_val) == 1:
+                return out_dict[self.output_val[0]]
+            else:
+                return {key: out_dict[key] for key in self.output_val}
+        else:
+            return out_dict
 
     def batch_calculate(
         self,
@@ -119,6 +130,10 @@ class BERTScore(BaseMetric):
         scores = [
             {"precision": p.item(), "recall": r.item(), "f1": f.item()} for p, r, f in zip(P, R, F1)
         ]
+
+        # Define final scores based on output_val
+        if self.output_val:
+            scores = [{key: score[key] for key in self.output_val} for score in scores]
 
         if isinstance(gen_texts, np.ndarray) and isinstance(ref_texts, np.ndarray):
             return np.array(scores)
