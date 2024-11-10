@@ -56,7 +56,8 @@ class BERTScore(BaseMetric):
             elif not all(val in ["precision", "recall", "f1"] for val in output_val):
                 raise ValueError("output_val must be one of ['precision', 'recall', 'f1']")
 
-        self.output_val = output_val
+        # Ensure output_val is a list
+        self.output_val = output_val or ["precision", "recall", "f1"]
 
     def calculate(
         self,
@@ -90,13 +91,10 @@ class BERTScore(BaseMetric):
         # If a single value is requested, return that value
         # Else, if multiple values are requested, return all those values only
         # If no value is requested, return all values
-        if self.output_val:
-            if len(self.output_val) == 1:
-                return out_dict[self.output_val[0]]
-            else:
-                return {key: out_dict[key] for key in self.output_val}
+        if len(self.output_val) == 1:
+            return out_dict[self.output_val[0]]
         else:
-            return out_dict
+            return {key: out_dict[key] for key in self.output_val}
 
     def batch_calculate(
         self,
@@ -132,8 +130,7 @@ class BERTScore(BaseMetric):
         ]
 
         # Define final scores based on output_val
-        if self.output_val:
-            scores = [{key: score[key] for key in self.output_val} for score in scores]
+        scores = [{key: score[key] for key in self.output_val} for score in scores]
 
         if isinstance(gen_texts, np.ndarray) and isinstance(ref_texts, np.ndarray):
             return np.array(scores)
