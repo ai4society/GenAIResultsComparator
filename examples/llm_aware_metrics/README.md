@@ -6,7 +6,7 @@ This module extends the base LLM-Metrics library to provide LLM-specific evaluat
 
 - **Prompt-Aware Comparison**: Compare LLM outputs while considering the prompts that generated them
 - **Schema-Based Validation**: Validate and compare structured outputs against predefined schemas
-- **Alignment Scoring**: Evaluate how well responses align with their prompts
+- **Aggregated Similarity Scoring**: Evaluate how well responses align with their prompts
 - **Flexible Integration**: Works with all existing metrics from the base library
 
 ## Installation
@@ -26,16 +26,15 @@ All metrics from the base library can be used with the LLM-aware metrics. The fo
    - Ensures structural consistency
    - Ideal for comparing structured outputs
 
-3. **PromptAlignmentMetric**
-   - Measures how well responses align with prompts
-   - Combines response similarity with prompt alignment
-   - Perfect for evaluating response relevance
+3. **AggregatedSimilarityMetric**
+   - Measures different aggregation levels of similarity within the prompts and responses
+
 
 ## Example Notebooks
 
 1. `example_prompt_aware_comparison.ipynb`: Basic usage and prompt-aware comparison
 2. `example_schema_based_comparison.ipynb`: Working with structured outputs
-3. `example_alignment_score.ipynb`: Advanced alignment scoring examples
+3. `example_agg_similarity_score.ipynb`: Advanced aggregation scoring examples
 
 ## Quick Start
 
@@ -66,7 +65,7 @@ score = prompt_aware.calculate_with_prompt(
 1. **Choosing the Right Metric**
    - Use `PromptAwareMetric` for general comparison tasks
    - Use `SchemaAwareMetric` when working with structured outputs
-   - Use `PromptAlignmentMetric` when prompt adherence is crucial
+   - Use `AggregatedSimilarityMetric` when prompt adherence is crucial
 
 2. **Working with Metadata**
    - Pass schemas through metadata for `SchemaAwareMetric`

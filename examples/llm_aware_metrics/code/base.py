@@ -18,7 +18,7 @@ class LLMAwareMetric(BaseMetric):
         prompt1: str,
         prompt2: Optional[str] = None,
         metadata: Optional[Dict[str, Any]] = None,
-    ) -> Union[float, Dict[str, float]]:
+    ) -> float | Dict[str, float]:
         """
         Calculate similarity considering prompts and metadata.
 
@@ -45,7 +45,7 @@ class LLMAwareMetric(BaseMetric):
         prompts1: List[str],
         prompts2: Optional[List[str]] = None,
         metadata: Optional[Dict[str, Any]] = None,
-    ) -> Union[List[float], List[Dict[str, float]]]:
+    ) -> List[float | Dict[str, float]]:
         """
         Calculate similarity for batches of texts with prompts.
 

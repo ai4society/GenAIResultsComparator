@@ -20,19 +20,19 @@ def get_combined_score(a: float, b: float, c: float) -> float:
     return (a + b + c) / 3
 
 
-class PromptAlignmentMetric(LLMAwareMetric):
+class AggregatedSimilarityMetric(LLMAwareMetric):
     """
-    A metric that combines a base metric with a prompt alignment metric.
-    The prompt alignment metric is used to calculate how well the response aligns with the prompt.
+    A metric that combines a base metric with an aggregated similarity metric.
+    The aggregated similarity metric is used to calculate the similarity between two responses.
     The base metric is used to calculate the similarity between the two responses.
     """
 
-    def __init__(self, base_metric: BaseMetric, alignment_metric: Optional[BaseMetric] = None):
+    def __init__(self, base_metric: BaseMetric, aggregated_metric: Optional[BaseMetric] = None):
         """
-        Initialize the metric with a base metric and an optional alignment metric.
+        Initialize the metric with a base metric and an optional aggregated similarity  metric.
 
         :param base_metric: Primary metric to use for comparison.
-        :param alignment_metric: Metric for measuring prompt alignment (if None, uses base_metric)
+        :param aggregated_metric: Metric for measuring aggregated similarity, (if None, uses base_metric)
         """
         self.base_metric = base_metric
 
@@ -40,22 +40,22 @@ class PromptAlignmentMetric(LLMAwareMetric):
         if not callable(getattr(base_metric, "calculate", None)):
             raise ValueError("Base metric must have a `calculate` method")
 
-        # Check if alignment metric has the calculate method
-        if alignment_metric is not None and not callable(
-            getattr(alignment_metric, "calculate", None)
+        # Check if aggregated metric has the calculate method
+        if aggregated_metric is not None and not callable(
+            getattr(aggregated_metric, "calculate", None)
         ):
             raise ValueError("Alignment metric must have a `calculate` method")
 
-        self.alignment_metric = alignment_metric or base_metric
+        self.aggregated_metric = aggregated_metric or base_metric
 
-    def calculate_prompt_alignment(
+    def calculate_prompt_aggregation(
         self, prompt: str, response: str
     ) -> Union[float, Dict[str, float]]:
         """
         Calculate how well the response aligns with the prompt.
-        Used the alignment metric to calculate the alignment score.
+        Uses the aggregated metric to calculate the aggregation score.
         """
-        return self.alignment_metric.calculate(prompt, response)
+        return self.aggregated_metric.calculate(prompt, response)
 
     def calculate_with_prompt(
         self,
@@ -66,8 +66,8 @@ class PromptAlignmentMetric(LLMAwareMetric):
         metadata: Optional[Dict[str, Any]] = None,
     ) -> Union[float, Dict[str, float]]:
         """
-        Calculate the combined score of prompt alignment and response similarity.
-        The method works by calculating the prompt alignment score for both prompts and responses respectively.
+        Calculate the combined score of aggregated and response similarity.
+        The method works by calculating the aggregated similarity score for both prompts and responses respectively.
         Then it calculates the response similarity score of the two responses using the base metric.
         Finally, it combines the scores to get the final score.
         Currently, the scores are combined by taking the average of the three scores.
@@ -87,9 +87,13 @@ class PromptAlignmentMetric(LLMAwareMetric):
         """
         prompt2 = prompt2 or prompt1
 
-        # Calculate prompt-response alignment scores
-        alignment1: Union[float, Dict[str, float]] = self.calculate_prompt_alignment(prompt1, text1)
-        alignment2: Union[float, Dict[str, float]] = self.calculate_prompt_alignment(prompt2, text2)
+        # Calculate prompt-response aggregation scores
+        aggregation1: Union[float, Dict[str, float]] = self.calculate_prompt_aggregation(
+            prompt1, text1
+        )
+        aggregation2: Union[float, Dict[str, float]] = self.calculate_prompt_aggregation(
+            prompt2, text2
+        )
 
         # Calculate response similarity
         response_similarity: Union[float, Dict[str, float]] = self.base_metric.calculate(
@@ -100,22 +104,32 @@ class PromptAlignmentMetric(LLMAwareMetric):
 
         # Using a BaseMetric class might output, either a single float or a
         # dictionary with multiple scores, such as 'precision', 'recall', 'f1'
-        if isinstance(response_similarity, float):
-            return get_combined_score(alignment1, alignment2, response_similarity)
+        if (
+            isinstance(response_similarity, float)
+            and isinstance(aggregation1, float)
+            and isinstance(aggregation2, float)
+        ):
+            return get_combined_score(aggregation1, aggregation2, response_similarity)
 
-        elif isinstance(
-            response_similarity, dict
-        ):  # If it is a dictionary, then combine each score separately
+        # If it is a dictionary, then combine each score separately
+        elif (
+            isinstance(response_similarity, dict)
+            and isinstance(aggregation1, dict)
+            and isinstance(aggregation2, dict)
+        ):
             combined_scores = {}
             for (
                 key
             ) in response_similarity:  # Assuming that the keys are the same for all dictionaries
                 combined_scores[key] = get_combined_score(
-                    alignment1.get(key, 0.0),
-                    alignment2.get(key, 0.0),
+                    aggregation1.get(key, 0.0),
+                    aggregation2.get(key, 0.0),
                     response_similarity.get(key, 0.0),
                 )
             return combined_scores
+
+        else:
+            raise ValueError("Incompatible return types for aggregation and response similarity")
 
     def batch_calculate_with_prompt(
         self,
@@ -124,10 +138,10 @@ class PromptAlignmentMetric(LLMAwareMetric):
         prompts1: List[str],
         prompts2: Optional[List[str]] = None,
         metadata: Optional[Dict[str, Any]] = None,
-    ) -> Union[List[float], List[Dict[str, float]]]:
+    ) -> List[float | Dict[str, float]]:
         """
-        Calculate the combined score of prompt alignment and response similarity for a batch of responses.
-        The method works by calculating the prompt alignment score for both prompts and responses respectively.
+        Calculate the combined score of prompt aggregation and response similarity for a batch of responses.
+        The method works by calculating the prompt aggregation score for both prompts and responses respectively.
         Then it calculates the response similarity score of the two responses using the base metric.
         Finally, it combines the scores to get the final score.
         Currently, the scores are combined by taking the average of the three scores.
