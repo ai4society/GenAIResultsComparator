@@ -14,7 +14,9 @@ Each metric is implemented as a Python class with **two methods**:
 - `calculate()`: Computes the metric for a single pair of texts
 - `batch_calculate()`: Efficiently processes multiple pairs of texts using vectorized operations and batch processing
 
-**_Note:_** While the library can be used to compare strings, and we demonstrate this in the examples below, it's main purpose is to be used with generated texts from LLMs.
+All outputs are normalized to a scale of 0 to 1, where 1 indicates a perfect match between the two texts.
+
+**_Note:_** While the library can be used to compare strings, and we demonstrate this in the examples below, it's main purpose is to be used with generated texts from LLMs. An example of this can be found in the [examples/llm_aware_metrics](examples/llm_aware_metrics) folder.
 
 ## Quick Start
 
@@ -81,14 +83,16 @@ bleu_score = bleu.calculate(text1, text2, additional_params={
 })
 ```
 
+For detailed usage and more examples, please refer to the [Detailed Usage](#detailed-usage) section.
+
 ## Table of Contents
 - [Features](#features)
 - [Installation](#installation)
 - [Project Structure](#project-structure)
 - [TODOs](#todos)
-- [Detailed Usage](#detailed-usage)
 - [Development](#development)
 - [Contributing](#contributing)
+- [Detailed Usage](#detailed-usage)
 - [License](#license)
 - [Acknowledgments](#acknowledgments)
 - [Contact](#contact)
@@ -139,31 +143,60 @@ The project structure is as follows:
 ├── poetry.lock
 ├── pyproject.toml
 ├── .pre-commit-config.yaml
-├── .github/
-│   └── workflows/
-│       └── ci.yml
-├── llm_metrics/
-│   ├── __init__.py
-│   ├── base.py
-│   ├── exceptions.py
-│   ├── ngram_metrics.py
-│   ├── semantic_similarity_metrics.py
-│   ├── text_similarity_metrics.py
-│   └── utils.py
-└── tests/
-    ├── __init__.py
-    ├── conftest.py
-    ├── ngram_metrics_test.py
-    ├── semantic_similarity_metrics_test.py
-    ├── text_similarity_metrics_test.py
-    └── utils_test.py
-
+├── llm_metrics/  # Contains the library code
+├── examples/  # Contains example scripts
+└── tests/  # Contains test scripts
 ```
 
 ## TODOs
 - Add a more comprehensive test suite
 - Add more metrics from the [Microsoft article](https://learn.microsoft.com/en-us/ai/playbook/technology-guidance/generative-ai/working-with-llms/evaluation/list-of-eval-metrics)
-- Add support for more input types (e.g., lists, numpy arrays, pandas Series)
+
+## Development
+
+To set up the development environment:
+
+1. Clone the repository:
+   ```
+   git clone https://github.com/ai4society/GenAIResultsComparator.git
+   cd GenAIResultsComparator
+   ```
+
+2. Install dependencies using Poetry:
+   ```
+   poetry install
+   ```
+
+3. Run tests:
+   ```
+   poetry run pytest tests/
+   ```
+
+### Code Style
+
+We use `pre-commit` hooks to maintain code quality and consistency. The configuration for these hooks is in the `.pre-commit-config.yaml` file. These hooks run automatically on `git commit`, but you can also run them manually:
+
+```
+pre-commit run --all-files
+```
+
+Our pre-commit hooks include:
+- Code formatting with Black
+- Import sorting with isort
+- Linting with flake8
+- Type checking with mypy
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/FeatureName`)
+3. Commit your changes (`git commit -m 'Add some FeatureName'`)
+4. Push to the branch (`git push origin feature/FeatureName`)
+5. Open a Pull Request
+
+Please ensure that your code passes all tests and adheres to our code style guidelines (enforced by pre-commit hooks) before submitting a pull request.
 
 ## Detailed Usage
 
@@ -246,62 +279,6 @@ reference_texts = ["Ref 1", "Ref 2", "Ref 3"]
 
 scores = metric.batch_calculate(generated_texts, reference_texts)
 ```
-
-## Development
-
-To set up the development environment:
-
-1. Clone the repository:
-   ```
-   git clone https://github.com/ai4society/GenAIResultsComparator.git
-   cd GenAIResultsComparator
-   ```
-
-2. Install dependencies using Poetry:
-   ```
-   poetry install
-   ```
-
-3. Run tests:
-   ```
-   poetry run pytest tests/
-   ```
-
-### Code Style
-
-We use `pre-commit` hooks to maintain code quality and consistency. The configuration for these hooks is in the `.pre-commit-config.yaml` file. These hooks run automatically on `git commit`, but you can also run them manually:
-
-```
-pre-commit run --all-files
-```
-
-Our pre-commit hooks include:
-- Code formatting with Black
-- Import sorting with isort
-- Linting with flake8
-- Type checking with mypy
-
-### Continuous Integration
-
-We use GitHub Actions for continuous integration. The configuration is in the `.github/workflows/ci.yml` file. This workflow runs on every push and pull request, and includes:
-
-- Running tests on multiple Python versions
-- Checking code style and linting
-- Building and verifying the package
-
-You can see the status of these checks on the GitHub Actions tab of the repository.
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/FeatureName`)
-3. Commit your changes (`git commit -m 'Add some FeatureName'`)
-4. Push to the branch (`git push origin feature/FeatureName`)
-5. Open a Pull Request
-
-Please ensure that your code passes all tests and adheres to our code style guidelines (enforced by pre-commit hooks) before submitting a pull request.
 
 ## License
 

@@ -19,6 +19,19 @@ This directory contains example notebooks demonstrating various use cases of the
 - Uses multiple metrics including BLEU, BERTScore, and semantic similarity
 - Includes sample FAQ dataset and responses
 
+### 3. LLM-Aware Metrics (`llm_aware_metrics/`)
+- Advanced metrics specifically designed for LLM output evaluation
+- Demonstrates how to:
+  - Compare LLM outputs while considering their prompts
+  - Validate structured outputs against schemas
+  - Measure prompt-response alignment
+- Features three detailed example notebooks:
+  - Basic prompt-aware comparison
+  - Schema-based output validation
+  - Alignment scoring
+- Includes implementation code and comprehensive documentation
+- Perfect for users working with LLM-generated content
+
 ## Contributing New Examples
 
 We welcome contributions! If you'd like to add a new example:
