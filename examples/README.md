@@ -4,22 +4,13 @@ This directory contains example notebooks demonstrating various use cases of the
 
 ## Available Examples
 
-### 1. Introduction to LLM-Metrics (`quickstart_example.ipynb`)
+### 1. Introduction to LLM-Metrics (`quickstart/`)
 - Basic introduction to the library
 - Detailed walkthrough of BLEU score implementation
 - Best practices and common pitfalls
 - Recommended for first-time users
 
-### 2. LLM FAQ Analysis (`llm_faq/`)
-- Comparison of responses from different LLMs on FAQ datasets
-- Demonstrates how to:
-  - Evaluate consistency across multiple LLM responses
-  - Compare responses from different models
-  - Analyze semantic similarity in FAQ contexts
-- Uses multiple metrics including BLEU, BERTScore, and semantic similarity
-- Includes sample FAQ dataset and responses
-
-### 3. LLM-Aware Metrics (`llm_aware_metrics/`)
+### 2. LLM-Aware Metrics (`llm_aware_metrics/`)
 - Advanced metrics specifically designed for LLM output evaluation
 - Demonstrates how to:
   - Compare LLM outputs while considering their prompts
@@ -31,6 +22,15 @@ This directory contains example notebooks demonstrating various use cases of the
   - Alignment scoring
 - Includes implementation code and comprehensive documentation
 - Perfect for users working with LLM-generated content
+
+### 3. LLM FAQ Analysis (`llm_faq/`)
+- Comparison of responses from different LLMs on FAQ datasets
+- Demonstrates how to:
+  - Evaluate consistency across multiple LLM responses
+  - Compare responses from different models
+  - Analyze semantic similarity in FAQ contexts
+- Uses multiple metrics including BLEU, BERTScore, and semantic similarity
+- Includes sample FAQ dataset and responses
 
 ## Contributing New Examples
 
