@@ -21,7 +21,7 @@ class BLEU(BaseMetric):
     def __init__(
         self,
         n: int = 4,
-        smoothing_function: Union[Callable, SmoothingFunction] = SmoothingFunction.method1,
+        smoothing_function: Union[Callable, SmoothingFunction] = SmoothingFunction().method1,
     ):
         """
         Initialize the BLEU scorer with the specified parameters.
