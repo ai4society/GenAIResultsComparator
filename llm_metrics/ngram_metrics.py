@@ -284,8 +284,11 @@ class JSDivergence(BaseMetric):
         gen_probs = [gen_freq.freq(word) for word in all_words]
         ref_probs = [ref_freq.freq(word) for word in all_words]
 
-        with np.errstate(divide="ignore", invalid="ignore"):
-            return float(np.nan_to_num(jensenshannon(gen_probs, ref_probs, **params)))
+        # Handle the case where arrays are zeros
+        if all(x == 0 for x in ref_probs) or all(x == 0 for x in gen_probs):
+            return 0.0
+
+        return 1.0 - float((jensenshannon(gen_probs, ref_probs, **params)))
 
     def batch_calculate(
         self,

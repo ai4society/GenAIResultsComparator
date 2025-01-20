@@ -193,7 +193,7 @@ class LevenshteinDistance(BaseMetric):
             params.update(additional_params)
 
         if calculate_ratio:
-            return 1 - ratio(generated_text, reference_text, **params)
+            return ratio(generated_text, reference_text, **params)
         return distance(generated_text, reference_text, **params)
 
     def batch_calculate(
