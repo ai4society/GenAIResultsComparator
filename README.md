@@ -9,16 +9,11 @@ Large Language Models (LLM).
 
 _Detailed examples can be found in the [examples](examples) folder._
 
-_To be implemented..._
-
 ```python
+'To be implemented...'
 ```
 
 ## Description
-
-Inspiration for the library and evaluation metrics was taken from [Microsoft's
-article on evaluating LLM-generated content](https://learn.microsoft.com/en-us/ai/playbook/technology-guidance/generative-ai/working-with-llms/evaluation/list-of-eval-metrics).
-In the article, Microsoft describes 3 categories of evaluation metrics: (1) Reference-based metrics, (2) Reference-free metrics, and (3) LLM-based metrics. _The library currently supports reference-based metrics._
 
 The library provides a set of metrics for evaluating **2 text strings** as inputs.
 Each metric is implemented as a Python class with **two methods**:
@@ -29,14 +24,15 @@ All outputs are normalized to a scale of 0 to 1, where 1 indicates a perfect mat
 
 **_Note:_** While the library can be used to compare strings, and we demonstrate this in the examples below, it's main purpose is to be used with generated texts from LLMs. An example of this can be found in the [examples/llm_aware_metrics](examples/llm_aware_metrics) folder.
 
+Inspiration for the library and evaluation metrics was taken from [Microsoft's
+article on evaluating LLM-generated content](https://learn.microsoft.com/en-us/ai/playbook/technology-guidance/generative-ai/working-with-llms/evaluation/list-of-eval-metrics). In the article, Microsoft describes 3 categories of evaluation metrics: **(1)** Reference-based metrics, **(2)** Reference-free metrics, and **(3)** LLM-based metrics. _The library currently supports reference-based metrics._
+
 ## Table of Contents
 - [Features](#features)
 - [Installation](#installation)
 - [Project Structure](#project-structure)
-- [TODOs](#todos)
 - [Development](#development)
 - [Contributing](#contributing)
-- [Detailed Usage](#detailed-usage)
 - [License](#license)
 - [Acknowledgments](#acknowledgments)
 - [Contact](#contact)
@@ -59,18 +55,18 @@ Currently, LLM Metrics is not available on PyPI. To use it, you'll need to clone
 1. First, make sure you have Poetry installed. If not, you can install it by following the instructions on the [official Poetry website](https://python-poetry.org/docs/#installation).
 
 2. Clone the repository:
-   ```bash
+   ```shell
    git clone https://github.com/ai4society/GenAIResultsComparator.git
    cd GenAIResultsComparator
    ```
 
 3. Install the dependencies using Poetry:
-   ```bash
+   ```shell
    poetry install
    ```
 
 4. Activate the virtual environment:
-   ```bash
+   ```shell
    poetry shell
    ```
 
@@ -88,31 +84,27 @@ The project structure is as follows:
 ├── pyproject.toml
 ├── .pre-commit-config.yaml
 ├── llm_metrics/  # Contains the library code
-├── examples/  # Contains example scripts
-└── tests/  # Contains test scripts
+├── examples/     # Contains example scripts
+└── tests/        # Contains test scripts
 ```
-
-## TODOs
-- Add a more comprehensive test suite
-- Add more metrics from the [Microsoft article](https://learn.microsoft.com/en-us/ai/playbook/technology-guidance/generative-ai/working-with-llms/evaluation/list-of-eval-metrics)
 
 ## Development
 
 To set up the development environment:
 
 1. Clone the repository:
-   ```
+   ```shell
    git clone https://github.com/ai4society/GenAIResultsComparator.git
    cd GenAIResultsComparator
    ```
 
 2. Install dependencies using Poetry:
-   ```
+   ```shell
    poetry install
    ```
 
 3. Run tests:
-   ```
+   ```shell
    poetry run pytest tests/
    ```
 
@@ -141,88 +133,6 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 5. Open a Pull Request
 
 Please ensure that your code passes all tests and adheres to our code style guidelines (enforced by pre-commit hooks) before submitting a pull request.
-
-## Detailed Usage
-
-### N-gram-based Metrics
-
-#### BLEU (Bilingual Evaluation Understudy)
-
-```python
-from llm_metrics import BLEU
-
-bleu = BLEU(n=4)  # n is the maximum n-gram order
-score = bleu.calculate(generated_text, reference_text)
-```
-
-#### ROUGE (Recall-Oriented Understudy for Gisting Evaluation)
-
-```python
-from llm_metrics import ROUGE
-
-rouge = ROUGE(rouge_types=['rouge1', 'rouge2', 'rougeL'])
-scores = rouge.calculate(generated_text, reference_text)
-```
-
-#### JS Divergence
-
-```python
-from llm_metrics import JSDivergence
-
-js_div = JSDivergence()
-score = js_div.calculate(generated_text, reference_text)
-```
-
-### Text Similarity Metrics
-
-#### Jaccard Similarity
-
-```python
-from llm_metrics import JaccardSimilarity
-
-jaccard = JaccardSimilarity()
-score = jaccard.calculate(generated_text, reference_text)
-```
-
-#### Cosine Similarity
-
-```python
-from llm_metrics import CosineSimilarity
-
-cosine = CosineSimilarity()
-score = cosine.calculate(generated_text, reference_text)
-```
-
-#### Levenshtein Distance
-
-```python
-from llm_metrics import LevenshteinDistance
-
-levenshtein = LevenshteinDistance()
-distance = levenshtein.calculate(generated_text, reference_text)
-```
-
-### Semantic Similarity Metrics
-
-#### BERTScore
-
-```python
-from llm_metrics import BERTScore
-
-bert_score = BERTScore(model_type="bert-base-uncased")
-score = bert_score.calculate(generated_text, reference_text)
-```
-
-### Batch Processing
-
-All metrics support batch processing for efficient computation on multiple texts:
-
-```python
-generated_texts = ["Text 1", "Text 2", "Text 3"]
-reference_texts = ["Ref 1", "Ref 2", "Ref 3"]
-
-scores = metric.batch_calculate(generated_texts, reference_texts)
-```
 
 ## License
 

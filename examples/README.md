@@ -36,7 +36,7 @@ This directory contains example notebooks demonstrating various use cases of the
 
 We welcome contributions! If you'd like to add a new example:
 
-1. Create a new directory for your example if it's more than a single notebook
+1. Create a new directory for your example if it's more than a single notebook (recommended).
 2. Ensure your notebook is well-documented with:
    - Clear objective and use case
    - Requirements and setup instructions

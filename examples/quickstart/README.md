@@ -1,6 +1,7 @@
 # Quickstart
 
-This is a quickstart guide to get you up and running with the `GenAIResultsComparator` library.
+This guide contains quickstart examples to get you up and running with the `GenAIResultsComparator` library.
+It also contains a [detailed usage](#detailed-usage) section for various metrics available in the library.
 
 Here's a simple example of how to use GenAIResultsComparator.
 _Please refer to the `quickstart_example.ipynb` file for a notebook-based version._
@@ -63,3 +64,86 @@ bleu_score = bleu.calculate(text1, text2, additional_params={
     'smoothing_function': custom_smoothing
 })
 ```
+
+
+## Detailed Usage
+
+### N-gram-based Metrics
+
+* BLEU (Bilingual Evaluation Understudy)
+
+    ```python
+    from llm_metrics import BLEU
+
+    bleu = BLEU(n=4)  # n is the maximum n-gram order
+    score = bleu.calculate(generated_text, reference_text)
+    ```
+
+* ROUGE (Recall-Oriented Understudy for Gisting Evaluation)
+
+    ```python
+    from llm_metrics import ROUGE
+
+    rouge = ROUGE(rouge_types=['rouge1', 'rouge2', 'rougeL'])
+    scores = rouge.calculate(generated_text, reference_text)
+    ```
+
+* JS Divergence
+
+    ```python
+    from llm_metrics import JSDivergence
+
+    js_div = JSDivergence()
+    score = js_div.calculate(generated_text, reference_text)
+    ```
+
+### Text Similarity Metrics
+
+* Jaccard Similarity
+
+    ```python
+    from llm_metrics import JaccardSimilarity
+
+    jaccard = JaccardSimilarity()
+    score = jaccard.calculate(generated_text, reference_text)
+    ```
+
+* Cosine Similarity
+
+    ```python
+    from llm_metrics import CosineSimilarity
+
+    cosine = CosineSimilarity()
+    score = cosine.calculate(generated_text, reference_text)
+    ```
+
+* Levenshtein Distance
+
+    ```python
+    from llm_metrics import LevenshteinDistance
+
+    levenshtein = LevenshteinDistance()
+    distance = levenshtein.calculate(generated_text, reference_text)
+    ```
+
+### Semantic Similarity Metrics
+
+* BERTScore
+
+    ```python
+    from llm_metrics import BERTScore
+
+    bert_score = BERTScore(model_type="bert-base-uncased")
+    score = bert_score.calculate(generated_text, reference_text)
+    ```
+
+### Batch Processing
+
+All metrics support batch processing for efficient computation on multiple texts:
+
+    ```python
+    generated_texts = ["Text 1", "Text 2", "Text 3"]
+    reference_texts = ["Ref 1", "Ref 2", "Ref 3"]
+
+    scores = metric.batch_calculate(generated_texts, reference_texts)
+    ```
