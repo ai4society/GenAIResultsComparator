@@ -5,7 +5,7 @@ from llm_metrics.base import BaseMetric
 from .base import LLMAwareMetric
 
 
-def get_combined_score(a: float, b: float, c: float) -> float:
+def _get_combined_score(a: float, b: float, c: float) -> float:
     """
     A simple function to combine three scores.
     :param a: First score
@@ -52,7 +52,7 @@ class AggregatedSimilarityMetric(LLMAwareMetric):
         self, prompt: str, response: str
     ) -> Union[float, Dict[str, float]]:
         """
-        Calculate how well the response aligns with the prompt.
+        Calculate how similar the response are to the prompt.
         Uses the aggregated metric to calculate the aggregation score.
         """
         return self.aggregated_metric.calculate(prompt, response)
@@ -70,7 +70,7 @@ class AggregatedSimilarityMetric(LLMAwareMetric):
         The method works by calculating the aggregated similarity score for both prompts and responses respectively.
         Then it calculates the response similarity score of the two responses using the base metric.
         Finally, it combines the scores to get the final score.
-        Currently, the scores are combined by taking the average of the three scores.
+        The score combination can be done in various ways depending on the use case. See the `_get_combined_score` function.
 
         :param text1: The first response
         :type text1: str
@@ -109,7 +109,7 @@ class AggregatedSimilarityMetric(LLMAwareMetric):
             and isinstance(aggregation1, float)
             and isinstance(aggregation2, float)
         ):
-            return get_combined_score(aggregation1, aggregation2, response_similarity)
+            return _get_combined_score(aggregation1, aggregation2, response_similarity)
 
         # If it is a dictionary, then combine each score separately
         elif (
@@ -121,7 +121,7 @@ class AggregatedSimilarityMetric(LLMAwareMetric):
             for (
                 key
             ) in response_similarity:  # Assuming that the keys are the same for all dictionaries
-                combined_scores[key] = get_combined_score(
+                combined_scores[key] = _get_combined_score(
                     aggregation1.get(key, 0.0),
                     aggregation2.get(key, 0.0),
                     response_similarity.get(key, 0.0),

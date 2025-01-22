@@ -15,16 +15,17 @@ _Detailed examples can be found in the [examples](examples) folder._
 
 ## Description
 
-The library provides a set of metrics for evaluating **2 text strings** as inputs.
-Each metric is implemented as a Python class with **two methods**:
+The library provides a set of metrics for evaluating **2 text strings as inputs**. **Outputs are on a scale of 0 to 1** (normalized), where 1 indicates a perfect match between the two texts.
+
+**_Class Structure:_** All metrics are implemented as classes, and they can be easily extended to add new metrics. The metrics start with the `BaseMetric` class under the `llm_metrics/base.py` file.
+
+Each metric class inherits from this base class and is implemented with **two required methods**:
 - `calculate()`: Computes the metric for a single pair of texts
 - `batch_calculate()`: Efficiently processes multiple pairs of texts using vectorized operations and batch processing
 
-All outputs are normalized to a scale of 0 to 1, where 1 indicates a perfect match between the two texts.
-
 **_Note:_** While the library can be used to compare strings, and we demonstrate this in the examples below, it's main purpose is to be used with generated texts from LLMs. An example of this can be found in the [examples/llm_aware_metrics](examples/llm_aware_metrics) folder.
 
-Inspiration for the library and evaluation metrics was taken from [Microsoft's
+**_Inspiration_** for the library and evaluation metrics was taken from [Microsoft's
 article on evaluating LLM-generated content](https://learn.microsoft.com/en-us/ai/playbook/technology-guidance/generative-ai/working-with-llms/evaluation/list-of-eval-metrics). In the article, Microsoft describes 3 categories of evaluation metrics: **(1)** Reference-based metrics, **(2)** Reference-free metrics, and **(3)** LLM-based metrics. _The library currently supports reference-based metrics._
 
 ## Table of Contents
