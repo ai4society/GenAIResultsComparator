@@ -7,11 +7,52 @@ Large Language Models (LLM).
 
 ## Quick Start
 
-_Detailed examples can be found in the [examples](examples) folder._
+Let's demonstrate the usage of the library with a simple example on the Recipie dataset.
 
 ```python
-'To be implemented...'
+from typing import Dict, Any
+import json
+from llm_metrics.semantic_similarity_metrics import BERTScore
+from examples.llm_aware_metrics.code.prompt_aware import PromptAwareMetric
+
+# Load the Recipie dataset
+def load_recipe_data(file_path: str) -> Dict[str, Any]:
+    """Load recipe conversion data from JSON file."""
+    with open(file_path, 'r') as f:
+        return json.load(f)
+
+# Load our recipe data; Check details under `examples/llm_aware_metrics` folder
+data = load_recipe_data('./examples/data/R3_conversion_1-shot-0.3.json')
+
+# Initialize the metric
+bert_score = BERTScore()
+prompt_metric = PromptAwareMetric(bert_score)
+
+# 2. Prompt-aware evaluation
+prompt_score = prompt_metric.calculate_with_prompt(
+    text1=data["response"],
+    text2="",  # Placeholder empty string for comparison
+    prompt1=data["system-prompt"],
+    prompt2=data["prompt"],
+)
+
+print(f"Prompt-aware score: {prompt_score}")
+
+# Output:
+# > Prompt-aware score: {'precision': 0.5313692688941956, 'recall': 0.4975050091743469, 'f1': 0.5138798356056213}
+
+# Using BERTScore as the base metric, we get three scores:
+#   Precision: 0.53 - How much of the LLM's output is relevant
+#   Recall: 0.50 - How much of the expected content is captured
+#   F1: 0.51 - Harmonic mean of precision and recall
+
+# These scores indicate that:
+#   The LLM captured about 50% of the expected content
+#   There's a good balance between precision and recall
+#   The model understood the basic recipe structure but missed some details
 ```
+
+_Detailed examples can be found in the [examples](examples) folder._
 
 ## Description
 
