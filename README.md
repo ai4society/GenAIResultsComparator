@@ -8,6 +8,7 @@ Large Language Models (LLM).
 ## Quick Start
 
 Let's demonstrate the usage of the library with a simple example on the Recipie dataset.
+_Detailed examples can be found in the [examples](examples) folder._
 
 ```python
 from typing import Dict, Any
@@ -37,22 +38,22 @@ prompt_score = prompt_metric.calculate_with_prompt(
 )
 
 print(f"Prompt-aware score: {prompt_score}")
-
-# Output:
-# > Prompt-aware score: {'precision': 0.5313692688941956, 'recall': 0.4975050091743469, 'f1': 0.5138798356056213}
-
-# Using BERTScore as the base metric, we get three scores:
-#   Precision: 0.53 - How much of the LLM's output is relevant
-#   Recall: 0.50 - How much of the expected content is captured
-#   F1: 0.51 - Harmonic mean of precision and recall
-
-# These scores indicate that:
-#   The LLM captured about 50% of the expected content
-#   There's a good balance between precision and recall
-#   The model understood the basic recipe structure but missed some details
 ```
 
-_Detailed examples can be found in the [examples](examples) folder._
+Output:
+```shell
+> Prompt-aware score: {'precision': 0.5313692688941956, 'recall': 0.4975050091743469, 'f1': 0.5138798356056213}
+```
+
+Using `BERTScore` as the base metric, we get three scores:
+- Precision: 0.53 - How much of the LLM's output is relevant
+- Recall: 0.50 - How much of the expected content is captured
+- F1: 0.51 - Harmonic mean of precision and recall
+
+These scores indicate that:
+- The LLM captured about 50% of the expected content
+- There's a good balance between precision and recall
+- The model understood the basic recipe structure but missed some details
 
 ## Description
 
