@@ -1,6 +1,11 @@
 from .ngram_metrics import BLEU, ROUGE, JSDivergence
 from .semantic_similarity_metrics import BERTScore
-from .text_similarity_metrics import CosineSimilarity, JaccardSimilarity, LevenshteinDistance
+from .text_similarity_metrics import (
+    CosineSimilarity,
+    JaccardSimilarity,
+    LevenshteinDistance,
+    SequenceMatcherSimilarity,
+)
 
 __all__ = [
     "BLEU",
@@ -10,4 +15,5 @@ __all__ = [
     "CosineSimilarity",
     "LevenshteinDistance",
     "BERTScore",
+    "SequenceMatcherSimilarity",
 ]
