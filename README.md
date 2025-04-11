@@ -16,7 +16,7 @@ import json
 from llm_metrics.semantic_similarity_metrics import BERTScore
 from examples.llm_aware_metrics.code.prompt_aware import PromptAwareMetric
 
-# Load the Recipie dataset
+# Load the Recipe dataset
 def load_recipe_data(file_path: str) -> Dict[str, Any]:
     """Load recipe conversion data from JSON file."""
     with open(file_path, 'r') as f:
