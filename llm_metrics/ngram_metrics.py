@@ -32,7 +32,6 @@ class BLEU(BaseMetric):
         :type smoothing_function: Union[Callable, SmoothingFunction], optional
         """
         self.n = n
-        self.weights = tuple([1 / n] * n)
         self.smoothing_function = smoothing_function
 
     def calculate(
@@ -62,7 +61,6 @@ class BLEU(BaseMetric):
             sentence_bleu(
                 [reference_text.split()],
                 generated_text.split(),
-                weights=self.weights,
                 smoothing_function=self.smoothing_function,
                 **params,
             )
@@ -119,7 +117,6 @@ class BLEU(BaseMetric):
             return corpus_bleu(
                 references,
                 hypotheses,
-                weights=self.weights,
                 smoothing_function=self.smoothing_function,
                 **params,
             )
