@@ -16,7 +16,7 @@ import json
 from llm_metrics.semantic_similarity_metrics import BERTScore
 from examples.llm_aware_metrics.code.prompt_aware import PromptAwareMetric
 
-# Load the Recipie dataset
+# Load the Recipe dataset
 def load_recipe_data(file_path: str) -> Dict[str, Any]:
     """Load recipe conversion data from JSON file."""
     with open(file_path, 'r') as f:
@@ -148,7 +148,7 @@ To set up the development environment:
 
 3. Run tests:
    ```shell
-   poetry run pytest tests/
+   poetry run pytest
    ```
 
 ### Code Style
@@ -165,6 +165,33 @@ Our pre-commit hooks include:
 - Linting with flake8
 - Type checking with mypy
 
+
+## Running Tests
+
+Navigate to the project root in your terminal and run:
+
+```bash
+poetry run pytest
+```
+
+Or, for more verbose output:
+
+```bash
+poetry run pytest -v
+```
+
+To run only the slow BERTScore tests (if marked):
+
+```bash
+poetry run pytest -m bertscore
+```
+
+To skip the slow BERTScore tests:
+
+```bash
+poetry run pytest -m "not bertscore"
+```
+
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
@@ -177,14 +204,14 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 Please ensure that your code passes all tests and adheres to our code style guidelines (enforced by pre-commit hooks) before submitting a pull request.
 
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
 ## Acknowledgments
 
 - This library uses several open-source packages including NLTK, scikit-learn, and others.
 - Special thanks to the creators and maintainers of the implemented metrics.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Contact
 

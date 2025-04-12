@@ -109,12 +109,22 @@ class CosineSimilarity(BaseMetric):
         :return: The Cosine Similarity score
         :rtype: float
         """
+        # Handle empty strings:
+        if not generated_text.strip() and not reference_text.strip():
+            return 1.0
+        if not generated_text.strip() or not reference_text.strip():
+            return 0.0
+
         params = {}
         if additional_params:
             params.update(additional_params)
 
         vectors = self.vectorizer.fit_transform([generated_text, reference_text])
-        return cosine_similarity(vectors[0], vectors[1], **params)[0][0]
+
+        # For entirely similar text, the cosine similarity might be slightly greater than 1 due to floating point precision
+        # Hence, we clip the value to be in the range [0, 1]
+        similarity = cosine_similarity(vectors[0], vectors[1], **params)[0][0]
+        return min(max(similarity, 0.0), 1.0)
 
     def batch_calculate(
         self,
@@ -134,27 +144,41 @@ class CosineSimilarity(BaseMetric):
         :return: A list, numpy array, or pandas Series of Cosine Similarity scores
         :rtype: Union[np.ndarray, pd.Series, List[float]]
         """
+
         gen_texts = to_iterable(generated_texts)
         ref_texts = to_iterable(reference_texts)
 
-        params = {}
-        if additional_params:
-            params.update(additional_params)
+        # Convert to lists for easier manipulation
+        gen_list = list(gen_texts)
+        ref_list = list(ref_texts)
 
-        vectors = self.vectorizer.fit_transform(list(gen_texts) + list(ref_texts))
-        gen_vectors = vectors[: len(gen_texts)]
-        ref_vectors = vectors[len(gen_texts) :]
+        # Handle empty strings for each pair
+        results = []
+        for i in range(len(gen_list)):
+            gen_stripped = gen_list[i].strip() if isinstance(gen_list[i], str) else ""
+            ref_stripped = ref_list[i].strip() if isinstance(ref_list[i], str) else ""
 
-        similarities: np.ndarray = cosine_similarity(gen_vectors, ref_vectors, **params)
+            if not gen_stripped and not ref_stripped:
+                results.append(1.0)  # Both empty - perfect match
+            elif not gen_stripped or not ref_stripped:
+                results.append(0.0)  # One empty - no match
+            else:
+                # Both non-empty - calculate similarity
+                params = {}
+                if additional_params:
+                    params.update(additional_params)
 
-        if isinstance(gen_texts, np.ndarray) and isinstance(ref_texts, np.ndarray):
-            return similarities.diagonal()
+                vectors = self.vectorizer.fit_transform([gen_list[i], ref_list[i]])
+                similarity = cosine_similarity(vectors[0], vectors[1], **params)[0][0]
+                results.append(min(max(similarity, 0.0), 1.0))  # Clip to [0, 1]
 
-        elif isinstance(gen_texts, pd.Series) and isinstance(ref_texts, pd.Series):
-            return pd.Series(similarities.diagonal(), index=gen_texts.index)
-
+        # Return results in the appropriate format
+        if isinstance(generated_texts, np.ndarray) and isinstance(reference_texts, np.ndarray):
+            return np.array(results)
+        elif isinstance(generated_texts, pd.Series) and isinstance(reference_texts, pd.Series):
+            return pd.Series(results, index=generated_texts.index)
         else:
-            return similarities.diagonal().tolist()
+            return results
 
 
 class LevenshteinDistance(BaseMetric):
