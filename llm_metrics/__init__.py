@@ -1,3 +1,4 @@
+from .base import BaseMetric
 from .ngram_metrics import BLEU, ROUGE, JSDivergence
 from .semantic_similarity_metrics import BERTScore
 from .text_similarity_metrics import (
@@ -8,6 +9,7 @@ from .text_similarity_metrics import (
 )
 
 __all__ = [
+    "BaseMetric",
     "BLEU",
     "ROUGE",
     "JSDivergence",
