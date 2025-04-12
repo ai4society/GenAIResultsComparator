@@ -133,7 +133,8 @@ class BLEU(BaseMetric):
             elif isinstance(gen_texts, pd.Series) and isinstance(ref_texts, pd.Series):
                 # Use pandas' apply method for Series
                 return gen_texts.combine(
-                    ref_texts, lambda g, r: self.calculate(g, r, additional_params=params)
+                    ref_texts,
+                    lambda g, r: self.calculate(g, r, additional_params=params),
                 )
             else:
                 # For other iterable types, use a list comprehension
@@ -198,13 +199,15 @@ class ROUGE(BaseMetric):
         :return: Either a single score or a dictionary of scores containing ROUGE types
         :rtype: Union[dict, float]
         """
+        # For some texts, such as empty strings, the scorer may return 0
+        # To account for such cases, ensure that each score is converted to float
         scores = self.scorer.score(reference_text, generated_text)
-        score_dict = {k: v.fmeasure for k, v in scores.items()}
+        score_dict = {k: float(v.fmeasure) for k, v in scores.items()}
 
         # Return based on the supplied ROUGE types
         if len(self.rouge_types) == 1:
-            return score_dict.get(self.rouge_types[0], 0.0)
-        return {key: score_dict[key] for key in self.rouge_types}
+            return float(score_dict.get(self.rouge_types[0], 0.0))
+        return {key: float(score_dict[key]) for key in self.rouge_types}
 
     def batch_calculate(
         self,
