@@ -7,6 +7,9 @@ from .text_similarity_metrics import (
     LevenshteinDistance,
     SequenceMatcherSimilarity,
 )
+from .visualize import plot_metric_comparison , plot_radar_comparison
+from .utils import prepare_results_dataframe 
+
 
 __all__ = [
     "BaseMetric",
@@ -18,4 +21,7 @@ __all__ = [
     "LevenshteinDistance",
     "BERTScore",
     "SequenceMatcherSimilarity",
+    "plot_metric_comparison",
+    "plot_radar_comparison",
+    "prepare_results_dataframe",
 ]
