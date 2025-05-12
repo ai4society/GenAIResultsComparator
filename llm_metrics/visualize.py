@@ -1,4 +1,7 @@
-from typing import Optional, Dict, List, Any, Union 
+from typing import Optional, Dict, List, Any, Union , Callable
+import warnings
+
+import pandas
 
 # Optional Imports - Keep these for lazy loading
 try:
@@ -29,209 +32,226 @@ except ImportError:
 
 # Bar Plot Function for comparing single metric across models 
 def plot_metric_comparison(
-    scores_df: Any, 
-    metric_name: str,
-    model_col: str = "model_name",
-    score_col: str = "score",
-    title: Optional[str] = None,
-    xlabel: Optional[str] = "Model",
-    ylabel: Optional[str] = None,
-    figsize: Optional[tuple] = (10, 6),
-    axis: Optional[Any] = None, 
+    df: pandas.DataFrame,
+    aggregate_func: Optional[Callable] = None, 
     **kwargs: Any,
 ) -> Any: 
     """
-    Generates a bar plot comparing different models based on a single metric.
-    Assumes matplotlib, seaborn, and pandas are installed and available at runtime.
+    Generates a bar plot comparing different models based on a single metric,
+    after aggregating scores using the provided aggregate_func.
 
-    :param scores_df: DataFrame containing the scores.
-        Expected columns: model_col, 'metric_name', score_col.
-    :type scores_df: pd.DataFrame or Any
-    :param metric_name: The name of the metric to plot (must exist in the 'metric_name' column).
-    :type metric_name: str
-    :param model_col: Name of the column identifying the models/generators.
-    :type model_col: str
-    :param score_col: Name of the column containing the scores.
-    :type score_col: str
-    :param title: Optional title for the plot. Defaults to f"{metric_name} Comparison".
-    :type title: Optional[str]
-    :param xlabel: Optional label for the x-axis.
-    :type xlabel: Optional[str]
-    :param ylabel: Optional label for the y-axis. Defaults to metric_name.
-    :type ylabel: Optional[str]
-    :param figsize: Figure size for the plot if creating a new figure.
-    :type figsize: tuple
-    :param axis: Optional matplotlib Axes object to plot on. If None, a new figure and axes are created.
-    :type axis: Optional[matplotlib.axes.Axes or Any]
-    :param kwargs: Additional keyword arguments passed to seaborn.barplot.
-    :raises ImportError: If required libraries (matplotlib, seaborn, pandas) are not installed when called.
+    :param df: DataFrame containing the scores, typically from prepare_results_dataframe.
+        Expected columns are defined by model_col, metric_col, and score_col in kwargs.
+    :type df: pd.DataFrame
+    :param aggregate_func: A function to aggregate scores (e.g., numpy.mean, numpy.median).
+        Defaults to numpy.mean if None.
+    :type aggregate_func: Optional[Callable]
+    :param kwargs: Additional keyword arguments:
+        - metric_name (str, required): The name of the metric to plot.
+        - model_col (str, optional): Name of the column identifying models. Defaults to "model_name".
+        - score_col (str, optional): Name of the column containing scores. Defaults to "score".
+        - metric_col (str, optional): Name of the column containing metric names. Defaults to "metric_name".
+        - title (Optional[str], optional): Title for the plot.
+        - xlabel (Optional[str], optional): Label for the x-axis. Defaults to "Model".
+        - ylabel (Optional[str], optional): Label for the y-axis. Defaults to the plotted metric's name.
+        - figsize (tuple, optional): Figure size. Defaults to (10, 6).
+        - axis (Optional[matplotlib.axes.Axes], optional): Matplotlib Axes to plot on.
+        - Other kwargs are passed to seaborn.barplot.
+    :raises ImportError: If required libraries (matplotlib, seaborn, pandas, numpy) are not installed.
+    :raises ValueError: If 'metric_name' is not provided in kwargs.
     :return: The matplotlib Axes object containing the plot.
-    :rtype: matplotlib.axes.Axes or Any
+    :rtype: matplotlib.axes.Axes
     """
 
-    metric_data = scores_df[scores_df["metric_name"] == metric_name]
-
-    # Create plot if axis not provided 
-    if axis is None:
-        if plt is None:
-            raise ImportError("Matplotlib is required but not installed.")
-        fig, axis = plt.subplots(figsize=figsize)
-
-    # Generate bar plot 
-    if sns is None:
-        raise ImportError("Seaborn is required but not installed.")
-    sns.barplot(
-        data=metric_data, x=model_col, y=score_col, ax=axis, **kwargs
-    )
-
-    # Set plot labels and title
-    plot_title = title if title else f"{metric_name} Comparison"
-    plot_ylabel = ylabel if ylabel else metric_name
-
-    axis.set_title(plot_title)
-    axis.set_xlabel(xlabel)
-    axis.set_ylabel(plot_ylabel)
-
-    # Adjust x-axis tick labels based on number of models
-    if len(metric_data[model_col].unique()) > 5:
-        axis.tick_params(axis="x", rotation=45)
-    else:
-        axis.tick_params(axis="x", rotation=0)
-
-    # Adjust layout 
-    if plt is None:
-        raise ImportError("Matplotlib is required but not installed.")
-    plt.tight_layout()
-
-    return axis
-
-# --- Radar Plot Function (Error checks removed as requested) ---
-def plot_radar_comparison(
-    df: Any, 
-    metrics: List[str],
-    model_col: str = "model_name",
-    score_col: str = "score",
-    metric_name_col: str = "metric_name",
-    title: Optional[str] = "Model Comparison Radar Plot",
-    figsize: Optional[tuple] = (8, 8),
-    fill_alpha: float = 0.1,
-    line_width: float = 1.0,
-    y_ticks: Optional[List[float]] = None,
-    axis: Optional[Any] = None, 
-    **kwargs: Any,
-) -> Any: 
-    """
-    Generates a radar plot comparing multiple models across several metrics.
-    Assumes matplotlib, numpy, and pandas are installed and available at runtime.
-
-    :param df: DataFrame containing the scores in long format.
-            Expected columns: model_col, metric_name_col, score_col.
-    :type df: pd.DataFrame or Any
-    :param metrics: List of metric names (values from metric_name_col) to include in the radar plot axes.
-    :type metrics: List[str]
-    :param model_col: Name of the column identifying the models.
-    :type model_col: str
-    :param score_col: Name of the column containing the scores.
-    :type score_col: str
-    :param metric_name_col: Name of the column containing the metric names.
-    :type metric_name_col: str
-    :param title: Optional title for the plot.
-    :type title: Optional[str]
-    :param figsize: Figure size if creating a new plot.
-    :type figsize: Optional[tuple]
-    :param fill_alpha: Alpha transparency for the filled area under the lines.
-    :type fill_alpha: float
-    :param line_width: Width of the lines on the plot.
-    :type line_width: float
-    :param y_ticks: Optional list of values for y-axis ticks (score range). If None, defaults based on data.
-    :type y_ticks: Optional[List[float]]
-    :param axis: Optional matplotlib Axes object (must be polar). If None, a new figure and polar axes are created.
-    :type axis: Optional[matplotlib.axes.Axes or Any]
-    :param kwargs: Additional keyword arguments (currently unused but kept for future customization).
-    :raises ImportError: If required libraries (matplotlib, numpy, pandas) are not installed when called.
-    :raises KeyError: If expected columns are missing in df.
-    :raises ValueError: If pivoting fails (e.g., duplicate model/metric pairs) or provided axis is not polar.
-    :raises TypeError: If axis is not a valid matplotlib Axes object or other type mismatches occur.
-    :return: The matplotlib Axes object containing the plot.
-    :rtype: matplotlib.axes.Axes or Any
-    """
-    # Check for pandas dependency implicitly needed for pivot/reindex
     if pd is None:
         raise ImportError("Pandas is required but not installed.")
+    if sns is None:
+        raise ImportError("Seaborn is required but not installed.")
+    if plt is None:
+        raise ImportError("Matplotlib is required but not installed.")
 
-    # Filter data 
-    plot_data = df[df[metric_name_col].isin(metrics)]
+    actual_aggregate_func = aggregate_func
+    if actual_aggregate_func is None:
+        if np is None:
+            raise ImportError("Numpy is required for default aggregation. Please install numpy or provide an aggregate_func.")
+        actual_aggregate_func = np.mean
 
-    # Pivot data - raises ValueError on duplicates, KeyError if columns missing
-    pivot_df = plot_data.pivot(
-        index=model_col, columns=metric_name_col, values=score_col
+    metric_to_plot = kwargs.pop("metric_name", None)
+    if metric_to_plot is None:
+        raise ValueError("'metric_name' must be provided in kwargs to specify which metric to plot.")
+
+    model_col = kwargs.pop("model_col", "model_name")
+    score_col = kwargs.pop("score_col", "score")
+    metric_col = kwargs.pop("metric_col", "metric_name")
+
+    title_val = kwargs.pop("title", None)
+    xlabel_val = kwargs.pop("xlabel", "Model")
+    ylabel_val = kwargs.pop("ylabel", None)
+    figsize_val = kwargs.pop("figsize", (10, 6))
+    axis_val = kwargs.pop("axis", None)
+
+    # Filter for the specific metric
+    metric_specific_df = df[df[metric_col] == metric_to_plot]
+        
+    # Aggregate scores
+    aggregated_data = metric_specific_df.groupby(model_col, as_index=False)[score_col].apply(actual_aggregate_func)
+    # If aggregate_func returns a DataFrame (i.e from a custom function), make sure it has the correct columns
+    if not isinstance(aggregated_data, pd.DataFrame) or model_col not in aggregated_data.columns or score_col not in aggregated_data.columns:
+        # Fallback for simple aggregation like np.mean.
+        aggregated_data = metric_specific_df.groupby(model_col)[score_col].agg(actual_aggregate_func).reset_index()
+
+
+    current_axis = axis_val
+    if current_axis is None:
+        fig, current_axis = plt.subplots(figsize=figsize_val)
+
+    sns.barplot(
+        data=aggregated_data, x=model_col, y=score_col, ax=current_axis, **kwargs
     )
 
-    pivot_df = pivot_df.reindex(columns=metrics)
+    plot_title = title_val if title_val else f"{metric_to_plot} Comparison"
+    plot_ylabel_text = ylabel_val if ylabel_val else metric_to_plot
 
-    models = pivot_df.index.tolist()
-    num_vars = len(metrics)
+    current_axis.set_title(plot_title)
+    current_axis.set_xlabel(xlabel_val)
+    current_axis.set_ylabel(plot_ylabel_text)
 
-    # Calculate angles 
-    if pi is None:
-        raise ImportError("math.pi is required but not available.")
-    if num_vars == 0:
-        raise ValueError("Metrics list cannot be empty.")
-    angles = [n / float(num_vars) * 2 * pi for n in range(num_vars)]
-    angles += angles[:1] # Close the plot
+    if len(aggregated_data[model_col].unique()) > 5:
+        current_axis.tick_params(axis="x", rotation=45)
+    else:
+        current_axis.tick_params(axis="x", rotation=0)
 
-    # Create plot if axis not provided 
-    if axis is None:
-        if plt is None:
-            raise ImportError("Matplotlib is required but not installed.")
-        fig, axis = plt.subplots(figsize=figsize, subplot_kw=dict(polar=True))
-    elif not hasattr(axis, 'set_theta_offset'):
-        raise ValueError("Provided axis must be a polar projection.")
+    plt.tight_layout()
+    return current_axis
 
-    # Set up plot axes
-    axis.set_xticks(angles[:-1])
-    axis.set_xticklabels(metrics)
+# Radar Plot Function for comparing multiple metrics across models 
+def plot_radar_comparison(
+    df: pandas.DataFrame, 
+    aggregate_func: Optional[Callable] = None,
+    **kwargs: Any,
+) -> Any: 
+    """
+    Generates a radar plot comparing multiple models across several metrics,
+    after aggregating scores using the provided aggregate_func.
 
-    # Determine Y-axis limits and ticks 
+    :param df: DataFrame containing the scores in long format, typically from prepare_results_dataframe.
+        Expected columns are defined by model_col, metric_col, and score_col in kwargs.
+    :type df: pd.DataFrame
+    :param aggregate_func: A function to aggregate scores (e.g., numpy.mean, numpy.median).
+        Defaults to numpy.mean if None.
+    :type aggregate_func: Optional[Callable]
+    :param kwargs: Additional keyword arguments:
+        - metrics (List[str], optional): List of metric names to include. If None, all metrics in df are used.
+        - model_col (str, optional): Name of the column identifying models. Defaults to "model_name".
+        - score_col (str, optional): Name of the column containing scores. Defaults to "score".
+        - metric_col (str, optional): Name of the column containing metric names. Defaults to "metric_name".
+        - title (Optional[str], optional): Title for the plot. Defaults to "Model Comparison Radar Plot".
+        - figsize (tuple, optional): Figure size. Defaults to (8, 8).
+        - fill_alpha (float, optional): Alpha for filled area. Defaults to 0.1.
+        - line_width (float, optional): Width of plot lines. Defaults to 1.0.
+        - y_ticks (Optional[List[float]], optional): Custom y-axis ticks.
+        - axis (Optional[matplotlib.axes.Axes], optional): Matplotlib polar Axes to plot on.
+    :raises ImportError: If required libraries (matplotlib, numpy, pandas) are not installed.
+    :raises ValueError: If aggregation results in no data or metrics.
+    :return: The matplotlib Axes object containing the plot.
+    :rtype: matplotlib.axes.Axes
+    """
+    if pd is None:
+        raise ImportError("Pandas is required but not installed.")
     if np is None:
         raise ImportError("Numpy is required but not installed.")
-    if y_ticks:
-        axis.set_yticks(y_ticks)
+    if plt is None:
+        raise ImportError("Matplotlib is required but not installed.")
+    if pi is None:
+        raise ImportError("math.pi is required from math module but not available.")
+
+    actual_aggregate_func = aggregate_func
+    if actual_aggregate_func is None:
+        actual_aggregate_func = np.mean
+
+    model_col = kwargs.pop("model_col", "model_name")
+    metric_col = kwargs.pop("metric_col", "metric_name")
+    score_col = kwargs.pop("score_col", "score")
+    
+    title_val = kwargs.pop("title", "Model Comparison Radar Plot")
+    figsize_val = kwargs.pop("figsize", (8, 8))
+    fill_alpha_val = kwargs.pop("fill_alpha", 0.1)
+    line_width_val = kwargs.pop("line_width", 1.0)
+    y_ticks_val = kwargs.pop("y_ticks", None)
+    axis_val = kwargs.pop("axis", None)
+    metrics_list_user = kwargs.pop("metrics", None)
+
+    # Aggregate data
+    aggregated_scores = df.groupby([model_col, metric_col])[score_col].agg(actual_aggregate_func)
+    pivot_df = aggregated_scores.unstack(level=metric_col)
+
+    if pivot_df.empty:
+        warnings.warn("Pivot table is empty after aggregation. Cannot generate radar plot.", UserWarning)
+        if axis_val is None:
+            fig, axis_val = plt.subplots(figsize=figsize_val, subplot_kw=dict(polar=True))
+        axis_val.set_title(title_val + " (No Data)")
+        plt.tight_layout()
+        return axis_val
+
+    if metrics_list_user:
+        # Keep only metrics present in both user list and pivot_df columns
+        metrics_to_plot = [m for m in metrics_list_user if m in pivot_df.columns]
+        if not metrics_to_plot:
+            raise ValueError("None of the specified 'metrics' are available in the data after aggregation.")
+        pivot_df = pivot_df[metrics_to_plot]
+    else:
+        metrics_to_plot = pivot_df.columns.tolist()
+
+    if not metrics_to_plot:
+        raise ValueError("No metrics available to plot after aggregation and filtering.")
+    
+    models = pivot_df.index.tolist()
+    num_vars = len(metrics_to_plot)
+
+    if num_vars < 1: # Should be caught by earlier checks, but as a safeguard
+        raise ValueError("At least one metric is required for a radar plot.")
+
+
+    angles = [n / float(num_vars) * 2 * pi for n in range(num_vars)]
+    angles += angles[:1] 
+
+    current_axis = axis_val
+    if current_axis is None:
+        fig, current_axis = plt.subplots(figsize=figsize_val, subplot_kw=dict(polar=True))
+    elif not hasattr(current_axis, 'set_theta_offset'): # Check if it's a polar axis
+        raise ValueError("Provided 'axis' must be a polar projection for radar plot.")
+
+    current_axis.set_xticks(angles[:-1])
+    current_axis.set_xticklabels(metrics_to_plot)
+
+    if y_ticks_val:
+        current_axis.set_yticks(y_ticks_val)
     else:
         max_val = pivot_df.max().max()
         if pd.notna(max_val) and max_val > 0:
-            # Calculate upper limit and step for ticks
-            upper_lim = np.ceil(max_val * 10) / 10
-            step = max(0.1, np.round(upper_lim / 5, 1)) # Adjust step logic as needed
-            # Ensure step is not zero if upper_lim is very small
+            upper_lim = np.ceil(max_val * 1.1 * 10) / 10 # Adds some padding
+            step = max(0.1, np.round(upper_lim / 5, 1)) 
             step = step if step > 0 else 0.1
-            axis.set_yticks(np.arange(0, upper_lim + step, step=step))
-        else:
-            axis.set_yticks(np.arange(0, 1.1, 0.2)) # Default ticks
+            current_axis.set_yticks(np.arange(0, upper_lim + step, step=step))
+        elif pd.notna(max_val) and max_val == 0: # Handle case where all values are 0
+            current_axis.set_yticks([0, 0.2, 0.4, 0.6, 0.8, 1.0])
+        else: # Default if max_val is NaN (e.g. all NaNs in pivot_df) or negative (less common for scores)
+            current_axis.set_yticks(np.arange(0, 1.1, 0.2))
 
-    # Plot data for each model 
-    if np is None:
-        raise ImportError("Numpy is required but not installed.")
-    angles_np = np.array(angles) # Convert angles to numpy array once
+
+    angles_np = np.array(angles) 
 
     for model in models:
         values = pivot_df.loc[model].values.flatten().tolist()
-        values_closed = values + values[:1] # Close the plot
-        # Convert to float array to handle potential NaNs for plotting
+        values_closed = values + values[:1] 
         values_masked = np.array(values_closed, dtype=float)
 
-        # Plot line segments and fill area
-        axis.plot(angles_np, values_masked, linewidth=line_width, linestyle='solid', label=model)
-        axis.fill(angles_np, values_masked, alpha=fill_alpha)
+        current_axis.plot(angles_np, values_masked, linewidth=line_width_val, linestyle='solid', label=model, **kwargs)
+        current_axis.fill(angles_np, values_masked, alpha=fill_alpha_val, **kwargs)
 
-    # Add legend and title
-    axis.legend(loc='upper right', bbox_to_anchor=(0.1, 0.1)) # Adjust legend position as needed
-    if title:
-        axis.set_title(title, size=16, y=1.1) # Adjust title position
+    current_axis.legend(loc='upper right', bbox_to_anchor=(0.1, 0.1)) 
+    if title_val:
+        current_axis.set_title(title_val, size=16, y=1.1) 
 
-    # Adjust layout 
-    if plt is None:
-        raise ImportError("Matplotlib is required but not installed.")
     plt.tight_layout()
-
-    return axis
+    return current_axis
