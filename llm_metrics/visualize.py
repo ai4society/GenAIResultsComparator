@@ -98,7 +98,10 @@ def plot_metric_comparison(
     # If aggregate_func returns a DataFrame (i.e from a custom function), make sure it has the correct columns
     if not isinstance(aggregated_data, pd.DataFrame) or model_col not in aggregated_data.columns or score_col not in aggregated_data.columns:
         # Fallback for simple aggregation like np.mean.
-        aggregated_data = metric_specific_df.groupby(model_col)[score_col].agg(actual_aggregate_func).reset_index()
+        if actual_aggregate_func == np.mean:
+            aggregated_data = metric_specific_df.groupby(model_col)[score_col].agg("mean").reset_index()
+        else:
+            aggregated_data = metric_specific_df.groupby(model_col)[score_col].agg(actual_aggregate_func).reset_index()
 
 
     current_axis = axis_val
@@ -182,7 +185,10 @@ def plot_radar_comparison(
     metrics_list_user = kwargs.pop("metrics", None)
 
     # Aggregate data
-    aggregated_scores = df.groupby([model_col, metric_col])[score_col].agg(actual_aggregate_func)
+    if actual_aggregate_func == np.mean:
+        aggregated_scores = df.groupby([model_col, metric_col])[score_col].agg("mean")
+    else:
+        aggregated_scores = df.groupby([model_col, metric_col])[score_col].agg(actual_aggregate_func)
     pivot_df = aggregated_scores.unstack(level=metric_col)
 
     if pivot_df.empty:
