@@ -11,7 +11,7 @@ ENV/
 env.bak/
 venv.bak/
 
-# Poetry
+# UV
 .venv/
 dist/
 
