@@ -93,9 +93,9 @@ article on evaluating LLM-generated content](https://learn.microsoft.com/en-us/a
 
 ## Installation
 
-Currently, LLM Metrics is not available on PyPI. To use it, you'll need to clone the repository and set up the environment using Poetry.
+Currently, LLM Metrics is not available on PyPI. To use it, you'll need to clone the repository and set up the environment using UV.
 
-1. First, make sure you have Poetry installed. If not, you can install it by following the instructions on the [official Poetry website](https://python-poetry.org/docs/#installation).
+1. First, make sure you have UV installed. If not, you can install it by following the instructions on the [official UV website](https://docs.astral.sh/uv/#installation).
 
 2. Clone the repository:
    ```shell
@@ -103,14 +103,15 @@ Currently, LLM Metrics is not available on PyPI. To use it, you'll need to clone
    cd GenAIResultsComparator
    ```
 
-3. Install the dependencies using Poetry:
+3. Ensure the dependencies are installed by creating a virtual env. (python 3.12 is recommended):
    ```shell
-   poetry install
+   uv venv
+   uv sync
    ```
 
-4. Activate the virtual environment:
+4. (Optional) Activate the virtual environment (doing this avoids prepending `uv run` to any proceeding commands):
    ```shell
-   poetry shell
+   source .venv/bin/activate
    ```
 
 Now you're ready to use LLM Metrics!
@@ -123,33 +124,13 @@ The project structure is as follows:
 ├── README.md
 ├── LICENSE
 ├── .gitignore
-├── poetry.lock
+├── uv.lock
 ├── pyproject.toml
 ├── .pre-commit-config.yaml
 ├── llm_metrics/  # Contains the library code
 ├── examples/     # Contains example scripts
 └── tests/        # Contains test scripts
 ```
-
-## Development
-
-To set up the development environment:
-
-1. Clone the repository:
-   ```shell
-   git clone https://github.com/ai4society/GenAIResultsComparator.git
-   cd GenAIResultsComparator
-   ```
-
-2. Install dependencies using Poetry:
-   ```shell
-   poetry install
-   ```
-
-3. Run tests:
-   ```shell
-   poetry run pytest
-   ```
 
 ### Code Style
 
@@ -171,25 +152,25 @@ Our pre-commit hooks include:
 Navigate to the project root in your terminal and run:
 
 ```bash
-poetry run pytest
+uv run pytest
 ```
 
 Or, for more verbose output:
 
 ```bash
-poetry run pytest -v
+uv run pytest -v
 ```
 
 To run only the slow BERTScore tests (if marked):
 
 ```bash
-poetry run pytest -m bertscore
+uv run pytest -m bertscore
 ```
 
 To skip the slow BERTScore tests:
 
 ```bash
-poetry run pytest -m "not bertscore"
+uv run pytest -m "not bertscore"
 ```
 
 ## Contributing
