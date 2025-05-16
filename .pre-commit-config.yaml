@@ -30,6 +30,12 @@ repos:
           - types-PyYAML
           - types-setuptools
           - types-six
+  - repo: https://github.com/astral-sh/uv-pre-commit
+    # uv version.
+    rev: 0.7.4
+    hooks:
+      - id: uv-lock
+      - id: uv-export
   - repo: local
     hooks:
     -   id: pytest
@@ -38,8 +44,6 @@ repos:
         language: system # Assumes pytest is installed in the environment
         types: [python] # Run only when Python files change
         pass_filenames: false # Run pytest on the whole project, not just changed files
-        always_run: true # Ensure it runs even if no Python files were staged (might be needed depending on test discovery)
+        always_run: false
         stages:
           - "push"
-        # Optional: Add --cov=llm_metrics for coverage check locally
-        # Optional: Use stages: [push] to run only on pre-push instead of pre-commit if tests are slow

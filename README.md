@@ -114,6 +114,15 @@ Currently, LLM Metrics is not available on PyPI. To use it, you'll need to clone
    source .venv/bin/activate
    ```
 
+Note: _If you don't want to use `uv`,_ you can install the dependencies with the following commands. However, the `requirements.txt` is generated automatically with the pre-commit and might not include all the dependencies (in such case, a manual pip install might be needed):
+
+   ```shell
+   python3 -m venv .venv
+   source .venv/bin/activate
+   pip install -r requirements.txt
+   ```
+
+
 Now you're ready to use LLM Metrics!
 
 ## Project Structure
