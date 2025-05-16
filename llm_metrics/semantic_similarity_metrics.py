@@ -40,7 +40,11 @@ class BERTScore(BaseMetric):
             Default only passes the model_type, num_layers, and batch_size
         :type additional_params: Dict[str, Any], optional
         """
-        params = {"model_type": model_type, "num_layers": num_layers, "batch_size": batch_size}
+        params = {
+            "model_type": model_type,
+            "num_layers": num_layers,
+            "batch_size": batch_size,
+        }
         if additional_params:
             params.update(additional_params)
 
@@ -52,7 +56,9 @@ class BERTScore(BaseMetric):
                 raise ValueError("`output_val` must be a list")
 
             elif not all(val in ["precision", "recall", "f1"] for val in output_val):
-                raise ValueError("`output_val` must be one of ['precision', 'recall', 'f1']")
+                raise ValueError(
+                    "`output_val` must be one of ['precision', 'recall', 'f1']"
+                )
 
         # Ensure output_val is a list
         self.output_val = output_val or ["precision", "recall", "f1"]
@@ -122,7 +128,8 @@ class BERTScore(BaseMetric):
         P, R, F1 = self.scorer.score(list(gen_texts), list(ref_texts), **params)
 
         scores = [
-            {"precision": p.item(), "recall": r.item(), "f1": f.item()} for p, r, f in zip(P, R, F1)
+            {"precision": p.item(), "recall": r.item(), "f1": f.item()}
+            for p, r, f in zip(P, R, F1)
         ]
 
         # Define final scores based on output_val

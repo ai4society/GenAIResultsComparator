@@ -21,7 +21,9 @@ class BLEU(BaseMetric):
     def __init__(
         self,
         n: int = 4,
-        smoothing_function: Union[Callable, SmoothingFunction] = SmoothingFunction().method1,
+        smoothing_function: Union[
+            Callable, SmoothingFunction
+        ] = SmoothingFunction().method1,
     ):
         """
         Initialize the BLEU scorer with the specified parameters.
@@ -178,7 +180,9 @@ class ROUGE(BaseMetric):
             if not isinstance(rouge_types, list):
                 raise ValueError("rouge_types must be a list")
             elif not all(val in ["rouge1", "rouge2", "rougeL"] for val in rouge_types):
-                raise ValueError("rouge_types must be one of ['rouge1', 'rouge2', 'rougeL']")
+                raise ValueError(
+                    "rouge_types must be one of ['rouge1', 'rouge2', 'rougeL']"
+                )
 
         self.rouge_types = rouge_types or ["rouge1", "rouge2", "rougeL"]
 
@@ -317,11 +321,19 @@ class JSDivergence(BaseMetric):
 
         if isinstance(gen_texts, np.ndarray) and isinstance(ref_texts, np.ndarray):
             return np.array(
-                [self.calculate(gen, ref, params) for gen, ref in zip(gen_texts, ref_texts)]
+                [
+                    self.calculate(gen, ref, params)
+                    for gen, ref in zip(gen_texts, ref_texts)
+                ]
             )
 
         elif isinstance(gen_texts, pd.Series) and isinstance(ref_texts, pd.Series):
-            return gen_texts.combine(ref_texts, lambda g, r: self.calculate(g, r, params))
+            return gen_texts.combine(
+                ref_texts, lambda g, r: self.calculate(g, r, params)
+            )
 
         else:
-            return [self.calculate(gen, ref, params) for gen, ref in zip(gen_texts, ref_texts)]
+            return [
+                self.calculate(gen, ref, params)
+                for gen, ref in zip(gen_texts, ref_texts)
+            ]

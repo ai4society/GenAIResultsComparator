@@ -1,5 +1,8 @@
 from typing import Any, Dict, List, Optional, Union
 
+from numpy import ndarray
+from pandas import Series
+
 from llm_metrics.base import BaseMetric
 
 from .base import LLMAwareMetric
@@ -27,7 +30,9 @@ class AggregatedSimilarityMetric(LLMAwareMetric):
     The base metric is used to calculate the similarity between the two responses.
     """
 
-    def __init__(self, base_metric: BaseMetric, aggregated_metric: Optional[BaseMetric] = None):
+    def __init__(
+        self, base_metric: BaseMetric, aggregated_metric: Optional[BaseMetric] = None
+    ):
         """
         Initialize the metric with a base metric and an optional aggregated similarity  metric.
 
@@ -88,16 +93,16 @@ class AggregatedSimilarityMetric(LLMAwareMetric):
         prompt2 = prompt2 or prompt1
 
         # Calculate prompt-response aggregation scores
-        aggregation1: Union[float, Dict[str, float]] = self.calculate_prompt_aggregation(
-            prompt1, text1
+        aggregation1: Union[float, Dict[str, float]] = (
+            self.calculate_prompt_aggregation(prompt1, text1)
         )
-        aggregation2: Union[float, Dict[str, float]] = self.calculate_prompt_aggregation(
-            prompt2, text2
+        aggregation2: Union[float, Dict[str, float]] = (
+            self.calculate_prompt_aggregation(prompt2, text2)
         )
 
         # Calculate response similarity
-        response_similarity: Union[float, Dict[str, float]] = self.base_metric.calculate(
-            text1, text2
+        response_similarity: Union[float, Dict[str, float]] = (
+            self.base_metric.calculate(text1, text2)
         )
 
         # Combine scores (can be weighted differently based on requirements)...
@@ -118,9 +123,9 @@ class AggregatedSimilarityMetric(LLMAwareMetric):
             and isinstance(aggregation2, dict)
         ):
             combined_scores = {}
-            for (
-                key
-            ) in response_similarity:  # Assuming that the keys are the same for all dictionaries
+            for key in (
+                response_similarity
+            ):  # Assuming that the keys are the same for all dictionaries
                 combined_scores[key] = _get_combined_score(
                     aggregation1.get(key, 0.0),
                     aggregation2.get(key, 0.0),
@@ -129,7 +134,9 @@ class AggregatedSimilarityMetric(LLMAwareMetric):
             return combined_scores
 
         else:
-            raise ValueError("Incompatible return types for aggregation and response similarity")
+            raise ValueError(
+                "Incompatible return types for aggregation and response similarity"
+            )
 
     def batch_calculate_with_prompt(
         self,
@@ -138,7 +145,7 @@ class AggregatedSimilarityMetric(LLMAwareMetric):
         prompts1: List[str],
         prompts2: Optional[List[str]] = None,
         metadata: Optional[Dict[str, Any]] = None,
-    ) -> List[float | Dict[str, float]]:
+    ) -> Union[List[float], List[Dict[str, float]], ndarray, Series]:
         """
         Calculate the combined score of prompt aggregation and response similarity for a batch of responses.
         The method works by calculating the prompt aggregation score for both prompts and responses respectively.
@@ -159,5 +166,7 @@ class AggregatedSimilarityMetric(LLMAwareMetric):
 
         for t1, t2, p1, p2 in zip(texts1, texts2, prompts1, prompts2):
             results.append(self.calculate_with_prompt(t1, t2, p1, p2, metadata))
+
+        return results
 
         return results

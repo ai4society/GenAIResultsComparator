@@ -65,7 +65,9 @@ class JaccardSimilarity(BaseMetric):
         ref_texts = to_iterable(reference_texts)
 
         if isinstance(gen_texts, np.ndarray) and isinstance(ref_texts, np.ndarray):
-            return np.array([self.calculate(gen, ref) for gen, ref in zip(gen_texts, ref_texts)])
+            return np.array(
+                [self.calculate(gen, ref) for gen, ref in zip(gen_texts, ref_texts)]
+            )
 
         elif isinstance(gen_texts, pd.Series) and isinstance(ref_texts, pd.Series):
             return gen_texts.combine(ref_texts, lambda g, r: self.calculate(g, r))
@@ -173,9 +175,13 @@ class CosineSimilarity(BaseMetric):
                 results.append(min(max(similarity, 0.0), 1.0))  # Clip to [0, 1]
 
         # Return results in the appropriate format
-        if isinstance(generated_texts, np.ndarray) and isinstance(reference_texts, np.ndarray):
+        if isinstance(generated_texts, np.ndarray) and isinstance(
+            reference_texts, np.ndarray
+        ):
             return np.array(results)
-        elif isinstance(generated_texts, pd.Series) and isinstance(reference_texts, pd.Series):
+        elif isinstance(generated_texts, pd.Series) and isinstance(
+            reference_texts, pd.Series
+        ):
             return pd.Series(results, index=generated_texts.index)
         else:
             return results
@@ -336,11 +342,19 @@ class SequenceMatcherSimilarity(BaseMetric):
 
         if isinstance(gen_texts, np.ndarray) and isinstance(ref_texts, np.ndarray):
             return np.array(
-                [self.calculate(gen, ref, params) for gen, ref in zip(gen_texts, ref_texts)]
+                [
+                    self.calculate(gen, ref, params)
+                    for gen, ref in zip(gen_texts, ref_texts)
+                ]
             )
 
         elif isinstance(gen_texts, pd.Series) and isinstance(ref_texts, pd.Series):
-            return gen_texts.combine(ref_texts, lambda g, r: self.calculate(g, r, params))
+            return gen_texts.combine(
+                ref_texts, lambda g, r: self.calculate(g, r, params)
+            )
 
         else:
-            return [self.calculate(gen, ref, params) for gen, ref in zip(gen_texts, ref_texts)]
+            return [
+                self.calculate(gen, ref, params)
+                for gen, ref in zip(gen_texts, ref_texts)
+            ]

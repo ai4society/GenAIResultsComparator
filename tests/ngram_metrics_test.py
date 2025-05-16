@@ -194,7 +194,9 @@ class TestROUGE:
     def test_batch_calculate_list_single(
         self, rouge_scorer_l, sample_generated_texts, sample_reference_texts
     ):
-        scores = rouge_scorer_l.batch_calculate(sample_generated_texts, sample_reference_texts)
+        scores = rouge_scorer_l.batch_calculate(
+            sample_generated_texts, sample_reference_texts
+        )
         assert isinstance(scores, list)
         assert len(scores) == len(sample_generated_texts)
         assert all(isinstance(s, float) for s in scores)

@@ -49,7 +49,9 @@ class TestJaccardSimilarity:
     def test_batch_calculate_list(
         self, jaccard_scorer, sample_generated_texts, sample_reference_texts
     ):
-        scores = jaccard_scorer.batch_calculate(sample_generated_texts, sample_reference_texts)
+        scores = jaccard_scorer.batch_calculate(
+            sample_generated_texts, sample_reference_texts
+        )
         assert isinstance(scores, list)
         assert len(scores) == len(sample_generated_texts)
         assert all(isinstance(s, float) for s in scores)
@@ -119,7 +121,9 @@ class TestCosineSimilarity:
     def test_batch_calculate_list(
         self, cosine_scorer, sample_generated_texts, sample_reference_texts
     ):
-        scores = cosine_scorer.batch_calculate(sample_generated_texts, sample_reference_texts)
+        scores = cosine_scorer.batch_calculate(
+            sample_generated_texts, sample_reference_texts
+        )
         assert isinstance(scores, list)
         assert len(scores) == len(sample_generated_texts)
         assert all(isinstance(s, float) for s in scores)
@@ -128,7 +132,9 @@ class TestCosineSimilarity:
     def test_batch_calculate_np(
         self, cosine_scorer, sample_generated_texts_np, sample_reference_texts_np
     ):
-        scores = cosine_scorer.batch_calculate(sample_generated_texts_np, sample_reference_texts_np)
+        scores = cosine_scorer.batch_calculate(
+            sample_generated_texts_np, sample_reference_texts_np
+        )
         assert isinstance(scores, np.ndarray)
         assert len(scores) == len(sample_generated_texts_np)
         assert scores.dtype == np.float64
@@ -136,7 +142,9 @@ class TestCosineSimilarity:
     def test_batch_calculate_pd(
         self, cosine_scorer, sample_generated_texts_pd, sample_reference_texts_pd
     ):
-        scores = cosine_scorer.batch_calculate(sample_generated_texts_pd, sample_reference_texts_pd)
+        scores = cosine_scorer.batch_calculate(
+            sample_generated_texts_pd, sample_reference_texts_pd
+        )
         assert isinstance(scores, pd.Series)
         assert len(scores) == len(sample_generated_texts_pd)
         assert scores.dtype == np.float64
@@ -184,7 +192,9 @@ class TestLevenshteinDistance:
         assert isinstance(score, int)
         assert score == pytest.approx(2)  # "sat" -> "was" requires 2 changes
 
-    def test_calculate_distance_identical(self, levenshtein_scorer, text_pair_identical):
+    def test_calculate_distance_identical(
+        self, levenshtein_scorer, text_pair_identical
+    ):
         gen, ref = text_pair_identical
         score = levenshtein_scorer.calculate(gen, ref, calculate_ratio=False)
         assert score == pytest.approx(0.0)
@@ -194,10 +204,14 @@ class TestLevenshteinDistance:
         score = levenshtein_scorer.calculate(gen, ref, calculate_ratio=False)
         assert score == pytest.approx(0.0)
 
-    def test_calculate_distance_one_empty(self, levenshtein_scorer, text_pair_one_empty):
+    def test_calculate_distance_one_empty(
+        self, levenshtein_scorer, text_pair_one_empty
+    ):
         gen, ref = text_pair_one_empty
         score = levenshtein_scorer.calculate(gen, ref, calculate_ratio=False)
-        assert score == pytest.approx(len(gen))  # Distance is length of non-empty string
+        assert score == pytest.approx(
+            len(gen)
+        )  # Distance is length of non-empty string
 
     # Test Batch (Ratio)
     def test_batch_calculate_ratio_list(
@@ -283,7 +297,9 @@ class TestSequenceMatcherSimilarity:
     def test_batch_calculate_list(
         self, seqmatch_scorer, sample_generated_texts, sample_reference_texts
     ):
-        scores = seqmatch_scorer.batch_calculate(sample_generated_texts, sample_reference_texts)
+        scores = seqmatch_scorer.batch_calculate(
+            sample_generated_texts, sample_reference_texts
+        )
         assert isinstance(scores, list)
         assert len(scores) == len(sample_generated_texts)
         assert all(isinstance(s, float) for s in scores)

@@ -67,11 +67,12 @@ def batch_get_ngrams(
     else:
         return [get_ngrams(text, n) for text in texts]
 
+
 def prepare_results_dataframe(
     results_dict: Dict[str, Dict[str, Any]],
     model_col: str = "model_name",
     metric_col: str = "metric_name",
-    score_col: str = "score"
+    score_col: str = "score",
 ) -> pd.DataFrame:
     """
     Converts a nested dictionary of results into a long-format DataFrame suitable for plotting.
@@ -84,7 +85,7 @@ def prepare_results_dataframe(
     Example Output DataFrame:
        model_name  metric_name  score
     0     ModelA    BLEU       0.80
-    1     ModelA    ROUGE_f1   0.75  
+    1     ModelA    ROUGE_f1   0.75
     2     ModelB    BLEU       0.70
     3     ModelB    ROUGE_f1   0.65
 
@@ -106,19 +107,25 @@ def prepare_results_dataframe(
             if isinstance(score_value, dict):
                 for sub_metric, sub_score in score_value.items():
                     full_metric_name = f"{metric_name}_{sub_metric}"
-                    if isinstance(sub_score, (int, float)): # Ensure the final score is numeric
-                        records.append({
-                            model_col: model_name,
-                            metric_col: full_metric_name,
-                            score_col: sub_score
-                        })
+                    if isinstance(
+                        sub_score, (int, float)
+                    ):  # Ensure the final score is numeric
+                        records.append(
+                            {
+                                model_col: model_name,
+                                metric_col: full_metric_name,
+                                score_col: sub_score,
+                            }
+                        )
                     # Handle cases with deeper nesting or other types if needed
             elif isinstance(score_value, (int, float)):
-                records.append({
-                    model_col: model_name,
-                    metric_col: metric_name,
-                    score_col: score_value
-                })
+                records.append(
+                    {
+                        model_col: model_name,
+                        metric_col: metric_name,
+                        score_col: score_value,
+                    }
+                )
             # Handle for other types if necessary (e.g., lists of scores)
 
     if not records:

@@ -1,5 +1,8 @@
 from typing import Any, Dict, List, Optional, Union
 
+from numpy import ndarray
+from pandas import Series
+
 from llm_metrics.base import BaseMetric
 
 from .base import LLMAwareMetric
@@ -62,7 +65,7 @@ class PromptAwareMetric(LLMAwareMetric):
         prompts1: List[str],
         prompts2: Optional[List[str]] = None,
         metadata: Optional[Dict[str, Any]] = None,
-    ) -> Union[List[float], List[Dict[str, float]]]:
+    ) -> Union[List[float], List[Dict[str, float]], ndarray, Series]:
         """
         Calculate similarity for batches of texts with prompts.
 
@@ -77,5 +80,7 @@ class PromptAwareMetric(LLMAwareMetric):
         prompts2 = prompts2 or prompts1
         full_texts1 = [f"{p} {t}" for p, t in zip(prompts1, texts1)]
         full_texts2 = [f"{p} {t}" for p, t in zip(prompts2, texts2)]
+
+        return self.base_metric.batch_calculate(full_texts1, full_texts2)
 
         return self.base_metric.batch_calculate(full_texts1, full_texts2)

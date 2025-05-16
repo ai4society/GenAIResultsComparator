@@ -45,7 +45,7 @@ class LLMAwareMetric(BaseMetric):
         prompts1: List[str],
         prompts2: Optional[List[str]] = None,
         metadata: Optional[Dict[str, Any]] = None,
-    ) -> List[float | Dict[str, float]]:
+    ) -> Union[List[float], List[Dict[str, float]], ndarray, Series]:
         """
         Calculate similarity for batches of texts with prompts.
 
@@ -64,15 +64,15 @@ class LLMAwareMetric(BaseMetric):
         """
         pass
 
-    def calculate(self, text1: str, text2: str) -> float:
+    def calculate(self, generated_text: str, reference_text: str) -> float:
         """
         Calculate similarity without prompts.
         Calls the base metric's calculate method.
 
-        :param text1: First text to compare.
-        :type text1: str
-        :param text2: Second text to compare.
-        :type text2: str
+        :param generated_text: First text to compare.
+        :type generated_text: str
+        :param reference_text: Second text to compare.
+        :type reference_text: str
         :return: Similarity score between the two texts.
         :rtype: float
         """
@@ -83,16 +83,18 @@ class LLMAwareMetric(BaseMetric):
         )
 
     def batch_calculate(
-        self, texts1: Union[Iterable, ndarray, Series], texts2: Union[Iterable, ndarray, Series]
+        self,
+        generated_texts: Union[Iterable, ndarray, Series],
+        reference_texts: Union[Iterable, ndarray, Series],
     ) -> Union[List[float], List[dict], ndarray, Series]:
         """
         Calculate similarity for batches of texts without prompts.
         Calls the base metric's batch_calculate method.
 
-        :param texts1: List of first texts to compare.
-        :type texts1: List[str]
-        :param texts2: List of second texts to compare.
-        :type texts2: List[str]
+        :param generated_texts: List of first texts to compare.
+        :type generated_texts: List[str]
+        :param reference_texts: List of second texts to compare.
+        :type reference_texts: List[str]
         :return: List of similarity scores between the text pairs.
         :rtype: List[float]
         """

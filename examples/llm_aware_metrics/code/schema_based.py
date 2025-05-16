@@ -1,8 +1,10 @@
 import json
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 from warnings import warn
 
 from jsonschema import ValidationError, validate
+from numpy import ndarray
+from pandas import Series
 
 from llm_metrics.base import BaseMetric
 
@@ -78,16 +80,23 @@ class SchemaAwareMetric(LLMAwareMetric):
         full_text2 = f"{prompt2} {text2}"
         similarity_score = self.base_metric.calculate(full_text1, full_text2)
 
-        # Combine scores
-        # Weights could be adjusted based on your needs
-        SCHEMA_WEIGHT, SIMILARITY_WEIGHT = 0.4, 0.6
+        if type(similarity_score) is float:
+            # Combine scores
+            # Weights could be adjusted based on your needs
+            SCHEMA_WEIGHT, SIMILARITY_WEIGHT = 0.4, 0.6
 
-        combined_score = (
-            SCHEMA_WEIGHT * ((schema_score1 + schema_score2) / 2)
-            + SIMILARITY_WEIGHT * similarity_score
-        )
+            combined_score = (
+                SCHEMA_WEIGHT * ((schema_score1 + schema_score2) / 2)
+                + SIMILARITY_WEIGHT * similarity_score
+            )
 
-        return combined_score
+            return combined_score
+
+        else:
+            raise ValueError(
+                "Base metric must return a float score. Check the base metric implementation."
+            )
+            return 0.0
 
     def calculate_with_prompt(
         self,
@@ -111,7 +120,9 @@ class SchemaAwareMetric(LLMAwareMetric):
             raise ValueError("Schema must be provided in metadata.")
 
         prompt2 = prompt2 or prompt1
-        return self._calculate_combined_score(text1, text2, prompt1, prompt2, metadata["schema"])
+        return self._calculate_combined_score(
+            text1, text2, prompt1, prompt2, metadata["schema"]
+        )
 
     def batch_calculate_with_prompt(
         self,
@@ -120,7 +131,7 @@ class SchemaAwareMetric(LLMAwareMetric):
         prompts1: List[str],
         prompts2: Optional[List[str]] = None,
         metadata: Optional[Dict[str, Any]] = None,
-    ) -> List[float]:
+    ) -> Union[List[float], List[Dict[str, float]], ndarray, Series]:
         """
         Calculate similarity for batches of texts with prompts and schema validation.
 

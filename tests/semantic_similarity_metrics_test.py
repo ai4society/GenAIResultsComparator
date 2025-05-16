@@ -102,7 +102,9 @@ class TestBERTScore:
         assert isinstance(scores, list)
         assert len(scores) == len(gen_filtered)
         assert all(
-            isinstance(score, float) for score_dict in scores for score in score_dict.values()
+            isinstance(score, float)
+            for score_dict in scores
+            for score in score_dict.values()
         )
 
     def test_batch_calculate_np_default(
@@ -134,7 +136,9 @@ class TestBERTScore:
         assert isinstance(scores, np.ndarray)
         assert len(scores) == len(gen_filtered)
         assert all(
-            isinstance(score, float) for score_dict in scores for score in score_dict.values()
+            isinstance(score, float)
+            for score_dict in scores
+            for score in score_dict.values()
         )
 
     def test_batch_calculate_pd_default(
@@ -166,7 +170,9 @@ class TestBERTScore:
         assert isinstance(scores, pd.Series)
         assert len(scores) == len(gen_filtered)
         assert all(
-            isinstance(score, float) for score_dict in scores for score in score_dict.values()
+            isinstance(score, float)
+            for score_dict in scores
+            for score in score_dict.values()
         )
 
     def test_bertscore_invalid_output_val_init(self):

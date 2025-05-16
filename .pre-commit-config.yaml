@@ -44,4 +44,4 @@ repos:
         pass_filenames: false # Run pytest on the whole project, not just changed files
         always_run: false
         stages:
-          - "push"
+          - "pre-push"
