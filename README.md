@@ -41,16 +41,19 @@ print(f"Prompt-aware score: {prompt_score}")
 ```
 
 Output:
+
 ```shell
 > Prompt-aware score: {'precision': 0.5313692688941956, 'recall': 0.4975050091743469, 'f1': 0.5138798356056213}
 ```
 
 Using `BERTScore` as the base metric, we get three scores:
+
 - Precision: 0.53 - How much of the LLM's output is relevant
 - Recall: 0.50 - How much of the expected content is captured
 - F1: 0.51 - Harmonic mean of precision and recall
 
 These scores indicate that:
+
 - The LLM captured about 50% of the expected content
 - There's a good balance between precision and recall
 - The model understood the basic recipe structure but missed some details
@@ -62,6 +65,7 @@ The library provides a set of metrics for evaluating **2 text strings as inputs*
 **_Class Structure:_** All metrics are implemented as classes, and they can be easily extended to add new metrics. The metrics start with the `BaseMetric` class under the `llm_metrics/base.py` file.
 
 Each metric class inherits from this base class and is implemented with **two required methods**:
+
 - `calculate()`: Computes the metric for a single pair of texts
 - `batch_calculate()`: Efficiently processes multiple pairs of texts using vectorized operations and batch processing
 
@@ -71,6 +75,7 @@ Each metric class inherits from this base class and is implemented with **two re
 article on evaluating LLM-generated content](https://learn.microsoft.com/en-us/ai/playbook/technology-guidance/generative-ai/working-with-llms/evaluation/list-of-eval-metrics). In the article, Microsoft describes 3 categories of evaluation metrics: **(1)** Reference-based metrics, **(2)** Reference-free metrics, and **(3)** LLM-based metrics. _The library currently supports reference-based metrics._
 
 ## Table of Contents
+
 - [Features](#features)
 - [Installation](#installation)
 - [Project Structure](#project-structure)
@@ -98,12 +103,14 @@ Currently, LLM Metrics is not available on PyPI. To use it, you'll need to clone
 1. First, make sure you have UV installed. If not, you can install it by following the instructions on the [official UV website](https://docs.astral.sh/uv/#installation).
 
 2. Clone the repository:
+
    ```shell
    git clone https://github.com/ai4society/GenAIResultsComparator.git
    cd GenAIResultsComparator
    ```
 
 3. Ensure the dependencies are installed by creating a virtual env. (python 3.12 is recommended):
+
    ```shell
    uv venv
    uv sync
@@ -114,20 +121,22 @@ Currently, LLM Metrics is not available on PyPI. To use it, you'll need to clone
    source .venv/bin/activate
    ```
 
-Note: _If you don't want to use `uv`,_ you can install the dependencies with the following commands. However, the `requirements.txt` is generated automatically with the pre-commit and might not include all the dependencies (in such case, a manual pip install might be needed):
+_If you don't want to use `uv`,_ you can install the dependencies with the following commands:
 
-   ```shell
-   python3 -m venv .venv
-   source .venv/bin/activate
-   pip install -r requirements.txt
-   ```
+```shell
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
 
+However note that the `requirements.txt` is generated automatically with the pre-commit file and might not include all the dependencies (in such case, a manual pip install might be needed).
 
 Now you're ready to use LLM Metrics!
 
 ## Project Structure
 
 The project structure is as follows:
+
 ```shell
 .
 ├── README.md
@@ -150,11 +159,11 @@ pre-commit run --all-files
 ```
 
 Our pre-commit hooks include:
+
 - Code formatting with Black
 - Import sorting with isort
 - Linting with flake8
 - Type checking with mypy
-
 
 ## Running Tests
 
@@ -170,7 +179,7 @@ Or, for more verbose output:
 uv run pytest -v
 ```
 
-To run only the slow BERTScore tests (if marked):
+To run only the slow BERTScore tests:
 
 ```bash
 uv run pytest -m bertscore
