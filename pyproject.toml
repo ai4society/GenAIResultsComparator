@@ -2,7 +2,7 @@
 name = "llm_metrics"
 version = "0.1.0"
 description = "A Python library for reference-based metrics to compare generated text with ground truth text"
-authors = [{ name = "niting", email = "niting1209@gmail.com" }]
+authors = [{ name = "AI4Society" }]
 requires-python = ">=3.10, <3.13"
 readme = "README.md"
 license = "MIT"

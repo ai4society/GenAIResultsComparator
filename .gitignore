@@ -39,6 +39,9 @@ build/
 # Jupyter
 **.ipynb_checkpoints/
 
+# Ruff
+.ruff_cache/
+
 .DS_Store
 own/
 llm_metrics/extensions.py
