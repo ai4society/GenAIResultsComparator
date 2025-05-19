@@ -112,7 +112,9 @@ class BLEU(BaseMetric):
             )
         else:
             # Calculate individual BLEU scores for each sentence pair
-            if isinstance(generated_texts, np.ndarray) and isinstance(reference_texts, np.ndarray):
+            if isinstance(generated_texts, np.ndarray) and isinstance(
+                reference_texts, np.ndarray
+            ):
                 # Use numpy vectorization for faster calculation
                 return np.array(
                     [
@@ -120,7 +122,9 @@ class BLEU(BaseMetric):
                         for gen, ref in zip(generated_texts, reference_texts)
                     ]
                 )
-            elif isinstance(generated_texts, pd.Series) and isinstance(reference_texts, pd.Series):
+            elif isinstance(generated_texts, pd.Series) and isinstance(
+                reference_texts, pd.Series
+            ):
                 # Use pandas' apply method for Series
                 return generated_texts.combine(
                     reference_texts,
@@ -220,12 +224,19 @@ class ROUGE(BaseMetric):
         """
 
         # `self.scorer` takes care of calculating ROUGE scores based on the supplied ROUGE types
-        scores = [self.single_calculate(gen, ref, **kwargs) for gen, ref in zip(generated_texts, reference_texts)]
+        scores = [
+            self.single_calculate(gen, ref, **kwargs)
+            for gen, ref in zip(generated_texts, reference_texts)
+        ]
 
-        if isinstance(generated_texts, np.ndarray) and isinstance(reference_texts, np.ndarray):
+        if isinstance(generated_texts, np.ndarray) and isinstance(
+            reference_texts, np.ndarray
+        ):
             return np.array(scores)
 
-        elif isinstance(generated_texts, pd.Series) and isinstance(reference_texts, pd.Series):
+        elif isinstance(generated_texts, pd.Series) and isinstance(
+            reference_texts, pd.Series
+        ):
             return pd.Series(scores, index=generated_texts.index)
 
         else:
@@ -296,7 +307,9 @@ class JSDivergence(BaseMetric):
         :return: A list, array, or Series of JSD scores
         """
 
-        if isinstance(generated_texts, np.ndarray) and isinstance(reference_texts, np.ndarray):
+        if isinstance(generated_texts, np.ndarray) and isinstance(
+            reference_texts, np.ndarray
+        ):
             return np.array(
                 [
                     self.single_calculate(gen, ref, **kwargs)
@@ -304,7 +317,9 @@ class JSDivergence(BaseMetric):
                 ]
             )
 
-        elif isinstance(generated_texts, pd.Series) and isinstance(reference_texts, pd.Series):
+        elif isinstance(generated_texts, pd.Series) and isinstance(
+            reference_texts, pd.Series
+        ):
             return generated_texts.combine(
                 reference_texts, lambda g, r: self.single_calculate(g, r, **kwargs)
             )

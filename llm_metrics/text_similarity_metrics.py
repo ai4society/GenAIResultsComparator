@@ -64,16 +64,28 @@ class JaccardSimilarity(BaseMetric):
         :rtype: Union[np.ndarray, pd.Series, List[float]]
         """
 
-        if isinstance(generated_texts, np.ndarray) and isinstance(reference_texts, np.ndarray):
+        if isinstance(generated_texts, np.ndarray) and isinstance(
+            reference_texts, np.ndarray
+        ):
             return np.array(
-                [self.single_calculate(gen, ref, **kwargs) for gen, ref in zip(generated_texts, reference_texts)]
+                [
+                    self.single_calculate(gen, ref, **kwargs)
+                    for gen, ref in zip(generated_texts, reference_texts)
+                ]
             )
 
-        elif isinstance(generated_texts, pd.Series) and isinstance(reference_texts, pd.Series):
-            return generated_texts.combine(reference_texts, lambda g, r: self.single_calculate(g, r, **kwargs))
+        elif isinstance(generated_texts, pd.Series) and isinstance(
+            reference_texts, pd.Series
+        ):
+            return generated_texts.combine(
+                reference_texts, lambda g, r: self.single_calculate(g, r, **kwargs)
+            )
 
         else:
-            return [self.single_calculate(gen, ref, **kwargs) for gen, ref in zip(generated_texts, reference_texts)]
+            return [
+                self.single_calculate(gen, ref, **kwargs)
+                for gen, ref in zip(generated_texts, reference_texts)
+            ]
 
 
 class CosineSimilarity(BaseMetric):
@@ -235,22 +247,33 @@ class LevenshteinDistance(BaseMetric):
         :rtype: Union[np.ndarray, pd.Series, List[float]]
         """
 
-        if isinstance(generated_texts, np.ndarray) and isinstance(reference_texts, np.ndarray):
+        if isinstance(generated_texts, np.ndarray) and isinstance(
+            reference_texts, np.ndarray
+        ):
             return np.array(
                 [
-                    self.single_calculate(gen, ref, calculate_ratio=calculate_ratio, **kwargs)
+                    self.single_calculate(
+                        gen, ref, calculate_ratio=calculate_ratio, **kwargs
+                    )
                     for gen, ref in zip(generated_texts, reference_texts)
                 ]
             )
 
-        elif isinstance(generated_texts, pd.Series) and isinstance(reference_texts, pd.Series):
+        elif isinstance(generated_texts, pd.Series) and isinstance(
+            reference_texts, pd.Series
+        ):
             return generated_texts.combine(
-                reference_texts, lambda g, r: self.single_calculate(g, r, calculate_ratio=calculate_ratio, **kwargs)
+                reference_texts,
+                lambda g, r: self.single_calculate(
+                    g, r, calculate_ratio=calculate_ratio, **kwargs
+                ),
             )
 
         else:
             return [
-                self.single_calculate(gen, ref, calculate_ratio=calculate_ratio, **kwargs)
+                self.single_calculate(
+                    gen, ref, calculate_ratio=calculate_ratio, **kwargs
+                )
                 for gen, ref in zip(generated_texts, reference_texts)
             ]
 
@@ -307,7 +330,9 @@ class SequenceMatcherSimilarity(BaseMetric):
         :rtype: Union[np.ndarray, pd.Series, List[float]]
         """
 
-        if isinstance(generated_texts, np.ndarray) and isinstance(reference_texts, np.ndarray):
+        if isinstance(generated_texts, np.ndarray) and isinstance(
+            reference_texts, np.ndarray
+        ):
             return np.array(
                 [
                     self.single_calculate(gen, ref, **kwargs)
@@ -315,7 +340,9 @@ class SequenceMatcherSimilarity(BaseMetric):
                 ]
             )
 
-        elif isinstance(generated_texts, pd.Series) and isinstance(reference_texts, pd.Series):
+        elif isinstance(generated_texts, pd.Series) and isinstance(
+            reference_texts, pd.Series
+        ):
             return generated_texts.combine(
                 reference_texts, lambda g, r: self.single_calculate(g, r, **kwargs)
             )

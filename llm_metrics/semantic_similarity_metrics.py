@@ -116,7 +116,9 @@ class BERTScore(BaseMetric):
         :rtype: Union[List[float], List[dict], np.ndarray, pd.Series]
         """
 
-        P, R, F1 = self.scorer.score(list(generated_texts), list(reference_texts), **kwargs)
+        P, R, F1 = self.scorer.score(
+            list(generated_texts), list(reference_texts), **kwargs
+        )
 
         scores = [
             {"precision": p.item(), "recall": r.item(), "f1": f.item()}
@@ -126,10 +128,14 @@ class BERTScore(BaseMetric):
         # Define final scores based on output_val
         scores = [{key: score[key] for key in self.output_val} for score in scores]
 
-        if isinstance(generated_texts, np.ndarray) and isinstance(reference_texts, np.ndarray):
+        if isinstance(generated_texts, np.ndarray) and isinstance(
+            reference_texts, np.ndarray
+        ):
             return np.array(scores)
 
-        elif isinstance(generated_texts, pd.Series) and isinstance(reference_texts, pd.Series):
+        elif isinstance(generated_texts, pd.Series) and isinstance(
+            reference_texts, pd.Series
+        ):
             return pd.Series(scores, index=generated_texts.index)
 
         else:
