@@ -5,7 +5,6 @@ import pandas as pd
 from bert_score import BERTScorer
 
 from .base import BaseMetric
-from .utils import to_iterable
 
 
 class BERTScore(BaseMetric):

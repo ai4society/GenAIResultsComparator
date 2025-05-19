@@ -3,13 +3,11 @@ from typing import Any, Callable, Dict, Iterable, List, Optional, Union
 import nltk
 import numpy as np
 import pandas as pd
-from nltk.translate.bleu_score import (SmoothingFunction, corpus_bleu,
-                                       sentence_bleu)
+from nltk.translate.bleu_score import SmoothingFunction, corpus_bleu, sentence_bleu
 from rouge_score import rouge_scorer
 from scipy.spatial.distance import jensenshannon
 
 from .base import BaseMetric
-from .utils import to_iterable
 
 
 class BLEU(BaseMetric):

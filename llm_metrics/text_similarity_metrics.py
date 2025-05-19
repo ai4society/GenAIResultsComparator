@@ -1,5 +1,5 @@
 from difflib import SequenceMatcher
-from typing import Any, Dict, Iterable, List, Optional, Union
+from typing import Any, Iterable, List, Union
 
 import numpy as np
 import pandas as pd
@@ -8,7 +8,6 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
 from .base import BaseMetric
-from .utils import to_iterable
 
 
 class JaccardSimilarity(BaseMetric):
