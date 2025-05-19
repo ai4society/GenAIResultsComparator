@@ -1,6 +1,5 @@
 import warnings
 from abc import ABC, abstractmethod
-from encodings.punycode import T
 from typing import Any, Dict, Iterable, List, Union
 
 import numpy as np

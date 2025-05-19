@@ -30,7 +30,7 @@ except ImportError:
     # If either import in this block fails, both are set to None,
     # maintaining the original logic.
     plt = None
-    pi = None
+    pi = 3.14159
 
 try:
     import numpy as _np_temp  # Import numpy using a temporary alias
