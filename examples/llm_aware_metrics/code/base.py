@@ -85,12 +85,17 @@ class LLMAwareMetric(BaseMetric):
     def batch_calculate(
         self,
 <<<<<<< HEAD
+<<<<<<< HEAD
         generated_texts: Union[Iterable, ndarray, Series],
         reference_texts: Union[Iterable, ndarray, Series],
 =======
         texts1: Union[Iterable, ndarray, Series],
         texts2: Union[Iterable, ndarray, Series],
 >>>>>>> 4e34e8f (Changed all metric classes to new format)
+=======
+        generated_texts: Union[Iterable, ndarray, Series],
+        reference_texts: Union[Iterable, ndarray, Series],
+>>>>>>> b203911 (Merge examples folder from main branch)
     ) -> Union[List[float], List[dict], ndarray, Series]:
         """
         Calculate similarity for batches of texts without prompts.
