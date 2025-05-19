@@ -74,6 +74,14 @@ Each metric class inherits from this base class and is implemented with **two re
 **_Inspiration_** for the library and evaluation metrics was taken from [Microsoft's
 article on evaluating LLM-generated content](https://learn.microsoft.com/en-us/ai/playbook/technology-guidance/generative-ai/working-with-llms/evaluation/list-of-eval-metrics). In the article, Microsoft describes 3 categories of evaluation metrics: **(1)** Reference-based metrics, **(2)** Reference-free metrics, and **(3)** LLM-based metrics. _The library currently supports reference-based metrics._
 
+### Workflow
+
+<figure style="display: flex; flex-direction: column; align-items: center;">
+  <img src="miscellaneous/GenAISummer.drawio.png" alt="GenAIResultsComparator Overview" style="display: block; margin: 0 auto;"/>
+  <figcaption style="text-align: center;">Overview of the workflow supported by the _GenAIResultsComparator_ library</figcaption>
+</figure>
+
+
 ## Table of Contents
 
 - [Features](#features)
