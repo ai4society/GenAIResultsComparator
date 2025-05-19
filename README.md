@@ -76,11 +76,12 @@ article on evaluating LLM-generated content](https://learn.microsoft.com/en-us/a
 
 ### Workflow
 
-<figure style="display: flex; flex-direction: column; align-items: center;">
-  <img src="miscellaneous/GenAISummer.drawio.png" alt="GenAIResultsComparator Overview" style="display: block; margin: 0 auto;"/>
-  <figcaption style="text-align: center;">Overview of the workflow supported by the _GenAIResultsComparator_ library</figcaption>
-</figure>
-
+<p align="center">
+  <img src="miscellaneous/GenAISummer.drawio.png" alt="GenAIResultsComparator Overview">
+</p>
+<p align="center">
+  <em>Overview of the workflow supported by the <i>GenAIResultsComparator</i> library</em>
+</p>
 
 ## Table of Contents
 
