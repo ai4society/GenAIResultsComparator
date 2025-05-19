@@ -2,12 +2,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from llm_metrics import (
-    CosineSimilarity,
-    JaccardSimilarity,
-    LevenshteinDistance,
-    SequenceMatcherSimilarity,
-)
+from llm_metrics import (CosineSimilarity, JaccardSimilarity,
+                         LevenshteinDistance, SequenceMatcherSimilarity)
 
 
 # JaccardSimilarity Tests

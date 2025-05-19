@@ -93,6 +93,7 @@ class AggregatedSimilarityMetric(LLMAwareMetric):
         prompt2 = prompt2 or prompt1
 
         # Calculate prompt-response aggregation scores
+<<<<<<< HEAD
         aggregation1: Union[float, Dict[str, float]] = (
             self.calculate_prompt_aggregation(prompt1, text1)
         )
@@ -104,6 +105,19 @@ class AggregatedSimilarityMetric(LLMAwareMetric):
         response_similarity: Union[float, Dict[str, float]] = (
             self.base_metric.calculate(text1, text2)
         )
+=======
+        aggregation1: Union[
+            float, Dict[str, float]
+        ] = self.calculate_prompt_aggregation(prompt1, text1)
+        aggregation2: Union[
+            float, Dict[str, float]
+        ] = self.calculate_prompt_aggregation(prompt2, text2)
+
+        # Calculate response similarity
+        response_similarity: Union[
+            float, Dict[str, float]
+        ] = self.base_metric.calculate(text1, text2)
+>>>>>>> 4e34e8f (Changed all metric classes to new format)
 
         # Combine scores (can be weighted differently based on requirements)...
 
@@ -123,7 +137,13 @@ class AggregatedSimilarityMetric(LLMAwareMetric):
             and isinstance(aggregation2, dict)
         ):
             combined_scores = {}
+<<<<<<< HEAD
             for key in (
+=======
+            for (
+                key
+            ) in (
+>>>>>>> 4e34e8f (Changed all metric classes to new format)
                 response_similarity
             ):  # Assuming that the keys are the same for all dictionaries
                 combined_scores[key] = _get_combined_score(

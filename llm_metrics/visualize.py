@@ -1,5 +1,5 @@
 import warnings
-from typing import Any, Callable, Optional
+from typing import Any, Callable, Dict, List, Optional, Union
 
 import pandas
 
@@ -326,7 +326,4 @@ def plot_radar_comparison(
 
     plt.tight_layout()
     return current_axis
-    return current_axis
-    plt.tight_layout()
-    return current_axis
-    return current_axis
+

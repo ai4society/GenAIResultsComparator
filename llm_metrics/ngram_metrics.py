@@ -3,7 +3,8 @@ from typing import Any, Callable, Dict, Iterable, List, Optional, Union
 import nltk
 import numpy as np
 import pandas as pd
-from nltk.translate.bleu_score import SmoothingFunction, corpus_bleu, sentence_bleu
+from nltk.translate.bleu_score import (SmoothingFunction, corpus_bleu,
+                                       sentence_bleu)
 from rouge_score import rouge_scorer
 from scipy.spatial.distance import jensenshannon
 
@@ -36,11 +37,11 @@ class BLEU(BaseMetric):
         self.n = n
         self.smoothing_function = smoothing_function
 
-    def calculate(
+    def single_calculate(
         self,
         generated_text: str,
         reference_text: str,
-        additional_params: Optional[Dict[str, Any]] = None,
+        **kwargs: Any,
     ) -> float:
         """
         Calculate the BLEU score for a pair of generated and reference texts.
@@ -49,14 +50,10 @@ class BLEU(BaseMetric):
         :type generated_text: str
         :param reference_text: The reference text to compare against
         :type reference_text: str
-        :param additional_params: Additional parameters to pass to the BLEU calculation, defaults to None
-        :type additional_params: Dict[str, Any], optional
+        :param kwargs: Additional parameters to pass to the NLTK sentence_bleu function
         :return: The BLEU score for the text pair
         :rtype: float
         """
-        params = {}
-        if additional_params:
-            params.update(additional_params)
 
         # Split texts into words and calculate sentence-level BLEU score
         return float(
@@ -64,7 +61,7 @@ class BLEU(BaseMetric):
                 [reference_text.split()],
                 generated_text.split(),
                 smoothing_function=self.smoothing_function,
-                **params,
+                **kwargs,
             )
         )
 
@@ -73,7 +70,7 @@ class BLEU(BaseMetric):
         generated_texts: Union[Iterable, np.ndarray, pd.Series],
         reference_texts: Union[Iterable, np.ndarray, pd.Series],
         use_corpus_bleu: bool = True,
-        additional_params: Optional[Dict[str, Any]] = None,
+        **kwargs: Any,
     ) -> Union[float, List[float], np.ndarray, pd.Series]:
         """
         Calculate BLEU scores for a batch of generated and reference texts.
@@ -90,59 +87,50 @@ class BLEU(BaseMetric):
         :type reference_texts: Union[Iterable, np.ndarray, pd.Series]
         :param use_corpus_bleu: Whether to use corpus-level BLEU calculation, defaults to True
         :type use_corpus_bleu: bool
-        :param additional_params: Additional parameters to pass to BLEU, defaults to None
-        :type additional_params: Dict[str, Any], optional
-        :return: Either a single corpus-level BLEU score or a list/array/series of sentence-level BLEU scores
+        :param kwargs: Additional parameters to pass to NLTK BLEU functions
+        :return: Either a single corpus-level BLEU score or a list/array/series of sentence-level BLEU scores.
         :rtype: Union[float, List[float], np.ndarray, pd.Series]
         """
-        # Convert inputs to appropriate iterable types,
-        # preserving numpy arrays and pandas Series
-        gen_texts = to_iterable(generated_texts)
-        ref_texts = to_iterable(reference_texts)
-
-        params = {}
-        if additional_params:
-            params.update(additional_params)
 
         if use_corpus_bleu:
             # Prepare data for corpus_bleu calculation
-            if isinstance(gen_texts, (np.ndarray, pd.Series)):
+            if isinstance(generated_texts, (np.ndarray, pd.Series)):
                 # For numpy arrays and pandas Series, use vectorized operations
-                hypotheses = [text.split() for text in gen_texts]
-                references = [[text.split()] for text in ref_texts]
+                hypotheses = [text.split() for text in generated_texts]
+                references = [[text.split()] for text in reference_texts]
             else:
                 # For other iterable types, we use a list comprehension
-                hypotheses = [gen.split() for gen in gen_texts]
-                references = [[ref.split()] for ref in ref_texts]
+                hypotheses = [gen.split() for gen in generated_texts]
+                references = [[ref.split()] for ref in reference_texts]
 
             # Calculate and return the corpus-level BLEU score
             return corpus_bleu(
                 references,
                 hypotheses,
                 smoothing_function=self.smoothing_function,
-                **params,
+                **kwargs,
             )
         else:
             # Calculate individual BLEU scores for each sentence pair
-            if isinstance(gen_texts, np.ndarray) and isinstance(ref_texts, np.ndarray):
+            if isinstance(generated_texts, np.ndarray) and isinstance(reference_texts, np.ndarray):
                 # Use numpy vectorization for faster calculation
                 return np.array(
                     [
-                        self.calculate(gen, ref, additional_params=params)
-                        for gen, ref in zip(gen_texts, ref_texts)
+                        self.single_calculate(gen, ref, **kwargs)
+                        for gen, ref in zip(generated_texts, reference_texts)
                     ]
                 )
-            elif isinstance(gen_texts, pd.Series) and isinstance(ref_texts, pd.Series):
+            elif isinstance(generated_texts, pd.Series) and isinstance(reference_texts, pd.Series):
                 # Use pandas' apply method for Series
-                return gen_texts.combine(
-                    ref_texts,
-                    lambda g, r: self.calculate(g, r, additional_params=params),
+                return generated_texts.combine(
+                    reference_texts,
+                    lambda g, r: self.single_calculate(g, r, **kwargs),
                 )
             else:
                 # For other iterable types, use a list comprehension
                 return [
-                    self.calculate(gen, ref, additional_params=params)
-                    for gen, ref in zip(gen_texts, ref_texts)
+                    self.single_calculate(gen, ref, **kwargs)
+                    for gen, ref in zip(generated_texts, reference_texts)
                 ]
 
 
@@ -155,7 +143,7 @@ class ROUGE(BaseMetric):
         self,
         rouge_types: Optional[List[str]] = None,
         use_stemmer: bool = True,
-        additional_params: Optional[Dict[str, Any]] = None,
+        **kwargs: Any,
     ):
         """
         Initialize the ROUGE scorer with the specified ROUGE types and parameters.
@@ -172,8 +160,7 @@ class ROUGE(BaseMetric):
         :type additional_params: Dict[str, Any], optional
         """
         params = {"use_stemmer": use_stemmer}
-        if additional_params:
-            params.update(additional_params)
+        params.update(kwargs)
 
         # Check if rouge_types is valid
         if rouge_types:
@@ -188,10 +175,11 @@ class ROUGE(BaseMetric):
 
         self.scorer = rouge_scorer.RougeScorer(self.rouge_types, **params)
 
-    def calculate(
+    def single_calculate(
         self,
         generated_text: str,
         reference_text: str,
+        **kwargs: Any,
     ) -> Union[Dict[str, float], float]:
         """
         Calculate the ROUGE score for a pair of generated and reference texts.
@@ -217,6 +205,7 @@ class ROUGE(BaseMetric):
         self,
         generated_texts: Union[Iterable, np.ndarray, pd.Series],
         reference_texts: Union[Iterable, np.ndarray, pd.Series],
+        **kwargs: Any,
     ) -> Union[List[float], List[dict], np.ndarray, pd.Series]:
         """
         Calculate ROUGE scores for a batch of generated and reference texts.
@@ -227,20 +216,17 @@ class ROUGE(BaseMetric):
         :param reference_texts: Reference texts
         :type reference_texts: Union[Iterable, np.ndarray, pd.Series]
         :return: A list, numpy array, or pandas Series of Dictionary of ROUGE scores
-            If `rouge_types` is a single type, returns a list, numpy array, or pandas Series of that value.
         :rtype: Union[List[dict], np.ndarray, pd.Series]
         """
-        gen_texts = to_iterable(generated_texts)
-        ref_texts = to_iterable(reference_texts)
 
         # `self.scorer` takes care of calculating ROUGE scores based on the supplied ROUGE types
-        scores = [self.calculate(gen, ref) for gen, ref in zip(gen_texts, ref_texts)]
+        scores = [self.single_calculate(gen, ref, **kwargs) for gen, ref in zip(generated_texts, reference_texts)]
 
-        if isinstance(gen_texts, np.ndarray) and isinstance(ref_texts, np.ndarray):
+        if isinstance(generated_texts, np.ndarray) and isinstance(reference_texts, np.ndarray):
             return np.array(scores)
 
-        elif isinstance(gen_texts, pd.Series) and isinstance(ref_texts, pd.Series):
-            return pd.Series(scores, index=gen_texts.index)
+        elif isinstance(generated_texts, pd.Series) and isinstance(reference_texts, pd.Series):
+            return pd.Series(scores, index=generated_texts.index)
 
         else:
             return scores
@@ -259,11 +245,11 @@ class JSDivergence(BaseMetric):
         """
         pass
 
-    def calculate(
+    def single_calculate(
         self,
         generated_text: str,
         reference_text: str,
-        additional_params: Optional[Dict[str, Any]] = None,
+        **kwargs: Any,
     ) -> float:
         """
         Calculate the Jensen-Shannon Divergence between a pair of generated and reference texts.
@@ -272,14 +258,11 @@ class JSDivergence(BaseMetric):
         :type generated_text: str
         :param reference_text: The reference text to compare against
         :type reference_text: str
-        :param additional_params: Additional parameters to pass to the score method of the BERTScorer class, defaults to None
-        :type additional_params: Dict[str, Any], optional
+        :param kwargs: Additional parameters for scipy's jensenshannon function
+        :type kwargs: Dict[str, Any], optional
         :return: The Jensen-Shannon Divergence score for the text pair
         :rtype: float
         """
-        params = {}
-        if additional_params:
-            params.update(additional_params)
 
         gen_freq = nltk.FreqDist(generated_text.split())
         ref_freq = nltk.FreqDist(reference_text.split())
@@ -292,13 +275,13 @@ class JSDivergence(BaseMetric):
         if all(x == 0 for x in ref_probs) or all(x == 0 for x in gen_probs):
             return 0.0
 
-        return 1.0 - float((jensenshannon(gen_probs, ref_probs, **params)))
+        return 1.0 - float((jensenshannon(gen_probs, ref_probs, **kwargs)))
 
     def batch_calculate(
         self,
         generated_texts: Union[Iterable, np.ndarray, pd.Series],
         reference_texts: Union[Iterable, np.ndarray, pd.Series],
-        additional_params: Optional[Dict[str, Any]] = None,
+        **kwargs: Any,
     ) -> Union[np.ndarray, pd.Series, List[float]]:
         """
         Calculate Jensen-Shannon Divergence scores for a batch of generated and reference texts.
@@ -308,32 +291,26 @@ class JSDivergence(BaseMetric):
         :type generated_texts: Union[Iterable, np.ndarray, pd.Series]
         :param reference_texts: Reference texts
         :type reference_texts: Union[Iterable, np.ndarray, pd.Series]
-        :param additional_params: Additional parameters to pass to the Jensen-Shannon Divergence calculation, defaults to None
-        :type additional_params: Dict[str, Any], optional
-        :return:
+        :param kwargs: Additional parameters for scipy's jensenshannon function, defaults to None
+        :type kwargs: Dict[str, Any], optional
+        :return: A list, array, or Series of JSD scores
         """
-        gen_texts = to_iterable(generated_texts)
-        ref_texts = to_iterable(reference_texts)
 
-        params = {}
-        if additional_params:
-            params.update(additional_params)
-
-        if isinstance(gen_texts, np.ndarray) and isinstance(ref_texts, np.ndarray):
+        if isinstance(generated_texts, np.ndarray) and isinstance(reference_texts, np.ndarray):
             return np.array(
                 [
-                    self.calculate(gen, ref, params)
-                    for gen, ref in zip(gen_texts, ref_texts)
+                    self.single_calculate(gen, ref, **kwargs)
+                    for gen, ref in zip(generated_texts, reference_texts)
                 ]
             )
 
-        elif isinstance(gen_texts, pd.Series) and isinstance(ref_texts, pd.Series):
-            return gen_texts.combine(
-                ref_texts, lambda g, r: self.calculate(g, r, params)
+        elif isinstance(generated_texts, pd.Series) and isinstance(reference_texts, pd.Series):
+            return generated_texts.combine(
+                reference_texts, lambda g, r: self.single_calculate(g, r, **kwargs)
             )
 
         else:
             return [
-                self.calculate(gen, ref, params)
-                for gen, ref in zip(gen_texts, ref_texts)
+                self.single_calculate(gen, ref, **kwargs)
+                for gen, ref in zip(generated_texts, reference_texts)
             ]
