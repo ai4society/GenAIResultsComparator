@@ -121,9 +121,7 @@ class TestCosineSimilarity:
     def test_batch_calculate_list(
         self, cosine_scorer, sample_generated_texts, sample_reference_texts
     ):
-        scores = cosine_scorer.calculate(
-            sample_generated_texts, sample_reference_texts
-        )
+        scores = cosine_scorer.calculate(sample_generated_texts, sample_reference_texts)
         assert isinstance(scores, list)
         assert len(scores) == len(sample_generated_texts)
         assert all(isinstance(s, float) for s in scores)
