@@ -16,7 +16,7 @@ class BaseMetric(ABC):
     """
 
     @abstractmethod
-    def single_calculate(
+    def __single_calculate(
         self, generated_text: str, reference_text: str, **kwargs: Any
     ) -> Union[float, dict]:
         """
@@ -33,7 +33,7 @@ class BaseMetric(ABC):
         pass
 
     @abstractmethod
-    def batch_calculate(
+    def __batch_calculate(
         self,
         generated_texts: Union[Iterable, np.ndarray, pd.Series],
         reference_texts: Union[Iterable, np.ndarray, pd.Series],
@@ -107,7 +107,7 @@ class BaseMetric(ABC):
 
         if is_gen_str and is_ref_str:
             # If both are strings, call single_calculate
-            return self.single_calculate(
+            return self.__single_calculate(
                 generated_iterable[0], reference_iterable[0], **kwargs
             )
 
@@ -116,7 +116,7 @@ class BaseMetric(ABC):
             # the single_generated text to match the number of references
             # and call batch_calculate.
             expanded_generated = [generated_iterable[0]] * len_ref
-            return self.batch_calculate(
+            return self.__batch_calculate(
                 expanded_generated, reference_iterable, **kwargs
             )
 
@@ -125,12 +125,12 @@ class BaseMetric(ABC):
             # the single_reference text to match the number of generated texts
             # and call batch_calculate.
             expanded_reference = [reference_iterable[0]] * len_gen
-            return self.batch_calculate(
+            return self.__batch_calculate(
                 generated_iterable, expanded_reference, **kwargs
             )
 
         elif not is_gen_str and not is_ref_str:
-            return self.batch_calculate(
+            return self.__batch_calculate(
                 generated_iterable, reference_iterable, **kwargs
             )
 

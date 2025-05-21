@@ -62,7 +62,7 @@ class BERTScore(BaseMetric):
         # Ensure output_val is a list
         self.output_val = output_val or ["precision", "recall", "f1"]
 
-    def single_calculate(
+    def __single_calculate(
         self,
         generated_text: str,
         reference_text: str,
@@ -94,7 +94,7 @@ class BERTScore(BaseMetric):
         else:
             return {key: out_dict[key] for key in self.output_val}
 
-    def batch_calculate(
+    def __batch_calculate(
         self,
         generated_texts: Union[Iterable, np.ndarray, pd.Series],
         reference_texts: Union[Iterable, np.ndarray, pd.Series],
