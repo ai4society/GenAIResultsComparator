@@ -35,7 +35,7 @@ class BLEU(BaseMetric):
         self.n = n
         self.smoothing_function = smoothing_function
 
-    def __single_calculate(
+    def _single_calculate(
         self,
         generated_text: str,
         reference_text: str,
@@ -63,7 +63,7 @@ class BLEU(BaseMetric):
             )
         )
 
-    def __batch_calculate(
+    def _batch_calculate(
         self,
         generated_texts: Union[Iterable, np.ndarray, pd.Series],
         reference_texts: Union[Iterable, np.ndarray, pd.Series],
@@ -116,7 +116,7 @@ class BLEU(BaseMetric):
                 # Use numpy vectorization for faster calculation
                 return np.array(
                     [
-                        self.__single_calculate(gen, ref, **kwargs)
+                        self._single_calculate(gen, ref, **kwargs)
                         for gen, ref in zip(generated_texts, reference_texts)
                     ]
                 )
@@ -126,12 +126,12 @@ class BLEU(BaseMetric):
                 # Use pandas' apply method for Series
                 return generated_texts.combine(
                     reference_texts,
-                    lambda g, r: self.__single_calculate(g, r, **kwargs),
+                    lambda g, r: self._single_calculate(g, r, **kwargs),
                 )
             else:
                 # For other iterable types, use a list comprehension
                 return [
-                    self.__single_calculate(gen, ref, **kwargs)
+                    self._single_calculate(gen, ref, **kwargs)
                     for gen, ref in zip(generated_texts, reference_texts)
                 ]
 
@@ -177,7 +177,7 @@ class ROUGE(BaseMetric):
 
         self.scorer = rouge_scorer.RougeScorer(self.rouge_types, **params)
 
-    def __single_calculate(
+    def _single_calculate(
         self,
         generated_text: str,
         reference_text: str,
@@ -203,7 +203,7 @@ class ROUGE(BaseMetric):
             return float(score_dict.get(self.rouge_types[0], 0.0))
         return {key: float(score_dict[key]) for key in self.rouge_types}
 
-    def __batch_calculate(
+    def _batch_calculate(
         self,
         generated_texts: Union[Iterable, np.ndarray, pd.Series],
         reference_texts: Union[Iterable, np.ndarray, pd.Series],
@@ -223,7 +223,7 @@ class ROUGE(BaseMetric):
 
         # `self.scorer` takes care of calculating ROUGE scores based on the supplied ROUGE types
         scores = [
-            self.__single_calculate(gen, ref, **kwargs)
+            self._single_calculate(gen, ref, **kwargs)
             for gen, ref in zip(generated_texts, reference_texts)
         ]
 
@@ -254,7 +254,7 @@ class JSDivergence(BaseMetric):
         """
         pass
 
-    def __single_calculate(
+    def _single_calculate(
         self,
         generated_text: str,
         reference_text: str,
@@ -286,7 +286,7 @@ class JSDivergence(BaseMetric):
 
         return 1.0 - float((jensenshannon(gen_probs, ref_probs, **kwargs)))
 
-    def __batch_calculate(
+    def _batch_calculate(
         self,
         generated_texts: Union[Iterable, np.ndarray, pd.Series],
         reference_texts: Union[Iterable, np.ndarray, pd.Series],
@@ -310,7 +310,7 @@ class JSDivergence(BaseMetric):
         ):
             return np.array(
                 [
-                    self.__single_calculate(gen, ref, **kwargs)
+                    self._single_calculate(gen, ref, **kwargs)
                     for gen, ref in zip(generated_texts, reference_texts)
                 ]
             )
@@ -319,11 +319,11 @@ class JSDivergence(BaseMetric):
             reference_texts, pd.Series
         ):
             return generated_texts.combine(
-                reference_texts, lambda g, r: self.__single_calculate(g, r, **kwargs)
+                reference_texts, lambda g, r: self._single_calculate(g, r, **kwargs)
             )
 
         else:
             return [
-                self.__single_calculate(gen, ref, **kwargs)
+                self._single_calculate(gen, ref, **kwargs)
                 for gen, ref in zip(generated_texts, reference_texts)
             ]

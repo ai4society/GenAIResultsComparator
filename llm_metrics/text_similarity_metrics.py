@@ -22,7 +22,7 @@ class JaccardSimilarity(BaseMetric):
         """Initialize the Jaccard Similarity metric."""
         pass
 
-    def __single_calculate(
+    def _single_calculate(
         self,
         generated_text: str,
         reference_text: str,
@@ -46,7 +46,7 @@ class JaccardSimilarity(BaseMetric):
 
         return intersection / union if union > 0 else 0.0
 
-    def __batch_calculate(
+    def _batch_calculate(
         self,
         generated_texts: Union[Iterable, np.ndarray, pd.Series],
         reference_texts: Union[Iterable, np.ndarray, pd.Series],
@@ -68,7 +68,7 @@ class JaccardSimilarity(BaseMetric):
         ):
             return np.array(
                 [
-                    self.__single_calculate(gen, ref, **kwargs)
+                    self._single_calculate(gen, ref, **kwargs)
                     for gen, ref in zip(generated_texts, reference_texts)
                 ]
             )
@@ -77,12 +77,12 @@ class JaccardSimilarity(BaseMetric):
             reference_texts, pd.Series
         ):
             return generated_texts.combine(
-                reference_texts, lambda g, r: self.__single_calculate(g, r, **kwargs)
+                reference_texts, lambda g, r: self._single_calculate(g, r, **kwargs)
             )
 
         else:
             return [
-                self.__single_calculate(gen, ref, **kwargs)
+                self._single_calculate(gen, ref, **kwargs)
                 for gen, ref in zip(generated_texts, reference_texts)
             ]
 
@@ -104,7 +104,7 @@ class CosineSimilarity(BaseMetric):
         """
         self.vectorizer = CountVectorizer(**kwargs)
 
-    def __single_calculate(
+    def _single_calculate(
         self,
         generated_text: str,
         reference_text: str,
@@ -135,7 +135,7 @@ class CosineSimilarity(BaseMetric):
         similarity = cosine_similarity(vectors[0], vectors[1], **kwargs)[0][0]
         return min(max(similarity, 0.0), 1.0)
 
-    def __batch_calculate(
+    def _batch_calculate(
         self,
         generated_texts: Union[Iterable, np.ndarray, pd.Series],
         reference_texts: Union[Iterable, np.ndarray, pd.Series],
@@ -197,7 +197,7 @@ class LevenshteinDistance(BaseMetric):
         """Initialize the Levenshtein Distance metric."""
         pass
 
-    def __single_calculate(
+    def _single_calculate(
         self,
         generated_text: str,
         reference_text: str,
@@ -224,7 +224,7 @@ class LevenshteinDistance(BaseMetric):
             return ratio(generated_text, reference_text, **kwargs)
         return distance(generated_text, reference_text, **kwargs)
 
-    def __batch_calculate(
+    def _batch_calculate(
         self,
         generated_texts: Union[Iterable, np.ndarray, pd.Series],
         reference_texts: Union[Iterable, np.ndarray, pd.Series],
@@ -251,7 +251,7 @@ class LevenshteinDistance(BaseMetric):
         ):
             return np.array(
                 [
-                    self.__single_calculate(
+                    self._single_calculate(
                         gen, ref, calculate_ratio=calculate_ratio, **kwargs
                     )
                     for gen, ref in zip(generated_texts, reference_texts)
@@ -263,14 +263,14 @@ class LevenshteinDistance(BaseMetric):
         ):
             return generated_texts.combine(
                 reference_texts,
-                lambda g, r: self.__single_calculate(
+                lambda g, r: self._single_calculate(
                     g, r, calculate_ratio=calculate_ratio, **kwargs
                 ),
             )
 
         else:
             return [
-                self.__single_calculate(
+                self._single_calculate(
                     gen, ref, calculate_ratio=calculate_ratio, **kwargs
                 )
                 for gen, ref in zip(generated_texts, reference_texts)
@@ -289,7 +289,7 @@ class SequenceMatcherSimilarity(BaseMetric):
         """Initialize the SequenceMatcher Similarity metric"""
         pass
 
-    def __single_calculate(
+    def _single_calculate(
         self,
         generated_text: str,
         reference_text: str,
@@ -311,7 +311,7 @@ class SequenceMatcherSimilarity(BaseMetric):
 
         return s_matcher.ratio()
 
-    def __batch_calculate(
+    def _batch_calculate(
         self,
         generated_texts: Union[Iterable, np.ndarray, pd.Series],
         reference_texts: Union[Iterable, np.ndarray, pd.Series],
@@ -334,7 +334,7 @@ class SequenceMatcherSimilarity(BaseMetric):
         ):
             return np.array(
                 [
-                    self.__single_calculate(gen, ref, **kwargs)
+                    self._single_calculate(gen, ref, **kwargs)
                     for gen, ref in zip(generated_texts, reference_texts)
                 ]
             )
@@ -343,11 +343,11 @@ class SequenceMatcherSimilarity(BaseMetric):
             reference_texts, pd.Series
         ):
             return generated_texts.combine(
-                reference_texts, lambda g, r: self.__single_calculate(g, r, **kwargs)
+                reference_texts, lambda g, r: self._single_calculate(g, r, **kwargs)
             )
 
         else:
             return [
-                self.__single_calculate(gen, ref, **kwargs)
+                self._single_calculate(gen, ref, **kwargs)
                 for gen, ref in zip(generated_texts, reference_texts)
             ]

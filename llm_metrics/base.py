@@ -1,4 +1,3 @@
-import warnings
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Union
 
@@ -16,7 +15,7 @@ class BaseMetric(ABC):
     """
 
     @abstractmethod
-    def __single_calculate(
+    def _single_calculate(
         self, generated_text: str, reference_text: str, **kwargs: Any
     ) -> Union[float, dict]:
         """
@@ -33,7 +32,7 @@ class BaseMetric(ABC):
         pass
 
     @abstractmethod
-    def __batch_calculate(
+    def _batch_calculate(
         self,
         generated_texts: Union[Iterable, np.ndarray, pd.Series],
         reference_texts: Union[Iterable, np.ndarray, pd.Series],
@@ -64,7 +63,7 @@ class BaseMetric(ABC):
         - If both inputs are single strings, it will call `single_calculate`.
         - If one is a string and the other an iterable, it broadcasts the string and calls `batch_calculate`.
         - If both inputs are iterables, they must have the same length, and it will call `batch_calculate`.
-        - If inputs are None or empty, it issues a warning and returns None.
+        - If inputs are None , it raises a ValueError.
 
         :param generated_texts: A single generated text or an iterable of generated texts
         :type generated_texts: Union[str, Iterable, np.ndarray, pd.Series]
@@ -82,17 +81,6 @@ class BaseMetric(ABC):
                 "Both generated_texts and reference_texts must be provided."
             )
 
-        if is_gen_str and not generated_texts:
-            warnings.warn(
-                "Generated text input is an empty string. Returning None.", UserWarning
-            )
-            return None
-        if is_ref_str and not reference_texts:
-            warnings.warn(
-                "Reference text input is an empty string. Returning None.", UserWarning
-            )
-            return None
-
         # Converting inputs to iterable format
         try:
             generated_iterable = to_iterable(generated_texts)
@@ -107,7 +95,7 @@ class BaseMetric(ABC):
 
         if is_gen_str and is_ref_str:
             # If both are strings, call single_calculate
-            return self.__single_calculate(
+            return self._single_calculate(
                 generated_iterable[0], reference_iterable[0], **kwargs
             )
 
@@ -116,7 +104,7 @@ class BaseMetric(ABC):
             # the single_generated text to match the number of references
             # and call batch_calculate.
             expanded_generated = [generated_iterable[0]] * len_ref
-            return self.__batch_calculate(
+            return self._batch_calculate(
                 expanded_generated, reference_iterable, **kwargs
             )
 
@@ -125,12 +113,12 @@ class BaseMetric(ABC):
             # the single_reference text to match the number of generated texts
             # and call batch_calculate.
             expanded_reference = [reference_iterable[0]] * len_gen
-            return self.__batch_calculate(
+            return self._batch_calculate(
                 generated_iterable, expanded_reference, **kwargs
             )
 
         elif not is_gen_str and not is_ref_str:
-            return self.__batch_calculate(
+            return self._batch_calculate(
                 generated_iterable, reference_iterable, **kwargs
             )
 
