@@ -107,9 +107,7 @@ def prepare_results_dataframe(
             if isinstance(score_value, dict):
                 for sub_metric, sub_score in score_value.items():
                     full_metric_name = f"{metric_name}_{sub_metric}"
-                    if isinstance(
-                        sub_score, (int, float)
-                    ):  # Ensure the final score is numeric
+                    if isinstance(sub_score, (int, float)):  # Ensure the final score is numeric
                         records.append(
                             {
                                 model_col: model_name,

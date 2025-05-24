@@ -37,12 +37,12 @@ visualization = [
 
 [dependency-groups]
 dev = [
-    "black>=25.1.0",
     "flake8>=7.2.0",
     "hypothesis>=6.131.17",
     "mypy>=1.15.0",
     "pre-commit>=4.2.0",
     "pytest>=8.3.5",
+    "ruff>=0.11.11",
     "sphinx>=8.1.3",
 ]
 
@@ -50,3 +50,19 @@ dev = [
 markers = [
     "bertscore: marker for BERTScore tests",
 ]
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.format]
+# Like Black, use double quotes for strings.
+quote-style = "double"
+
+# Like Black, indent with spaces, rather than tabs.
+indent-style = "space"
+
+# Like Black, respect magic trailing commas.
+skip-magic-trailing-comma = false
+
+# Like Black, automatically detect the appropriate line ending.
+line-ending = "auto"

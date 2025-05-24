@@ -55,9 +55,7 @@ class BERTScore(BaseMetric):
                 raise ValueError("`output_val` must be a list")
 
             elif not all(val in ["precision", "recall", "f1"] for val in output_val):
-                raise ValueError(
-                    "`output_val` must be one of ['precision', 'recall', 'f1']"
-                )
+                raise ValueError("`output_val` must be one of ['precision', 'recall', 'f1']")
 
         # Ensure output_val is a list
         self.output_val = output_val or ["precision", "recall", "f1"]
@@ -115,26 +113,19 @@ class BERTScore(BaseMetric):
         :rtype: Union[List[float], List[dict], np.ndarray, pd.Series]
         """
 
-        P, R, F1 = self.scorer.score(
-            list(generated_texts), list(reference_texts), **kwargs
-        )
+        P, R, F1 = self.scorer.score(list(generated_texts), list(reference_texts), **kwargs)
 
         scores = [
-            {"precision": p.item(), "recall": r.item(), "f1": f.item()}
-            for p, r, f in zip(P, R, F1)
+            {"precision": p.item(), "recall": r.item(), "f1": f.item()} for p, r, f in zip(P, R, F1)
         ]
 
         # Define final scores based on output_val
         scores = [{key: score[key] for key in self.output_val} for score in scores]
 
-        if isinstance(generated_texts, np.ndarray) and isinstance(
-            reference_texts, np.ndarray
-        ):
+        if isinstance(generated_texts, np.ndarray) and isinstance(reference_texts, np.ndarray):
             return np.array(scores)
 
-        elif isinstance(generated_texts, pd.Series) and isinstance(
-            reference_texts, pd.Series
-        ):
+        elif isinstance(generated_texts, pd.Series) and isinstance(reference_texts, pd.Series):
             return pd.Series(scores, index=generated_texts.index)
 
         else:

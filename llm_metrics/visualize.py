@@ -127,9 +127,9 @@ def plot_metric_comparison(
     metric_specific_df = df[df[metric_col] == metric_to_plot]
 
     # Aggregate scores
-    aggregated_data = metric_specific_df.groupby(model_col, as_index=False)[
-        score_col
-    ].apply(actual_aggregate_func)
+    aggregated_data = metric_specific_df.groupby(model_col, as_index=False)[score_col].apply(
+        actual_aggregate_func
+    )
     # If aggregate_func returns a DataFrame (i.e from a custom function), make sure it has the correct columns
     if (
         not isinstance(aggregated_data, pd.DataFrame)
@@ -139,9 +139,7 @@ def plot_metric_comparison(
         # Fallback for simple aggregation like np.mean.
         if actual_aggregate_func == np.mean:
             aggregated_data = (
-                metric_specific_df.groupby(model_col)[score_col]
-                .agg("mean")
-                .reset_index()
+                metric_specific_df.groupby(model_col)[score_col].agg("mean").reset_index()
             )
         else:
             aggregated_data = (
@@ -154,9 +152,7 @@ def plot_metric_comparison(
     if current_axis is None:
         fig, current_axis = plt.subplots(figsize=figsize_val)
 
-    sns.barplot(
-        data=aggregated_data, x=model_col, y=score_col, ax=current_axis, **kwargs
-    )
+    sns.barplot(data=aggregated_data, x=model_col, y=score_col, ax=current_axis, **kwargs)
 
     plot_title = title_val if title_val else f"{metric_to_plot} Comparison"
     plot_ylabel_text = ylabel_val if ylabel_val else metric_to_plot
@@ -246,9 +242,7 @@ def plot_radar_comparison(
             UserWarning,
         )
         if axis_val is None:
-            fig, axis_val = plt.subplots(
-                figsize=figsize_val, subplot_kw=dict(polar=True)
-            )
+            fig, axis_val = plt.subplots(figsize=figsize_val, subplot_kw=dict(polar=True))
         axis_val.set_title(title_val + " (No Data)")
         plt.tight_layout()
         return axis_val
@@ -265,9 +259,7 @@ def plot_radar_comparison(
         metrics_to_plot = pivot_df.columns.tolist()
 
     if not metrics_to_plot:
-        raise ValueError(
-            "No metrics available to plot after aggregation and filtering."
-        )
+        raise ValueError("No metrics available to plot after aggregation and filtering.")
 
     models = pivot_df.index.tolist()
     num_vars = len(metrics_to_plot)
@@ -280,9 +272,7 @@ def plot_radar_comparison(
 
     current_axis = axis_val
     if current_axis is None:
-        fig, current_axis = plt.subplots(
-            figsize=figsize_val, subplot_kw=dict(polar=True)
-        )
+        fig, current_axis = plt.subplots(figsize=figsize_val, subplot_kw=dict(polar=True))
     elif not hasattr(current_axis, "set_theta_offset"):  # Check if it's a polar axis
         raise ValueError("Provided 'axis' must be a polar projection for radar plot.")
 

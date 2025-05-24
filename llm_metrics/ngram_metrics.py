@@ -20,9 +20,7 @@ class BLEU(BaseMetric):
     def __init__(
         self,
         n: int = 4,
-        smoothing_function: Union[
-            Callable, SmoothingFunction
-        ] = SmoothingFunction().method1,
+        smoothing_function: Union[Callable, SmoothingFunction] = SmoothingFunction().method1,
     ):
         """
         Initialize the BLEU scorer with the specified parameters.
@@ -110,9 +108,7 @@ class BLEU(BaseMetric):
             )
         else:
             # Calculate individual BLEU scores for each sentence pair
-            if isinstance(generated_texts, np.ndarray) and isinstance(
-                reference_texts, np.ndarray
-            ):
+            if isinstance(generated_texts, np.ndarray) and isinstance(reference_texts, np.ndarray):
                 # Use numpy vectorization for faster calculation
                 return np.array(
                     [
@@ -120,9 +116,7 @@ class BLEU(BaseMetric):
                         for gen, ref in zip(generated_texts, reference_texts)
                     ]
                 )
-            elif isinstance(generated_texts, pd.Series) and isinstance(
-                reference_texts, pd.Series
-            ):
+            elif isinstance(generated_texts, pd.Series) and isinstance(reference_texts, pd.Series):
                 # Use pandas' apply method for Series
                 return generated_texts.combine(
                     reference_texts,
@@ -169,9 +163,7 @@ class ROUGE(BaseMetric):
             if not isinstance(rouge_types, list):
                 raise ValueError("rouge_types must be a list")
             elif not all(val in ["rouge1", "rouge2", "rougeL"] for val in rouge_types):
-                raise ValueError(
-                    "rouge_types must be one of ['rouge1', 'rouge2', 'rougeL']"
-                )
+                raise ValueError("rouge_types must be one of ['rouge1', 'rouge2', 'rougeL']")
 
         self.rouge_types = rouge_types or ["rouge1", "rouge2", "rougeL"]
 
@@ -227,14 +219,10 @@ class ROUGE(BaseMetric):
             for gen, ref in zip(generated_texts, reference_texts)
         ]
 
-        if isinstance(generated_texts, np.ndarray) and isinstance(
-            reference_texts, np.ndarray
-        ):
+        if isinstance(generated_texts, np.ndarray) and isinstance(reference_texts, np.ndarray):
             return np.array(scores)
 
-        elif isinstance(generated_texts, pd.Series) and isinstance(
-            reference_texts, pd.Series
-        ):
+        elif isinstance(generated_texts, pd.Series) and isinstance(reference_texts, pd.Series):
             return pd.Series(scores, index=generated_texts.index)
 
         else:
@@ -305,9 +293,7 @@ class JSDivergence(BaseMetric):
         :return: A list, array, or Series of JSD scores
         """
 
-        if isinstance(generated_texts, np.ndarray) and isinstance(
-            reference_texts, np.ndarray
-        ):
+        if isinstance(generated_texts, np.ndarray) and isinstance(reference_texts, np.ndarray):
             return np.array(
                 [
                     self._single_calculate(gen, ref, **kwargs)
@@ -315,9 +301,7 @@ class JSDivergence(BaseMetric):
                 ]
             )
 
-        elif isinstance(generated_texts, pd.Series) and isinstance(
-            reference_texts, pd.Series
-        ):
+        elif isinstance(generated_texts, pd.Series) and isinstance(reference_texts, pd.Series):
             return generated_texts.combine(
                 reference_texts, lambda g, r: self._single_calculate(g, r, **kwargs)
             )

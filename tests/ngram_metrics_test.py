@@ -183,9 +183,7 @@ class TestROUGE:
     def test_batch_calculate_list_default(
         self, rouge_scorer_default, sample_generated_texts, sample_reference_texts
     ):
-        scores = rouge_scorer_default.calculate(
-            sample_generated_texts, sample_reference_texts
-        )
+        scores = rouge_scorer_default.calculate(sample_generated_texts, sample_reference_texts)
         assert isinstance(scores, list)
         assert len(scores) == len(sample_generated_texts)
         assert all(isinstance(s, dict) for s in scores)
@@ -194,9 +192,7 @@ class TestROUGE:
     def test_batch_calculate_list_single(
         self, rouge_scorer_l, sample_generated_texts, sample_reference_texts
     ):
-        scores = rouge_scorer_l.calculate(
-            sample_generated_texts, sample_reference_texts
-        )
+        scores = rouge_scorer_l.calculate(sample_generated_texts, sample_reference_texts)
         assert isinstance(scores, list)
         assert len(scores) == len(sample_generated_texts)
         assert all(isinstance(s, float) for s in scores)
@@ -214,9 +210,7 @@ class TestROUGE:
     def test_batch_calculate_np_single(
         self, rouge_scorer_l, sample_generated_texts_np, sample_reference_texts_np
     ):
-        scores = rouge_scorer_l.calculate(
-            sample_generated_texts_np, sample_reference_texts_np
-        )
+        scores = rouge_scorer_l.calculate(sample_generated_texts_np, sample_reference_texts_np)
         assert isinstance(scores, np.ndarray)
         assert len(scores) == len(sample_generated_texts_np)
         assert scores.dtype == np.float64
@@ -234,9 +228,7 @@ class TestROUGE:
     def test_batch_calculate_pd_single(
         self, rouge_scorer_l, sample_generated_texts_pd, sample_reference_texts_pd
     ):
-        scores = rouge_scorer_l.calculate(
-            sample_generated_texts_pd, sample_reference_texts_pd
-        )
+        scores = rouge_scorer_l.calculate(sample_generated_texts_pd, sample_reference_texts_pd)
         assert isinstance(scores, pd.Series)
         assert len(scores) == len(sample_generated_texts_pd)
         assert scores.dtype == np.float64
@@ -296,9 +288,7 @@ class TestJSDivergence:
     def test_batch_calculate_list(
         self, js_divergence_scorer, sample_generated_texts, sample_reference_texts
     ):
-        scores = js_divergence_scorer.calculate(
-            sample_generated_texts, sample_reference_texts
-        )
+        scores = js_divergence_scorer.calculate(sample_generated_texts, sample_reference_texts)
         assert isinstance(scores, list)
         assert len(scores) == len(sample_generated_texts)
         assert all(isinstance(s, float) for s in scores)
