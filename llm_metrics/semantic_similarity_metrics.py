@@ -5,7 +5,6 @@ import pandas as pd
 from bert_score import BERTScorer
 
 from .base import BaseMetric
-from .utils import to_iterable
 
 
 class BERTScore(BaseMetric):
@@ -63,11 +62,11 @@ class BERTScore(BaseMetric):
         # Ensure output_val is a list
         self.output_val = output_val or ["precision", "recall", "f1"]
 
-    def calculate(
+    def _single_calculate(
         self,
         generated_text: str,
         reference_text: str,
-        additional_params: Optional[Dict[str, Any]] = None,
+        **kwargs: Any,
     ) -> Union[dict[str, float], float]:
         """
         Calculate the BERTScore for a pair of generated and reference texts.
@@ -76,16 +75,13 @@ class BERTScore(BaseMetric):
         :type generated_text: str
         :param reference_text: The reference text to compare against
         :type reference_text: str
-        :param additional_params: Additional parameters to pass to the score method of the BERTScorer class, defaults to None
-        :type additional_params: Dict[str, Any], optional
+        :param kwargs: Additional parameters to pass to the score method of the BERTScorer class, defaults to None
+        :type kwargs: Dict[str, Any], optional
         :return: Either a single score or a dictionary of scores containing precision, recall, and F1
         :rtype: Union[dict[str, float], float]
         """
-        params = {}
-        if additional_params:
-            params.update(additional_params)
 
-        P, R, F1 = self.scorer.score([generated_text], [reference_text], **params)
+        P, R, F1 = self.scorer.score([generated_text], [reference_text], **kwargs)
 
         out_dict = {"precision": P.item(), "recall": R.item(), "f1": F1.item()}
 
@@ -98,11 +94,11 @@ class BERTScore(BaseMetric):
         else:
             return {key: out_dict[key] for key in self.output_val}
 
-    def batch_calculate(
+    def _batch_calculate(
         self,
         generated_texts: Union[Iterable, np.ndarray, pd.Series],
         reference_texts: Union[Iterable, np.ndarray, pd.Series],
-        additional_params: Optional[Dict[str, Any]] = None,
+        **kwargs: Any,
     ) -> Union[List[float], List[dict], np.ndarray, pd.Series]:
         """
         Calculate BERTScores for a batch of generated and reference texts.
@@ -112,20 +108,16 @@ class BERTScore(BaseMetric):
         :type generated_texts: Union[Iterable, np.ndarray, pd.Series]
         :param reference_texts: Reference texts
         :type reference_texts: Union[Iterable, np.ndarray, pd.Series]
-        :param additional_params: Additional parameters to pass to the score method of the BERTScorer class, defaults to None
-        :type additional_params: Dict[str, Any], optional
+        :param kwargs: Additional parameters to pass to the score method of the BERTScorer class
+        :type kwargs: Dict[str, Any], optional
         :return: A list, numpy array, or pandas Series of dictionaries containing precision, recall, and F1 scores.
             If `output_val` is set to a single value, returns a list, numpy array, or pandas Series of that value.
         :rtype: Union[List[float], List[dict], np.ndarray, pd.Series]
         """
-        gen_texts = to_iterable(generated_texts)
-        ref_texts = to_iterable(reference_texts)
 
-        params = {}
-        if additional_params:
-            params.update(additional_params)
-
-        P, R, F1 = self.scorer.score(list(gen_texts), list(ref_texts), **params)
+        P, R, F1 = self.scorer.score(
+            list(generated_texts), list(reference_texts), **kwargs
+        )
 
         scores = [
             {"precision": p.item(), "recall": r.item(), "f1": f.item()}
@@ -135,11 +127,15 @@ class BERTScore(BaseMetric):
         # Define final scores based on output_val
         scores = [{key: score[key] for key in self.output_val} for score in scores]
 
-        if isinstance(gen_texts, np.ndarray) and isinstance(ref_texts, np.ndarray):
+        if isinstance(generated_texts, np.ndarray) and isinstance(
+            reference_texts, np.ndarray
+        ):
             return np.array(scores)
 
-        elif isinstance(gen_texts, pd.Series) and isinstance(ref_texts, pd.Series):
-            return pd.Series(scores, index=gen_texts.index)
+        elif isinstance(generated_texts, pd.Series) and isinstance(
+            reference_texts, pd.Series
+        ):
+            return pd.Series(scores, index=generated_texts.index)
 
         else:
             return scores

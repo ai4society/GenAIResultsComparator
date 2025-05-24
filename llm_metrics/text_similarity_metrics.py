@@ -1,5 +1,5 @@
 from difflib import SequenceMatcher
-from typing import Any, Dict, Iterable, List, Optional, Union
+from typing import Any, Iterable, List, Union
 
 import numpy as np
 import pandas as pd
@@ -8,7 +8,6 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
 from .base import BaseMetric
-from .utils import to_iterable
 
 
 class JaccardSimilarity(BaseMetric):
@@ -23,10 +22,11 @@ class JaccardSimilarity(BaseMetric):
         """Initialize the Jaccard Similarity metric."""
         pass
 
-    def calculate(
+    def _single_calculate(
         self,
         generated_text: str,
         reference_text: str,
+        **kwargs: Any,
     ) -> float:
         """
         Calculate the Jaccard Similarity for a pair of generated and reference texts.
@@ -46,10 +46,11 @@ class JaccardSimilarity(BaseMetric):
 
         return intersection / union if union > 0 else 0.0
 
-    def batch_calculate(
+    def _batch_calculate(
         self,
         generated_texts: Union[Iterable, np.ndarray, pd.Series],
         reference_texts: Union[Iterable, np.ndarray, pd.Series],
+        **kwargs: Any,
     ) -> Union[np.ndarray, pd.Series, List[float]]:
         """
         Calculate Jaccard Similarity for a batch of generated and reference texts.
@@ -61,19 +62,29 @@ class JaccardSimilarity(BaseMetric):
         :return: A list, numpy array, or pandas Series of Jaccard Similarity scores
         :rtype: Union[np.ndarray, pd.Series, List[float]]
         """
-        gen_texts = to_iterable(generated_texts)
-        ref_texts = to_iterable(reference_texts)
 
-        if isinstance(gen_texts, np.ndarray) and isinstance(ref_texts, np.ndarray):
+        if isinstance(generated_texts, np.ndarray) and isinstance(
+            reference_texts, np.ndarray
+        ):
             return np.array(
-                [self.calculate(gen, ref) for gen, ref in zip(gen_texts, ref_texts)]
+                [
+                    self._single_calculate(gen, ref, **kwargs)
+                    for gen, ref in zip(generated_texts, reference_texts)
+                ]
             )
 
-        elif isinstance(gen_texts, pd.Series) and isinstance(ref_texts, pd.Series):
-            return gen_texts.combine(ref_texts, lambda g, r: self.calculate(g, r))
+        elif isinstance(generated_texts, pd.Series) and isinstance(
+            reference_texts, pd.Series
+        ):
+            return generated_texts.combine(
+                reference_texts, lambda g, r: self._single_calculate(g, r, **kwargs)
+            )
 
         else:
-            return [self.calculate(gen, ref) for gen, ref in zip(gen_texts, ref_texts)]
+            return [
+                self._single_calculate(gen, ref, **kwargs)
+                for gen, ref in zip(generated_texts, reference_texts)
+            ]
 
 
 class CosineSimilarity(BaseMetric):
@@ -84,20 +95,20 @@ class CosineSimilarity(BaseMetric):
     Supports calculation for individual sentence pairs and for batches of sentences.
     """
 
-    def __init__(self, additional_params: Optional[Dict[str, Any]] = None):
+    def __init__(self, **kwargs: Any):
         """
         Initialize the Cosine Similarity metric.
 
-        :param additional_params: Additional parameters for the CountVectorizer, defaults to None
-        :type additional_params: Dict[str, Any], optional
+        :param kwargs: Parameters for the CountVectorizer
+        :type kwargs: Any
         """
-        self.vectorizer = CountVectorizer(**(additional_params or {}))
+        self.vectorizer = CountVectorizer(**kwargs)
 
-    def calculate(
+    def _single_calculate(
         self,
         generated_text: str,
         reference_text: str,
-        additional_params: Optional[Dict[str, Any]] = None,
+        **kwargs: Any,
     ) -> float:
         """
         Calculate the Cosine Similarity for a pair of generated and reference texts.
@@ -106,8 +117,8 @@ class CosineSimilarity(BaseMetric):
         :type generated_text: str
         :param reference_text: The reference text to compare against
         :type reference_text: str
-        :param additional_params: Additional parameters to pass to the `cosine_similarity` function, defaults to None
-        :type additional_params: Dict[str, Any], optional
+        :param kwargs: Additional parameters to pass to the `cosine_similarity` function, defaults to None
+        :type kwargs: Dict[str, Any], optional
         :return: The Cosine Similarity score
         :rtype: float
         """
@@ -117,22 +128,18 @@ class CosineSimilarity(BaseMetric):
         if not generated_text.strip() or not reference_text.strip():
             return 0.0
 
-        params = {}
-        if additional_params:
-            params.update(additional_params)
-
         vectors = self.vectorizer.fit_transform([generated_text, reference_text])
 
         # For entirely similar text, the cosine similarity might be slightly greater than 1 due to floating point precision
         # Hence, we clip the value to be in the range [0, 1]
-        similarity = cosine_similarity(vectors[0], vectors[1], **params)[0][0]
+        similarity = cosine_similarity(vectors[0], vectors[1], **kwargs)[0][0]
         return min(max(similarity, 0.0), 1.0)
 
-    def batch_calculate(
+    def _batch_calculate(
         self,
         generated_texts: Union[Iterable, np.ndarray, pd.Series],
         reference_texts: Union[Iterable, np.ndarray, pd.Series],
-        additional_params: Optional[Dict[str, Any]] = None,
+        **kwargs: Any,
     ) -> Union[np.ndarray, pd.Series, List[float]]:
         """
         Calculate Cosine Similarity for a batch of generated and reference texts.
@@ -141,18 +148,15 @@ class CosineSimilarity(BaseMetric):
         :type generated_texts: Union[Iterable, np.ndarray, pd.Series]
         :param reference_texts: Reference texts
         :type reference_texts: Union[Iterable, np.ndarray, pd.Series]
-        :param additional_params: Additional parameters for the `cosine_similarity` function, defaults to None
-        :type additional_params: Dict[str, Any], optional
+        :param kwargs: Additional parameters for the `cosine_similarity` function, defaults to None
+        :type kwargs: Dict[str, Any], optional
         :return: A list, numpy array, or pandas Series of Cosine Similarity scores
         :rtype: Union[np.ndarray, pd.Series, List[float]]
         """
 
-        gen_texts = to_iterable(generated_texts)
-        ref_texts = to_iterable(reference_texts)
-
         # Convert to lists for easier manipulation
-        gen_list = list(gen_texts)
-        ref_list = list(ref_texts)
+        gen_list = list(generated_texts)
+        ref_list = list(reference_texts)
 
         # Handle empty strings for each pair
         results = []
@@ -166,12 +170,8 @@ class CosineSimilarity(BaseMetric):
                 results.append(0.0)  # One empty - no match
             else:
                 # Both non-empty - calculate similarity
-                params = {}
-                if additional_params:
-                    params.update(additional_params)
-
                 vectors = self.vectorizer.fit_transform([gen_list[i], ref_list[i]])
-                similarity = cosine_similarity(vectors[0], vectors[1], **params)[0][0]
+                similarity = cosine_similarity(vectors[0], vectors[1], **kwargs)[0][0]
                 results.append(min(max(similarity, 0.0), 1.0))  # Clip to [0, 1]
 
         # Return results in the appropriate format
@@ -197,12 +197,12 @@ class LevenshteinDistance(BaseMetric):
         """Initialize the Levenshtein Distance metric."""
         pass
 
-    def calculate(
+    def _single_calculate(
         self,
         generated_text: str,
         reference_text: str,
         calculate_ratio: bool = True,
-        additional_params: Optional[Dict[str, Any]] = None,
+        **kwargs: Any,
     ) -> float:
         """
         Calculate the Levenshtein Distance for a pair of generated and reference texts.
@@ -214,25 +214,22 @@ class LevenshteinDistance(BaseMetric):
         :param calculate_ratio: Whether to calculate the ratio of the distance to the length of the longer string, defaults to True.
             If True, returns the ratio, else returns the distance.
         :type calculate_ratio: bool, optional
-        :param additional_params: Additional parameters for calculation, defaults to None
-        :type additional_params: Dict[str, Any], optional
+        :param kwargs: Additional parameters for calculation.
+        :type kwargs: Dict[str, Any], optional
         :return: The Levenshtein Distance or Ratio score
         :rtype: float
         """
-        params = {}
-        if additional_params:
-            params.update(additional_params)
 
         if calculate_ratio:
-            return ratio(generated_text, reference_text, **params)
-        return distance(generated_text, reference_text, **params)
+            return ratio(generated_text, reference_text, **kwargs)
+        return distance(generated_text, reference_text, **kwargs)
 
-    def batch_calculate(
+    def _batch_calculate(
         self,
         generated_texts: Union[Iterable, np.ndarray, pd.Series],
         reference_texts: Union[Iterable, np.ndarray, pd.Series],
         calculate_ratio: bool = True,
-        additional_params: Optional[Dict[str, Any]] = None,
+        **kwargs: Any,
     ) -> Union[np.ndarray, pd.Series, List[float]]:
         """
         Calculate Levenshtein Distance for a batch of generated and reference texts.
@@ -244,35 +241,39 @@ class LevenshteinDistance(BaseMetric):
         :param calculate_ratio: Whether to calculate the ratio of the distance to the length of the longer string, defaults to True.
             If True, returns the ratio, else returns the distance.
         :type calculate_ratio: bool, optional
-        :param additional_params: Additional parameters for calculation, defaults to None
-        :type additional_params: Dict[str, Any], optional
+        :param kwargs: Additional parameters for Levenshtein functions
         :return: A list, numpy array, or pandas Series of Levenshtein Distance or Ratio scores
         :rtype: Union[np.ndarray, pd.Series, List[float]]
         """
-        gen_texts = to_iterable(generated_texts)
-        ref_texts = to_iterable(reference_texts)
 
-        params = {}
-        if additional_params:
-            params.update(additional_params)
-
-        if isinstance(gen_texts, np.ndarray) and isinstance(ref_texts, np.ndarray):
+        if isinstance(generated_texts, np.ndarray) and isinstance(
+            reference_texts, np.ndarray
+        ):
             return np.array(
                 [
-                    self.calculate(gen, ref, calculate_ratio, params)
-                    for gen, ref in zip(gen_texts, ref_texts)
+                    self._single_calculate(
+                        gen, ref, calculate_ratio=calculate_ratio, **kwargs
+                    )
+                    for gen, ref in zip(generated_texts, reference_texts)
                 ]
             )
 
-        elif isinstance(gen_texts, pd.Series) and isinstance(ref_texts, pd.Series):
-            return gen_texts.combine(
-                ref_texts, lambda g, r: self.calculate(g, r, calculate_ratio, params)
+        elif isinstance(generated_texts, pd.Series) and isinstance(
+            reference_texts, pd.Series
+        ):
+            return generated_texts.combine(
+                reference_texts,
+                lambda g, r: self._single_calculate(
+                    g, r, calculate_ratio=calculate_ratio, **kwargs
+                ),
             )
 
         else:
             return [
-                self.calculate(gen, ref, calculate_ratio, params)
-                for gen, ref in zip(gen_texts, ref_texts)
+                self._single_calculate(
+                    gen, ref, calculate_ratio=calculate_ratio, **kwargs
+                )
+                for gen, ref in zip(generated_texts, reference_texts)
             ]
 
 
@@ -288,11 +289,11 @@ class SequenceMatcherSimilarity(BaseMetric):
         """Initialize the SequenceMatcher Similarity metric"""
         pass
 
-    def calculate(
+    def _single_calculate(
         self,
         generated_text: str,
         reference_text: str,
-        additional_params: Optional[Dict[str, Any]] = None,
+        **kwargs: Any,
     ) -> float:
         """
         Calculate the SequenceMatcher Similarity ratio for a pair of generated and reference texts.
@@ -301,24 +302,20 @@ class SequenceMatcherSimilarity(BaseMetric):
         :type generated_text: str
         :param reference_text: The reference text to compare against
         :type reference_text: str
-        :param additional_params: Additional parameters for SequenceMatcher, defaults to None
-        :type additional_params: Dict[str, Any], optional
+        :param kwargs: Additional parameters for SequenceMatcher
         :return: The SequenceMatcher Similarity ratio
         :rtype: float
         """
-        params = {}
-        if additional_params:
-            params.update(additional_params)
 
-        s_matcher = SequenceMatcher(None, generated_text, reference_text, **params)
+        s_matcher = SequenceMatcher(None, generated_text, reference_text, **kwargs)
 
         return s_matcher.ratio()
 
-    def batch_calculate(
+    def _batch_calculate(
         self,
         generated_texts: Union[Iterable, np.ndarray, pd.Series],
         reference_texts: Union[Iterable, np.ndarray, pd.Series],
-        additional_params: Optional[Dict[str, Any]] = None,
+        **kwargs: Any,
     ) -> Union[np.ndarray, pd.Series, List[float]]:
         """
         Calculate SequenceMatcher Similarity for a batch of generated and reference texts.
@@ -327,34 +324,30 @@ class SequenceMatcherSimilarity(BaseMetric):
         :type generated_texts: Union[Iterable, np.ndarray, pd.Series]
         :param reference_texts: Reference texts
         :type reference_texts: Union[Iterable, np.ndarray, pd.Series]
-        :param additional_params: Additional parameters to pass to SequenceMatcher, defaults to None
-        :type additional_params: Dict[str, Any], optional
+        :param kwargs: Additional parameters for SequenceMatcher
         :return: A list, numpy array, or pandas Series of SequenceMatcher Similarity ratios
         :rtype: Union[np.ndarray, pd.Series, List[float]]
         """
 
-        gen_texts = to_iterable(generated_texts)
-        ref_texts = to_iterable(reference_texts)
-
-        params = {}
-        if additional_params:
-            params.update(additional_params)
-
-        if isinstance(gen_texts, np.ndarray) and isinstance(ref_texts, np.ndarray):
+        if isinstance(generated_texts, np.ndarray) and isinstance(
+            reference_texts, np.ndarray
+        ):
             return np.array(
                 [
-                    self.calculate(gen, ref, params)
-                    for gen, ref in zip(gen_texts, ref_texts)
+                    self._single_calculate(gen, ref, **kwargs)
+                    for gen, ref in zip(generated_texts, reference_texts)
                 ]
             )
 
-        elif isinstance(gen_texts, pd.Series) and isinstance(ref_texts, pd.Series):
-            return gen_texts.combine(
-                ref_texts, lambda g, r: self.calculate(g, r, params)
+        elif isinstance(generated_texts, pd.Series) and isinstance(
+            reference_texts, pd.Series
+        ):
+            return generated_texts.combine(
+                reference_texts, lambda g, r: self._single_calculate(g, r, **kwargs)
             )
 
         else:
             return [
-                self.calculate(gen, ref, params)
-                for gen, ref in zip(gen_texts, ref_texts)
+                self._single_calculate(gen, ref, **kwargs)
+                for gen, ref in zip(generated_texts, reference_texts)
             ]

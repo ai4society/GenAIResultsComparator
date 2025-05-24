@@ -81,7 +81,7 @@ class TestBERTScore:
         if not gen_filtered:  # Skip if only empty strings remain
             pytest.skip("Skipping batch test with only empty strings")
 
-        scores = bert_scorer_default.batch_calculate(gen_filtered, ref_filtered)
+        scores = bert_scorer_default.calculate(gen_filtered, ref_filtered)
         assert isinstance(scores, list)
         assert len(scores) == len(gen_filtered)
         assert all(isinstance(s, dict) for s in scores)
@@ -98,7 +98,7 @@ class TestBERTScore:
         if not gen_filtered:
             pytest.skip("Skipping batch test with only empty strings")
 
-        scores = bert_scorer_f1.batch_calculate(gen_filtered, ref_filtered)
+        scores = bert_scorer_f1.calculate(gen_filtered, ref_filtered)
         assert isinstance(scores, list)
         assert len(scores) == len(gen_filtered)
         assert all(
@@ -117,7 +117,7 @@ class TestBERTScore:
         if gen_filtered.size == 0:
             pytest.skip("Skipping batch test with only empty strings")
 
-        scores = bert_scorer_default.batch_calculate(gen_filtered, ref_filtered)
+        scores = bert_scorer_default.calculate(gen_filtered, ref_filtered)
         assert isinstance(scores, np.ndarray)
         assert len(scores) == len(gen_filtered)
         assert scores.dtype == object  # Array of dicts
@@ -132,7 +132,7 @@ class TestBERTScore:
         if gen_filtered.size == 0:
             pytest.skip("Skipping batch test with only empty strings")
 
-        scores = bert_scorer_f1.batch_calculate(gen_filtered, ref_filtered)
+        scores = bert_scorer_f1.calculate(gen_filtered, ref_filtered)
         assert isinstance(scores, np.ndarray)
         assert len(scores) == len(gen_filtered)
         assert all(
@@ -151,7 +151,7 @@ class TestBERTScore:
         if gen_filtered.empty:
             pytest.skip("Skipping batch test with only empty strings")
 
-        scores = bert_scorer_default.batch_calculate(gen_filtered, ref_filtered)
+        scores = bert_scorer_default.calculate(gen_filtered, ref_filtered)
         assert isinstance(scores, pd.Series)
         assert len(scores) == len(gen_filtered)
         assert scores.dtype == object  # Series of dicts
@@ -166,7 +166,7 @@ class TestBERTScore:
         if gen_filtered.empty:
             pytest.skip("Skipping batch test with only empty strings")
 
-        scores = bert_scorer_f1.batch_calculate(gen_filtered, ref_filtered)
+        scores = bert_scorer_f1.calculate(gen_filtered, ref_filtered)
         assert isinstance(scores, pd.Series)
         assert len(scores) == len(gen_filtered)
         assert all(

@@ -49,7 +49,7 @@ class TestJaccardSimilarity:
     def test_batch_calculate_list(
         self, jaccard_scorer, sample_generated_texts, sample_reference_texts
     ):
-        scores = jaccard_scorer.batch_calculate(
+        scores = jaccard_scorer.calculate(
             sample_generated_texts, sample_reference_texts
         )
         assert isinstance(scores, list)
@@ -60,7 +60,7 @@ class TestJaccardSimilarity:
     def test_batch_calculate_np(
         self, jaccard_scorer, sample_generated_texts_np, sample_reference_texts_np
     ):
-        scores = jaccard_scorer.batch_calculate(
+        scores = jaccard_scorer.calculate(
             sample_generated_texts_np, sample_reference_texts_np
         )
         assert isinstance(scores, np.ndarray)
@@ -70,7 +70,7 @@ class TestJaccardSimilarity:
     def test_batch_calculate_pd(
         self, jaccard_scorer, sample_generated_texts_pd, sample_reference_texts_pd
     ):
-        scores = jaccard_scorer.batch_calculate(
+        scores = jaccard_scorer.calculate(
             sample_generated_texts_pd, sample_reference_texts_pd
         )
         assert isinstance(scores, pd.Series)
@@ -121,9 +121,7 @@ class TestCosineSimilarity:
     def test_batch_calculate_list(
         self, cosine_scorer, sample_generated_texts, sample_reference_texts
     ):
-        scores = cosine_scorer.batch_calculate(
-            sample_generated_texts, sample_reference_texts
-        )
+        scores = cosine_scorer.calculate(sample_generated_texts, sample_reference_texts)
         assert isinstance(scores, list)
         assert len(scores) == len(sample_generated_texts)
         assert all(isinstance(s, float) for s in scores)
@@ -132,7 +130,7 @@ class TestCosineSimilarity:
     def test_batch_calculate_np(
         self, cosine_scorer, sample_generated_texts_np, sample_reference_texts_np
     ):
-        scores = cosine_scorer.batch_calculate(
+        scores = cosine_scorer.calculate(
             sample_generated_texts_np, sample_reference_texts_np
         )
         assert isinstance(scores, np.ndarray)
@@ -142,7 +140,7 @@ class TestCosineSimilarity:
     def test_batch_calculate_pd(
         self, cosine_scorer, sample_generated_texts_pd, sample_reference_texts_pd
     ):
-        scores = cosine_scorer.batch_calculate(
+        scores = cosine_scorer.calculate(
             sample_generated_texts_pd, sample_reference_texts_pd
         )
         assert isinstance(scores, pd.Series)
@@ -217,7 +215,7 @@ class TestLevenshteinDistance:
     def test_batch_calculate_ratio_list(
         self, levenshtein_scorer, sample_generated_texts, sample_reference_texts
     ):
-        scores = levenshtein_scorer.batch_calculate(
+        scores = levenshtein_scorer.calculate(
             sample_generated_texts, sample_reference_texts, calculate_ratio=True
         )
         assert isinstance(scores, list)
@@ -227,7 +225,7 @@ class TestLevenshteinDistance:
     def test_batch_calculate_ratio_np(
         self, levenshtein_scorer, sample_generated_texts_np, sample_reference_texts_np
     ):
-        scores = levenshtein_scorer.batch_calculate(
+        scores = levenshtein_scorer.calculate(
             sample_generated_texts_np, sample_reference_texts_np, calculate_ratio=True
         )
         assert isinstance(scores, np.ndarray)
@@ -237,7 +235,7 @@ class TestLevenshteinDistance:
     def test_batch_calculate_ratio_pd(
         self, levenshtein_scorer, sample_generated_texts_pd, sample_reference_texts_pd
     ):
-        scores = levenshtein_scorer.batch_calculate(
+        scores = levenshtein_scorer.calculate(
             sample_generated_texts_pd, sample_reference_texts_pd, calculate_ratio=True
         )
         assert isinstance(scores, pd.Series)
@@ -248,7 +246,7 @@ class TestLevenshteinDistance:
     def test_batch_calculate_distance_list(
         self, levenshtein_scorer, sample_generated_texts, sample_reference_texts
     ):
-        scores = levenshtein_scorer.batch_calculate(
+        scores = levenshtein_scorer.calculate(
             sample_generated_texts, sample_reference_texts, calculate_ratio=False
         )
         assert isinstance(scores, list)
@@ -297,7 +295,7 @@ class TestSequenceMatcherSimilarity:
     def test_batch_calculate_list(
         self, seqmatch_scorer, sample_generated_texts, sample_reference_texts
     ):
-        scores = seqmatch_scorer.batch_calculate(
+        scores = seqmatch_scorer.calculate(
             sample_generated_texts, sample_reference_texts
         )
         assert isinstance(scores, list)
@@ -307,7 +305,7 @@ class TestSequenceMatcherSimilarity:
     def test_batch_calculate_np(
         self, seqmatch_scorer, sample_generated_texts_np, sample_reference_texts_np
     ):
-        scores = seqmatch_scorer.batch_calculate(
+        scores = seqmatch_scorer.calculate(
             sample_generated_texts_np, sample_reference_texts_np
         )
         assert isinstance(scores, np.ndarray)
@@ -317,7 +315,7 @@ class TestSequenceMatcherSimilarity:
     def test_batch_calculate_pd(
         self, seqmatch_scorer, sample_generated_texts_pd, sample_reference_texts_pd
     ):
-        scores = seqmatch_scorer.batch_calculate(
+        scores = seqmatch_scorer.calculate(
             sample_generated_texts_pd, sample_reference_texts_pd
         )
         assert isinstance(scores, pd.Series)

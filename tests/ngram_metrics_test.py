@@ -42,7 +42,7 @@ class TestBLEU:
     def test_batch_calculate_list_corpus(
         self, bleu_scorer, sample_generated_texts, sample_reference_texts
     ):
-        scores = bleu_scorer.batch_calculate(
+        scores = bleu_scorer.calculate(
             sample_generated_texts, sample_reference_texts, use_corpus_bleu=True
         )
         assert isinstance(scores, float)
@@ -51,7 +51,7 @@ class TestBLEU:
     def test_batch_calculate_list_sentence(
         self, bleu_scorer, sample_generated_texts, sample_reference_texts
     ):
-        scores = bleu_scorer.batch_calculate(
+        scores = bleu_scorer.calculate(
             sample_generated_texts, sample_reference_texts, use_corpus_bleu=False
         )
         assert isinstance(scores, list)
@@ -62,7 +62,7 @@ class TestBLEU:
     def test_batch_calculate_np_corpus(
         self, bleu_scorer, sample_generated_texts_np, sample_reference_texts_np
     ):
-        scores = bleu_scorer.batch_calculate(
+        scores = bleu_scorer.calculate(
             sample_generated_texts_np, sample_reference_texts_np, use_corpus_bleu=True
         )
         assert isinstance(scores, float)
@@ -73,7 +73,7 @@ class TestBLEU:
         sample_generated_texts_np,
         sample_reference_texts_np,
     ):
-        scores = bleu_scorer.batch_calculate(
+        scores = bleu_scorer.calculate(
             sample_generated_texts_np, sample_reference_texts_np, use_corpus_bleu=False
         )
         assert isinstance(scores, np.ndarray)
@@ -89,7 +89,7 @@ class TestBLEU:
     def test_batch_calculate_pd_corpus(
         self, bleu_scorer, sample_generated_texts_pd, sample_reference_texts_pd
     ):
-        scores = bleu_scorer.batch_calculate(
+        scores = bleu_scorer.calculate(
             sample_generated_texts_pd, sample_reference_texts_pd, use_corpus_bleu=True
         )
         assert isinstance(scores, float)
@@ -100,7 +100,7 @@ class TestBLEU:
         sample_generated_texts_pd,
         sample_reference_texts_pd,
     ):
-        scores = bleu_scorer.batch_calculate(
+        scores = bleu_scorer.calculate(
             sample_generated_texts_pd, sample_reference_texts_pd, use_corpus_bleu=False
         )
         assert isinstance(scores, pd.Series)
@@ -183,7 +183,7 @@ class TestROUGE:
     def test_batch_calculate_list_default(
         self, rouge_scorer_default, sample_generated_texts, sample_reference_texts
     ):
-        scores = rouge_scorer_default.batch_calculate(
+        scores = rouge_scorer_default.calculate(
             sample_generated_texts, sample_reference_texts
         )
         assert isinstance(scores, list)
@@ -194,7 +194,7 @@ class TestROUGE:
     def test_batch_calculate_list_single(
         self, rouge_scorer_l, sample_generated_texts, sample_reference_texts
     ):
-        scores = rouge_scorer_l.batch_calculate(
+        scores = rouge_scorer_l.calculate(
             sample_generated_texts, sample_reference_texts
         )
         assert isinstance(scores, list)
@@ -204,7 +204,7 @@ class TestROUGE:
     def test_batch_calculate_np_default(
         self, rouge_scorer_default, sample_generated_texts_np, sample_reference_texts_np
     ):
-        scores = rouge_scorer_default.batch_calculate(
+        scores = rouge_scorer_default.calculate(
             sample_generated_texts_np, sample_reference_texts_np
         )
         assert isinstance(scores, np.ndarray)
@@ -214,7 +214,7 @@ class TestROUGE:
     def test_batch_calculate_np_single(
         self, rouge_scorer_l, sample_generated_texts_np, sample_reference_texts_np
     ):
-        scores = rouge_scorer_l.batch_calculate(
+        scores = rouge_scorer_l.calculate(
             sample_generated_texts_np, sample_reference_texts_np
         )
         assert isinstance(scores, np.ndarray)
@@ -224,7 +224,7 @@ class TestROUGE:
     def test_batch_calculate_pd_default(
         self, rouge_scorer_default, sample_generated_texts_pd, sample_reference_texts_pd
     ):
-        scores = rouge_scorer_default.batch_calculate(
+        scores = rouge_scorer_default.calculate(
             sample_generated_texts_pd, sample_reference_texts_pd
         )
         assert isinstance(scores, pd.Series)
@@ -234,7 +234,7 @@ class TestROUGE:
     def test_batch_calculate_pd_single(
         self, rouge_scorer_l, sample_generated_texts_pd, sample_reference_texts_pd
     ):
-        scores = rouge_scorer_l.batch_calculate(
+        scores = rouge_scorer_l.calculate(
             sample_generated_texts_pd, sample_reference_texts_pd
         )
         assert isinstance(scores, pd.Series)
@@ -296,7 +296,7 @@ class TestJSDivergence:
     def test_batch_calculate_list(
         self, js_divergence_scorer, sample_generated_texts, sample_reference_texts
     ):
-        scores = js_divergence_scorer.batch_calculate(
+        scores = js_divergence_scorer.calculate(
             sample_generated_texts, sample_reference_texts
         )
         assert isinstance(scores, list)
@@ -307,7 +307,7 @@ class TestJSDivergence:
     def test_batch_calculate_np(
         self, js_divergence_scorer, sample_generated_texts_np, sample_reference_texts_np
     ):
-        scores = js_divergence_scorer.batch_calculate(
+        scores = js_divergence_scorer.calculate(
             sample_generated_texts_np, sample_reference_texts_np
         )
         assert isinstance(scores, np.ndarray)
@@ -317,7 +317,7 @@ class TestJSDivergence:
     def test_batch_calculate_pd(
         self, js_divergence_scorer, sample_generated_texts_pd, sample_reference_texts_pd
     ):
-        scores = js_divergence_scorer.batch_calculate(
+        scores = js_divergence_scorer.calculate(
             sample_generated_texts_pd, sample_reference_texts_pd
         )
         assert isinstance(scores, pd.Series)

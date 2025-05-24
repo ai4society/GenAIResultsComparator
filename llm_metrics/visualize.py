@@ -30,7 +30,7 @@ except ImportError:
     # If either import in this block fails, both are set to None,
     # maintaining the original logic.
     plt = None
-    pi = None
+    pi = 3.14159
 
 try:
     import numpy as _np_temp  # Import numpy using a temporary alias
@@ -325,8 +325,4 @@ def plot_radar_comparison(
         current_axis.set_title(title_val, size=16, y=1.1)
 
     plt.tight_layout()
-    return current_axis
-    return current_axis
-    plt.tight_layout()
-    return current_axis
     return current_axis
