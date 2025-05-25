@@ -1,8 +1,9 @@
 from collections import Counter
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Union, Optional
 
 import numpy as np
 import pandas as pd
+import os
 
 
 def to_iterable(obj: Any) -> Union[np.ndarray, pd.Series, List]:
@@ -130,3 +131,82 @@ def prepare_results_dataframe(
         return pd.DataFrame(columns=[model_col, metric_col, score_col])
 
     return pd.DataFrame(records)
+
+
+def generate_deltas_csv(
+    threshold_results: Union[Dict[str, Dict[str, Any]], List[Dict[str, Dict[str, Any]]]],
+    generated_texts: Optional[Union[str, List[str]]] = None,
+    reference_texts: Optional[Union[str, List[str]]] = None,
+    output_csv_path: Optional[str] = None,
+) -> None:
+    """
+    Generate a CSV file from threshold function outputs with optional text strings.
+
+    :param threshold_results: Output from apply_thresholds (handles both single and batch)
+        Single: {"BLEU": {"score": 0.6, "threshold_applied": 0.5, "passed_threshold": True}, ...}
+        Batch: [{"BLEU": {"score": 0.6, ...}, ...}, {"BLEU": {"score": 0.4, ...}, ...}]
+    :param generated_texts: Optional generated text string(s)
+    :param reference_texts: Optional reference text string(s)
+    :param output_csv_path: Optional path to save the CSV file
+    """
+
+    if output_csv_path is None:
+        output_csv_path = os.path.join(os.getcwd(), "threshold_analysis_report.csv")
+        print(f"Output CSV path not provided. Defaulting to: {output_csv_path}")
+
+    # Normalize generated and reference texts to lists
+    gen_texts_list: Optional[List[str]] = None
+    ref_texts_list: Optional[List[str]] = None
+    results_list: Optional[List[Dict[str, Any]]] = None
+
+    if isinstance(threshold_results, dict):
+        # Single pair
+        results_list = [threshold_results]
+        if generated_texts is not None:
+            gen_texts_list = (
+                [generated_texts] if isinstance(generated_texts, str) else generated_texts
+            )
+        if reference_texts is not None:
+            ref_texts_list = (
+                [reference_texts] if isinstance(reference_texts, str) else reference_texts
+            )
+    else:
+        # Already a list
+        results_list = threshold_results
+        if isinstance(generated_texts, list):
+            gen_texts_list = generated_texts
+        if isinstance(reference_texts, list):
+            ref_texts_list = reference_texts
+
+    report_data: List[Dict[str, Any]] = []
+
+    for idx, item_results in enumerate(results_list):
+        row_data: Dict[str, Any] = {}
+
+        # Adding text strings if provided
+        if gen_texts_list is not None and idx < len(gen_texts_list):
+            row_data["generated_text"] = str(gen_texts_list[idx])
+        if ref_texts_list is not None and idx < len(ref_texts_list):
+            row_data["reference_text"] = str(ref_texts_list[idx])
+
+        # Adding metric scores and pass/fail status
+        for metric_name, details in item_results.items():
+            row_data[f"{metric_name}_score"] = details.get("score")
+            row_data[f"{metric_name}_passed"] = details.get("passed_threshold")
+
+        report_data.append(row_data)
+
+    if not report_data:
+        print("Warning: No data to write to CSV.")
+        return
+
+    # Creating DataFrame
+    df = pd.DataFrame(report_data)
+
+    # Create output directory for the CSV file if it doesn't exist
+    output_dir = os.path.dirname(output_csv_path)
+    if output_dir and not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+
+    df.to_csv(output_csv_path, index=False)
+    print(f"CSV report generated at: {output_csv_path}")
