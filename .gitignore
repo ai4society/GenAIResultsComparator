@@ -44,6 +44,3 @@ build/
 
 .DS_Store
 own/
-llm_metrics/extensions.py
-examples/llm_faq_2/
-examples/roostai_faq/

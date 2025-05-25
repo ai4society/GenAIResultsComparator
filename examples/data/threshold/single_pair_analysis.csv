@@ -1,0 +1,2 @@
+generated_text,reference_text,BLEU_score,BLEU_passed,ROUGE_score,ROUGE_passed,JSD_score,JSD_passed,BERTScore_score,BERTScore_passed,Jaccard_score,Jaccard_passed,Cosine_score,Cosine_passed,Levenshtein_score,Levenshtein_passed,SequenceMatcher_score,SequenceMatcher_passed
+The quick brown fox jumps over the lazy dog,A quick brown fox jumped over a lazy dog,0.1561969968460128,False,0.7777777777777778,True,0.519324371133039,False,0.910301923751831,True,0.6,True,0.6837634587578276,True,0.8674698795180723,True,0.8674698795180723,True
