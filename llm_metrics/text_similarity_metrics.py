@@ -63,9 +63,7 @@ class JaccardSimilarity(BaseMetric):
         :rtype: Union[np.ndarray, pd.Series, List[float]]
         """
 
-        if isinstance(generated_texts, np.ndarray) and isinstance(
-            reference_texts, np.ndarray
-        ):
+        if isinstance(generated_texts, np.ndarray) and isinstance(reference_texts, np.ndarray):
             return np.array(
                 [
                     self._single_calculate(gen, ref, **kwargs)
@@ -73,9 +71,7 @@ class JaccardSimilarity(BaseMetric):
                 ]
             )
 
-        elif isinstance(generated_texts, pd.Series) and isinstance(
-            reference_texts, pd.Series
-        ):
+        elif isinstance(generated_texts, pd.Series) and isinstance(reference_texts, pd.Series):
             return generated_texts.combine(
                 reference_texts, lambda g, r: self._single_calculate(g, r, **kwargs)
             )
@@ -175,13 +171,9 @@ class CosineSimilarity(BaseMetric):
                 results.append(min(max(similarity, 0.0), 1.0))  # Clip to [0, 1]
 
         # Return results in the appropriate format
-        if isinstance(generated_texts, np.ndarray) and isinstance(
-            reference_texts, np.ndarray
-        ):
+        if isinstance(generated_texts, np.ndarray) and isinstance(reference_texts, np.ndarray):
             return np.array(results)
-        elif isinstance(generated_texts, pd.Series) and isinstance(
-            reference_texts, pd.Series
-        ):
+        elif isinstance(generated_texts, pd.Series) and isinstance(reference_texts, pd.Series):
             return pd.Series(results, index=generated_texts.index)
         else:
             return results
@@ -246,21 +238,15 @@ class LevenshteinDistance(BaseMetric):
         :rtype: Union[np.ndarray, pd.Series, List[float]]
         """
 
-        if isinstance(generated_texts, np.ndarray) and isinstance(
-            reference_texts, np.ndarray
-        ):
+        if isinstance(generated_texts, np.ndarray) and isinstance(reference_texts, np.ndarray):
             return np.array(
                 [
-                    self._single_calculate(
-                        gen, ref, calculate_ratio=calculate_ratio, **kwargs
-                    )
+                    self._single_calculate(gen, ref, calculate_ratio=calculate_ratio, **kwargs)
                     for gen, ref in zip(generated_texts, reference_texts)
                 ]
             )
 
-        elif isinstance(generated_texts, pd.Series) and isinstance(
-            reference_texts, pd.Series
-        ):
+        elif isinstance(generated_texts, pd.Series) and isinstance(reference_texts, pd.Series):
             return generated_texts.combine(
                 reference_texts,
                 lambda g, r: self._single_calculate(
@@ -270,9 +256,7 @@ class LevenshteinDistance(BaseMetric):
 
         else:
             return [
-                self._single_calculate(
-                    gen, ref, calculate_ratio=calculate_ratio, **kwargs
-                )
+                self._single_calculate(gen, ref, calculate_ratio=calculate_ratio, **kwargs)
                 for gen, ref in zip(generated_texts, reference_texts)
             ]
 
@@ -329,9 +313,7 @@ class SequenceMatcherSimilarity(BaseMetric):
         :rtype: Union[np.ndarray, pd.Series, List[float]]
         """
 
-        if isinstance(generated_texts, np.ndarray) and isinstance(
-            reference_texts, np.ndarray
-        ):
+        if isinstance(generated_texts, np.ndarray) and isinstance(reference_texts, np.ndarray):
             return np.array(
                 [
                     self._single_calculate(gen, ref, **kwargs)
@@ -339,9 +321,7 @@ class SequenceMatcherSimilarity(BaseMetric):
                 ]
             )
 
-        elif isinstance(generated_texts, pd.Series) and isinstance(
-            reference_texts, pd.Series
-        ):
+        elif isinstance(generated_texts, pd.Series) and isinstance(reference_texts, pd.Series):
             return generated_texts.combine(
                 reference_texts, lambda g, r: self._single_calculate(g, r, **kwargs)
             )

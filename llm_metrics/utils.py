@@ -108,9 +108,7 @@ def prepare_results_dataframe(
             if isinstance(score_value, dict):
                 for sub_metric, sub_score in score_value.items():
                     full_metric_name = f"{metric_name}_{sub_metric}"
-                    if isinstance(
-                        sub_score, (int, float)
-                    ):  # Ensure the final score is numeric
+                    if isinstance(sub_score, (int, float)):  # Ensure the final score is numeric
                         records.append(
                             {
                                 model_col: model_name,
@@ -136,9 +134,7 @@ def prepare_results_dataframe(
 
 
 def generate_deltas_csv(
-    threshold_results: Union[
-        Dict[str, Dict[str, Any]], List[Dict[str, Dict[str, Any]]]
-    ],
+    threshold_results: Union[Dict[str, Dict[str, Any]], List[Dict[str, Dict[str, Any]]]],
     generated_texts: Optional[Union[str, List[str]]] = None,
     reference_texts: Optional[Union[str, List[str]]] = None,
     output_csv_path: Optional[str] = None,
@@ -168,15 +164,11 @@ def generate_deltas_csv(
         results_list = [threshold_results]
         if generated_texts is not None:
             gen_texts_list = (
-                [generated_texts]
-                if isinstance(generated_texts, str)
-                else generated_texts
+                [generated_texts] if isinstance(generated_texts, str) else generated_texts
             )
         if reference_texts is not None:
             ref_texts_list = (
-                [reference_texts]
-                if isinstance(reference_texts, str)
-                else reference_texts
+                [reference_texts] if isinstance(reference_texts, str) else reference_texts
             )
     else:
         # Already a list

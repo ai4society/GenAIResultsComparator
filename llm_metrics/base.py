@@ -77,50 +77,38 @@ class BaseMetric(ABC):
         is_ref_str = isinstance(reference_texts, str)
 
         if generated_texts is None or reference_texts is None:
-            raise ValueError(
-                "Both generated_texts and reference_texts must be provided."
-            )
+            raise ValueError("Both generated_texts and reference_texts must be provided.")
 
         # Converting inputs to iterable format
         try:
             generated_iterable = to_iterable(generated_texts)
             reference_iterable = to_iterable(reference_texts)
         except (TypeError, ValueError) as e:
-            raise TypeError(
-                f"Inputs could not be converted to suitable iterables for metrics: {e}"
-            )
+            raise TypeError(f"Inputs could not be converted to suitable iterables for metrics: {e}")
 
         len_gen = len(generated_iterable)
         len_ref = len(reference_iterable)
 
         if is_gen_str and is_ref_str:
             # If both are strings, call single_calculate
-            return self._single_calculate(
-                generated_iterable[0], reference_iterable[0], **kwargs
-            )
+            return self._single_calculate(generated_iterable[0], reference_iterable[0], **kwargs)
 
         elif is_gen_str and not is_ref_str:
             # If generated is a single string and reference is a list, expand
             # the single_generated text to match the number of references
             # and call batch_calculate.
             expanded_generated = [generated_iterable[0]] * len_ref
-            return self._batch_calculate(
-                expanded_generated, reference_iterable, **kwargs
-            )
+            return self._batch_calculate(expanded_generated, reference_iterable, **kwargs)
 
         elif not is_gen_str and is_ref_str:
             # If reference is a single string and generated is a list, expand
             # the single_reference text to match the number of generated texts
             # and call batch_calculate.
             expanded_reference = [reference_iterable[0]] * len_gen
-            return self._batch_calculate(
-                generated_iterable, expanded_reference, **kwargs
-            )
+            return self._batch_calculate(generated_iterable, expanded_reference, **kwargs)
 
         elif not is_gen_str and not is_ref_str:
-            return self._batch_calculate(
-                generated_iterable, reference_iterable, **kwargs
-            )
+            return self._batch_calculate(generated_iterable, reference_iterable, **kwargs)
 
         else:
             raise RuntimeError(
