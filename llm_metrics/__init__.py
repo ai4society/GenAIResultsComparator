@@ -30,7 +30,6 @@ __all__ = [
     "plot_radar_comparison",
     "prepare_results_dataframe",
     "apply_thresholds",
-    "apply_thresholds_to_batch",
     "get_default_thresholds",
     "generate_deltas_csv",
     "DEFAULT_THRESHOLD",
