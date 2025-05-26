@@ -4,33 +4,23 @@ This directory contains example notebooks demonstrating various use cases of the
 
 ## Available Examples
 
-### 1. Introduction to LLM-Metrics (`quickstart/`)
+### 1. `quickstart.ipynb`: Introduction to LLM-Metrics
+
 - Basic introduction to the library
-- Detailed walkthrough of BLEU score implementation
-- Best practices and common pitfalls
 - Recommended for first-time users
 
-### 2. LLM-Aware Metrics (`llm_aware_metrics/`)
-- Advanced metrics specifically designed for LLM output evaluation
-- Demonstrates how to:
-  - Compare LLM outputs while considering their prompts
-  - Validate structured outputs against schemas
-  - Measure prompt-response alignment
-- Features three detailed example notebooks:
-  - Basic prompt-aware comparison
-  - Schema-based output validation
-  - Alignment scoring
-- Includes implementation code and comprehensive documentation
-- Perfect for users working with LLM-generated content
+### 2. `bleu-example.ipynb`: Detailed Introduction to BLEU
 
-### 3. LLM FAQ Analysis (`llm_faq/`)
-- Comparison of responses from different LLMs on FAQ datasets
-- Demonstrates how to:
-  - Evaluate consistency across multiple LLM responses
-  - Compare responses from different models
-  - Analyze semantic similarity in FAQ contexts
-- Uses multiple metrics including BLEU, BERTScore, and semantic similarity
-- Includes sample FAQ dataset and responses
+- Detailed walkthrough of BLEU score implementation
+
+### 3. `DeepSeek-example.ipynb`: Testing _DeepSeek R1_
+
+- Comparing DeepSeek's models to other LLMs.
+- **Note**: All results remove the `<think>` tags for the DeepSeek models.
+
+### 4. Advanced Examples
+
+The `advanced-examples` directory contains advances notebooks showcasing more complex use cases and metrics. These examples are intended for users who are already familiar with the basics of LLM-Metrics. Please refer to the README.md file in that directory for details.
 
 ## Contributing New Examples
 
