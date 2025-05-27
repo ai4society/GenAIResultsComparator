@@ -3,9 +3,9 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "llm_metrics"
+name = "GAICo"
 version = "0.1.0"
-description = "A Python library for reference-based metrics to compare generated text with ground truth text"
+description = "A Python library for reference-based metrics to compare generated LLM text with ground truth text"
 authors = [{ name = "AI4Society", email = "ai4societyteam@gmail.com" }]
 requires-python = ">=3.10, <3.13"
 readme = "README.md"
@@ -76,6 +76,6 @@ skip-magic-trailing-comma = false
 line-ending = "auto"
 
 [tool.hatch.build.targets.wheel]
-# This tells hatch to package the `llm_metrics` directory
+# This tells hatch to package the `gaico` directory
 # as the root of the library in the wheel.
-packages = ["llm_metrics"]
+packages = ["gaico"]

@@ -72,7 +72,7 @@ beautifulsoup4==4.13.4 \
 bert-score==0.3.13 \
     --hash=sha256:8ffe5838eac8cdd988b8b1a896af7f49071188c8c011a1ed160d71a9899a2ba4 \
     --hash=sha256:bbbb4c7fcdaa46d7681aff49f37f96faa09ed74e1b150e659bdc6b58a66989b9
-    # via llm-metrics
+    # via gaico
 bleach==6.2.0 \
     --hash=sha256:117d9c6097a7c3d22fd578fcd8d35ff1e125df6736f554da4e432fdd63f31e5e \
     --hash=sha256:123e894118b8a599fd80d3ec1a6d4cc7ce4e5882b1317a7e1ba69b56e95f991f
@@ -696,7 +696,7 @@ levenshtein==0.27.1 \
     --hash=sha256:fcc08effe77fec0bc5b0f6f10ff20b9802b961c4a69047b5499f383119ddbe24 \
     --hash=sha256:ff18d78c5c16bea20876425e1bf5af56c25918fb01bc0f2532db1317d4c0e157 \
     --hash=sha256:ff5afb78719659d353055863c7cb31599fbea6865c0890b2d840ee40214b3ddb
-    # via llm-metrics
+    # via gaico
 markdown-it-py==3.0.0 \
     --hash=sha256:355216845c60bd96232cd8d8c40e8f9765cc86f46880e43a8fd22dc1a1a8cab1 \
     --hash=sha256:e3f60a94fa066dc52ec76661e37c851cb232d92f9886b15cb560aaada2df8feb
@@ -859,7 +859,7 @@ nltk==3.9.1 \
     --hash=sha256:4fa26829c5b00715afe3061398a8989dc643b92ce7dd93fb4585a70930d168a1 \
     --hash=sha256:87d127bd3de4bd89a4f81265e5fa59cb1b199b27440175370f7417d2bc7ae868
     # via
-    #   llm-metrics
+    #   gaico
     #   rouge-score
 nodeenv==1.9.1 \
     --hash=sha256:6ec12890a2dab7946721edbfbcd91f3319c6ccc9aec47be7c7e6b7011ee6645f \
@@ -914,7 +914,7 @@ numpy==2.2.5 \
     # via
     #   bert-score
     #   contourpy
-    #   llm-metrics
+    #   gaico
     #   matplotlib
     #   pandas
     #   rouge-score
@@ -1027,7 +1027,7 @@ pandas==2.2.3 \
     --hash=sha256:fffb8ae78d8af97f849404f21411c95062db1496aeb3e56f146f0355c9989319
     # via
     #   bert-score
-    #   llm-metrics
+    #   gaico
 pandocfilters==1.5.1 \
     --hash=sha256:002b4a555ee4ebc03f8b66307e287fa492e4a77b4ea14d3f934328297bb4939e \
     --hash=sha256:93be382804a9cdb0a7267585f157e5d1731bbe5545a85b268d6f5fe6232de2bc
@@ -1463,7 +1463,7 @@ roman-numerals-py==3.1.0 ; python_full_version >= '3.11' \
     # via sphinx
 rouge-score==0.1.2 \
     --hash=sha256:c7d4da2683e68c9abf0135ef915d63a46643666f848e558a1b9f7ead17ff0f04
-    # via llm-metrics
+    # via gaico
 rpds-py==0.25.1 \
     --hash=sha256:0317177b1e8691ab5879f4f33f4b6dc55ad3b344399e23df2e499de7b10a548d \
     --hash=sha256:048893e902132fd6548a2e661fb38bf4896a89eea95ac5816cf443524a85556f \
@@ -1587,7 +1587,7 @@ scikit-learn==1.6.1 \
     --hash=sha256:dc4765af3386811c3ca21638f63b9cf5ecf66261cc4815c1db3f1e7dc7b79db2 \
     --hash=sha256:fa909b1a36e000a03c382aade0bd2063fd5680ff8b8e501660c0f59f021a6415
     # via
-    #   llm-metrics
+    #   gaico
     #   sentence-transformers
 scipy==1.15.3 \
     --hash=sha256:05dc6abcd105e1a29f95eada46d4a3f251743cfd7d3ae8ddb4088047f24ea477 \
@@ -1619,7 +1619,7 @@ scipy==1.15.3 \
     --hash=sha256:eae3cf522bc7df64b42cad3925c876e1b0b6c35c1337c93e12c0f366f55b0eaf \
     --hash=sha256:ed7284b21a7a0c8f1b6e5977ac05396c0d008b89e05498c8b7e8f4a1423bba0e
     # via
-    #   llm-metrics
+    #   gaico
     #   scikit-learn
     #   sentence-transformers
 secretstorage==3.3.3 ; platform_machine != 'ppc64le' and platform_machine != 's390x' and sys_platform == 'linux' \
@@ -1633,7 +1633,7 @@ send2trash==1.8.3 \
 sentence-transformers==4.1.0 \
     --hash=sha256:382a7f6be1244a100ce40495fb7523dbe8d71b3c10b299f81e6b735092b3b8ca \
     --hash=sha256:f125ffd1c727533e0eca5d4567de72f84728de8f7482834de442fd90c2c3d50b
-    # via llm-metrics
+    # via gaico
 setuptools==80.7.1 \
     --hash=sha256:ca5cc1069b85dc23070a6628e6bcecb3292acac802399c7f8edc0100619f9009 \
     --hash=sha256:f6ffc5f0142b1bd8d0ca94ee91b30c0ca862ffd50826da1ea85258a06fd94552

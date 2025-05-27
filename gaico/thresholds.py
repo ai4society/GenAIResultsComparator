@@ -45,9 +45,7 @@ def apply_thresholds(
         Batch: [{"BLEU": {"score": 0.6, ...}, ...}, {"BLEU": {"score": 0.4, ...}, ...}]
     """
 
-    current_threshold = (
-        thresholds if thresholds is not None else get_default_thresholds()
-    )
+    current_threshold = thresholds if thresholds is not None else get_default_thresholds()
 
     def single_result(
         result: Dict[str, Union[float, Any]],
@@ -93,9 +91,7 @@ def calculate_pass_fail_percent(
     :param thresholds: Dictionary of thresholds for each metric
     :return: Dictionary with metric names as keys and pass/fail statistics as values
     """
-    current_thresholds = (
-        thresholds if thresholds is not None else get_default_thresholds()
-    )
+    current_thresholds = thresholds if thresholds is not None else get_default_thresholds()
 
     if not results:
         return {}
@@ -124,12 +120,8 @@ def calculate_pass_fail_percent(
         metric_stats[metric_name] = {
             "total_passed": passed_count,
             "total_failed": failed_count,
-            "pass_percentage": (passed_count / total_items * 100)
-            if total_items > 0
-            else 0,
-            "fail_percentage": (failed_count / total_items * 100)
-            if total_items > 0
-            else 0,
+            "pass_percentage": (passed_count / total_items * 100) if total_items > 0 else 0,
+            "fail_percentage": (failed_count / total_items * 100) if total_items > 0 else 0,
         }
 
     return metric_stats

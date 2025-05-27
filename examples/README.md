@@ -1,4 +1,4 @@
-# GenAIResultsComparator Examples
+# GAICo Examples
 
 This directory contains example notebooks demonstrating various use cases of the LLM-Metrics library. Each example is designed to showcase practical applications and provide detailed guidance on using different metrics for specific scenarios.
 
