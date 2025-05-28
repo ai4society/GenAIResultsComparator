@@ -4,12 +4,11 @@ This directory contains example notebooks demonstrating various use cases of the
 
 ## Available Examples
 
-### 1. `quickstart.ipynb`: Introduction to LLM-Metrics
+### 1. `workflow.ipynb`: Workflow of GAICo
 
-- Basic introduction to the library
-- Recommended for first-time users
+- Detailed walkthrough of all functionality from the library
 
-### 2. `bleu-example.ipynb`: Detailed Introduction to BLEU
+### 2. `bleu-example.ipynb`: Introduction to BLEU
 
 - Detailed walkthrough of BLEU score implementation
 
