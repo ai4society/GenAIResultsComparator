@@ -185,9 +185,13 @@ class LevenshteinDistance(BaseMetric):
     It uses the `distance` and `ratio` functions from the `Levenshtein` package.
     """
 
-    def __init__(self):
-        """Initialize the Levenshtein Distance metric."""
-        pass
+    def __init__(self, calculate_ratio: bool = True):
+        """
+        Initialize the Levenshtein Distance metric.
+        :param calculate_ratio: Whether to calculate the ratio of the distance to the length of the longer string, defaults to True.
+        :type calculate_ratio: bool, optional
+        """
+        self.calculate_ratio = calculate_ratio
 
     def _single_calculate(
         self,
@@ -212,7 +216,7 @@ class LevenshteinDistance(BaseMetric):
         :rtype: float
         """
 
-        if calculate_ratio:
+        if calculate_ratio or self.calculate_ratio:
             return ratio(generated_text, reference_text, **kwargs)
         return distance(generated_text, reference_text, **kwargs)
 
@@ -237,11 +241,12 @@ class LevenshteinDistance(BaseMetric):
         :return: A list, numpy array, or pandas Series of Levenshtein Distance or Ratio scores
         :rtype: Union[np.ndarray, pd.Series, List[float]]
         """
+        self.calculate_ratio = calculate_ratio
 
         if isinstance(generated_texts, np.ndarray) and isinstance(reference_texts, np.ndarray):
             return np.array(
                 [
-                    self._single_calculate(gen, ref, calculate_ratio=calculate_ratio, **kwargs)
+                    self._single_calculate(gen, ref, calculate_ratio=self.calculate_ratio, **kwargs)
                     for gen, ref in zip(generated_texts, reference_texts)
                 ]
             )
@@ -250,13 +255,13 @@ class LevenshteinDistance(BaseMetric):
             return generated_texts.combine(
                 reference_texts,
                 lambda g, r: self._single_calculate(
-                    g, r, calculate_ratio=calculate_ratio, **kwargs
+                    g, r, calculate_ratio=self.calculate_ratio, **kwargs
                 ),
             )
 
         else:
             return [
-                self._single_calculate(gen, ref, calculate_ratio=calculate_ratio, **kwargs)
+                self._single_calculate(gen, ref, calculate_ratio=self.calculate_ratio, **kwargs)
                 for gen, ref in zip(generated_texts, reference_texts)
             ]
 
