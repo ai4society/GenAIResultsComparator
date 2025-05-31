@@ -1,9 +1,9 @@
+import os
 from collections import Counter
-from typing import Any, Dict, List, Union, Optional
+from typing import Any, Dict, List, Optional, Union
 
 import numpy as np
 import pandas as pd
-import os
 
 
 def to_iterable(obj: Any) -> Union[np.ndarray, pd.Series, List]:
@@ -133,14 +133,14 @@ def prepare_results_dataframe(
     return pd.DataFrame(records)
 
 
-def generate_deltas_csv(
+def generate_deltas_frame(
     threshold_results: Union[Dict[str, Dict[str, Any]], List[Dict[str, Dict[str, Any]]]],
     generated_texts: Optional[Union[str, List[str]]] = None,
     reference_texts: Optional[Union[str, List[str]]] = None,
     output_csv_path: Optional[str] = None,
-) -> None:
+) -> pd.DataFrame:
     """
-    Generate a CSV file from threshold function outputs with optional text strings.
+    Generate a Pandas DataFrame from threshold function outputs with optional text strings. If `output_csv_path` is provided, it saves the DataFrame to a CSV file.
 
     :param threshold_results: Output from apply_thresholds (handles both single and batch)
         Single: {"BLEU": {"score": 0.6, "threshold_applied": 0.5, "passed_threshold": True}, ...}
@@ -148,12 +148,9 @@ def generate_deltas_csv(
     :param generated_texts: Optional generated text string(s)
     :param reference_texts: Optional reference text string(s)
     :param output_csv_path: Optional path to save the CSV file
+    :return: A Pandas DataFrame containing the results
+    :rtype: pd.DataFrame
     """
-
-    if output_csv_path is None:
-        output_csv_path = os.path.join(os.getcwd(), "threshold_analysis_report.csv")
-        print(f"Output CSV path not provided. Defaulting to: {output_csv_path}")
-
     # Normalize generated and reference texts to lists
     gen_texts_list: Optional[List[str]] = None
     ref_texts_list: Optional[List[str]] = None
@@ -198,15 +195,20 @@ def generate_deltas_csv(
 
     if not report_data:
         print("Warning: No data to write to CSV.")
-        return
+        return pd.DataFrame(
+            columns=["generated_text", "reference_text", "metric_name", "score", "passed"]
+        )
 
     # Creating DataFrame
     df = pd.DataFrame(report_data)
 
-    # Create output directory for the CSV file if it doesn't exist
-    output_dir = os.path.dirname(output_csv_path)
-    if output_dir and not os.path.exists(output_dir):
-        os.makedirs(output_dir)
+    if output_csv_path:
+        # Create output directory for the CSV file if it doesn't exist
+        output_dir = os.path.dirname(output_csv_path)
+        if output_dir and not os.path.exists(output_dir):
+            os.makedirs(output_dir)
 
-    df.to_csv(output_csv_path, index=False)
-    print(f"CSV report generated at: {output_csv_path}")
+        df.to_csv(output_csv_path, index=False)
+        print(f"CSV report generated at: {output_csv_path}")
+
+    return df

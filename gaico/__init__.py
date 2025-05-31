@@ -7,7 +7,7 @@ from .text_similarity_metrics import (
     LevenshteinDistance,
     SequenceMatcherSimilarity,
 )
-from .utils import prepare_results_dataframe, generate_deltas_csv
+from .utils import prepare_results_dataframe, generate_deltas_frame
 from .visualize import plot_metric_comparison, plot_radar_comparison
 from .thresholds import (
     apply_thresholds,
@@ -31,7 +31,7 @@ __all__ = [
     "prepare_results_dataframe",
     "apply_thresholds",
     "get_default_thresholds",
-    "generate_deltas_csv",
+    "generate_deltas_frame",
     "DEFAULT_THRESHOLD",
     "calculate_pass_fail_percent",
 ]
