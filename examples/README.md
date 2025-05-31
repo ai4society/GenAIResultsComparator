@@ -1,25 +1,25 @@
 # GAICo Examples
 
-This directory contains example notebooks demonstrating various use cases of the LLM-Metrics library. Each example is designed to showcase practical applications and provide detailed guidance on using different metrics for specific scenarios.
+This directory contains example notebooks demonstrating various use cases of the GAICo library. Each example is designed to showcase practical applications and provide detailed guidance on using different metrics for specific scenarios.
 
 ## Available Examples
 
-### 1. `workflow.ipynb`: Workflow of GAICo
+### 1. `quickstart-1.ipynb`: Multiple Models, Single Metric
 
-- Detailed walkthrough of all functionality from the library
+- Evaluating multiple models (LLMs, Google, and Custom) using a single metric.
 
-### 2. `bleu-example.ipynb`: Introduction to BLEU
+### 2. `quickstart-2.ipynb`: Single Model, Multiple Metric
 
-- Detailed walkthrough of BLEU score implementation
+- Evaluating a single model on multiple metrics.
 
 ### 3. `DeepSeek-example.ipynb`: Testing _DeepSeek R1_
 
-- Comparing DeepSeek's models to other LLMs.
+- Comparing DeepSeek's R1 model to other LLMs.
 - **Note**: All results remove the `<think>` tags for the DeepSeek models.
 
 ### 4. Advanced Examples
 
-The `advanced-examples` directory contains advances notebooks showcasing more complex use cases and metrics. These examples are intended for users who are already familiar with the basics of LLM-Metrics. Please refer to the README.md file in that directory for details.
+The `advanced-examples` directory contains advances notebooks showcasing more complex use cases and metrics. These examples are intended for users who are already familiar with the basics of GAICo. Please refer to the README.md file in that directory for details.
 
 ## Contributing New Examples
 

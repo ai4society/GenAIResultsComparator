@@ -4,7 +4,11 @@ This subdirectory contains the files for the data used in the examples.
 
 To add a new dataset, upload the data files to this directory and update the `README.md` file to include a description of the dataset.
 
-### 1. DeepSeek
+### 1. Quickstarts
+
+Outputs from the `example/quickstart-1.ipynb` and `example/quickstart-2.ipynb` notebooks.
+
+### 2. DeepSeek
 
 The `DeepSeek` directory contains the data used for testing the DeepSeek models. It includes:
 
@@ -16,7 +20,7 @@ The `DeepSeek` directory contains the data used for testing the DeepSeek models.
 
 - the visualization outputs, which are stored in the `plots` directory.
 
-### 2. LLM FAQ
+### 3. LLM FAQ
 
 The `llm_faq` directory contains the data used for testing various LLMs on USC FAQ. It includes:
 
@@ -27,6 +31,6 @@ The `llm_faq` directory contains the data used for testing various LLMs on USC F
 
 - the `plots` directory contains the visualization outputs.
 
-### 3. Threshold
+### 4. Threshold
 
 The `threshold` directory contains outputs from the `threshold-example.ipynb` file.
