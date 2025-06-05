@@ -2,33 +2,37 @@
 
 This directory contains example notebooks demonstrating various use cases of the GAICo library. Each example is designed to showcase practical applications and provide detailed guidance on using different metrics for specific scenarios.
 
-## Available Examples
+## Examples
 
-### 1. `quickstart-1.ipynb`: Multiple Models, Single Metric
+### 1. `quickstart.ipynb`
+
+- Using GAICo's `Experiment` module to provide a simple, quickstart workflow.
+
+### 2. `example-1.ipynb`: Multiple Models, Single Metric
 
 - Evaluating multiple models (LLMs, Google, and Custom) using a single metric.
 
-### 2. `quickstart-2.ipynb`: Single Model, Multiple Metric
+### 3. `example-2.ipynb`: Single Model, Multiple Metric
 
 - Evaluating a single model on multiple metrics.
 
-### 3. `DeepSeek-example.ipynb`: Testing _DeepSeek R1_
+### 4. `DeepSeek-example.ipynb`: Testing _DeepSeek R1_
 
-- Comparing DeepSeek's R1 model to other LLMs.
+- The aim for this notebook was to aid with evaluating DeepSeek R1 for [AI4Society's Point of View (POV)](https://drive.google.com/file/d/1ErR1xT7ftvmHiUyYrdUbjyd4qCK_FxKX/view?usp=sharing).
 - **Note**: All results remove the `<think>` tags for the DeepSeek models.
 
-### 4. Advanced Examples
+## Advanced Examples
 
-The `advanced-examples` directory contains advances notebooks showcasing more complex use cases and metrics. These examples are intended for users who are already familiar with the basics of GAICo. Please refer to the README.md file in that directory for details.
+The `advanced-examples` directory contains advances notebooks showcasing more complex use cases and metrics. These examples are intended for users who are already familiar with the basics of GAICo. Please refer to the README.md file in that directory for details. A quick description:
 
-## Contributing New Examples
+### 1. `llm_faq-example.ipynb`: LLM FAQ Analysis
 
-We welcome contributions! If you'd like to add a new example:
+- Comparison of various LLM responses (Phi, Mixtral, etc.) on FAQ dataset from USC.
 
-1. Create a new directory for your example if it's more than a single notebook (recommended).
-2. Ensure your notebook is well-documented with:
-   - Clear objective and use case
-   - Requirements and setup instructions
-   - Step-by-step explanations
-   - Sample data (if applicable)
-3. Submit a pull request with your example
+### 2. `threshold-example.ipynb`: Thresholds
+
+- Exploration of default and custom thresholding techniques for LLM responses.
+
+### 3. `viz-example.ipynb`: Visualizations
+
+- Hands-on visualizations for LLM results.
