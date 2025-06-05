@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from gaico import BERTScore
+from gaico.metrics import BERTScore
 
 
 # Mark tests as potentially slow due to model download/loading

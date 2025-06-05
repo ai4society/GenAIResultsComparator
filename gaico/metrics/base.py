@@ -4,7 +4,7 @@ from typing import Any, Iterable, List, Union
 import numpy as np
 import pandas as pd
 
-from .utils import to_iterable
+from ..utils import to_iterable
 
 
 class BaseMetric(ABC):

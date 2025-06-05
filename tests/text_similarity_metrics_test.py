@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from gaico import (
+from gaico.metrics import (
     CosineSimilarity,
     JaccardSimilarity,
     LevenshteinDistance,
