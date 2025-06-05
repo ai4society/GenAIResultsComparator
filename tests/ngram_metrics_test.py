@@ -3,7 +3,7 @@ import pandas as pd
 import pytest
 from nltk.translate.bleu_score import SmoothingFunction
 
-from llm_metrics import BLEU, ROUGE, JSDivergence
+from gaico import BLEU, ROUGE, JSDivergence
 
 
 # BLEU Tests
