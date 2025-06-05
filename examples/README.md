@@ -4,15 +4,18 @@ This directory contains example notebooks demonstrating various use cases of the
 
 ## Available Examples
 
-### 1. `quickstart-1.ipynb`: Multiple Models, Single Metric
+### 1. `quickstart.ipynb`
+
+
+### 2. `example-1.ipynb`: Multiple Models, Single Metric
 
 - Evaluating multiple models (LLMs, Google, and Custom) using a single metric.
 
-### 2. `quickstart-2.ipynb`: Single Model, Multiple Metric
+### 3. `example-2.ipynb`: Single Model, Multiple Metric
 
 - Evaluating a single model on multiple metrics.
 
-### 3. `DeepSeek-example.ipynb`: Testing _DeepSeek R1_
+### 4. `DeepSeek-example.ipynb`: Testing _DeepSeek R1_
 
 - Comparing DeepSeek's R1 model to other LLMs.
 - **Note**: All results remove the `<think>` tags for the DeepSeek models.

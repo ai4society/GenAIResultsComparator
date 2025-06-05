@@ -1,3 +1,4 @@
+from .experiment import Experiment
 from .metrics.base import BaseMetric
 from .thresholds import (
     DEFAULT_THRESHOLD,
@@ -18,4 +19,5 @@ __all__ = [
     "generate_deltas_frame",
     "DEFAULT_THRESHOLD",
     "calculate_pass_fail_percent",
+    "Experiment",
 ]

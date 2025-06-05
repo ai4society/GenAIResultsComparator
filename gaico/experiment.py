@@ -1,0 +1,365 @@
+from typing import Any, Callable, Dict, List, Optional
+
+import pandas as pd
+
+from gaico.metrics import (
+    BLEU,
+    ROUGE,
+    BERTScore,
+    CosineSimilarity,
+    JaccardSimilarity,
+    JSDivergence,
+    LevenshteinDistance,
+    SequenceMatcherSimilarity,
+)
+
+from .metrics.base import BaseMetric
+from .thresholds import apply_thresholds, get_default_thresholds
+from .utils import generate_deltas_frame, prepare_results_dataframe
+
+# Import plt from visualize to check availability and use for showing plots
+# Use an alias to avoid conflict if user imports plt
+from .visualize import plot_metric_comparison, plot_radar_comparison
+from .visualize import plt as viz_plt
+
+REGISTERED_METRICS: Dict[str, type[BaseMetric]] = {
+    "Jaccard": JaccardSimilarity,
+    "Cosine": CosineSimilarity,
+    "Levenshtein": LevenshteinDistance,
+    "SequenceMatcher": SequenceMatcherSimilarity,
+    "BLEU": BLEU,
+    "ROUGE": ROUGE,
+    "JSD": JSDivergence,
+    "BERTScore": BERTScore,
+}
+
+DEFAULT_METRICS_TO_RUN = list(REGISTERED_METRICS.keys())
+
+
+class Experiment:
+    """
+    An abstraction to simplify plotting, applying thresholds, and generating CSVs
+    for comparing LLM responses against reference answers using various metrics.
+    """
+
+    def __init__(
+        self,
+        llm_responses: Dict[str, str],
+        reference_answer: str,
+    ):
+        """
+        Initializes the Experiment.
+
+        :param llm_responses: A dictionary mapping model names (str) to their generated text responses (str).
+        :param reference_answer: A single reference text (str) to compare against.
+        """
+        if not isinstance(llm_responses, dict):
+            raise TypeError("llm_responses must be a dictionary.")
+        if not all(isinstance(k, str) and isinstance(v, str) for k, v in llm_responses.items()):
+            raise ValueError("llm_responses must be Dict[str, str] (model_name -> text).")
+        if not isinstance(reference_answer, str):
+            raise TypeError("reference_answer must be a string.")
+
+        self.llm_responses = llm_responses
+        self.reference_answer = reference_answer
+        self.models = list(llm_responses.keys())
+
+        # model_name -> base_metric_name -> score_value
+        self._raw_scores: Dict[str, Dict[str, Any]] = {}
+        # Caches the full, unfiltered DF from _raw_scores
+        self._results_df_cache: Optional[pd.DataFrame] = None
+        # model_name -> {flat_metric: {details}}
+        self._thresholded_results_cache: Optional[Dict[str, Dict[str, Dict[str, Any]]]] = None
+
+    def _calculate_scores_for_metric(self, metric_name: str) -> None:
+        """Calculates scores for a given base metric across all models if not already done."""
+        if metric_name not in REGISTERED_METRICS:
+            # This should be caught by callers, but as a safeguard:
+            raise ValueError(f"Metric '{metric_name}' is not registered.")
+
+        metric_cls = REGISTERED_METRICS[metric_name]
+        # Use default initialization for metric classes
+        # Specific configurations (e.g., ROUGE types, BERTScore output_val) use class defaults.
+        # Users wanting specific sub-metrics should rely on the flattened names post-prepare_results_dataframe.
+        metric_instance = metric_cls()
+
+        for model_name, gen_text in self.llm_responses.items():
+            if model_name not in self._raw_scores:
+                self._raw_scores[model_name] = {}
+
+            if metric_name not in self._raw_scores[model_name]:  # Calculate if not present
+                score = metric_instance.calculate(gen_text, self.reference_answer)
+                self._raw_scores[model_name][metric_name] = score
+                self._results_df_cache = None  # Invalidate DataFrame cache
+                self._thresholded_results_cache = None  # Invalidate threshold cache
+
+    def _get_internal_scores_df(self) -> pd.DataFrame:
+        """
+        Ensures all raw scores are converted to a DataFrame and caches it.
+        This DataFrame contains all calculated metrics, flattened.
+        """
+        if self._results_df_cache is None:
+            if not self._raw_scores:  # No scores calculated yet
+                # This might happen if _get_scores_df is called before any metric calculation.
+                # Calculate all default metrics as a baseline.
+                for metric_name in DEFAULT_METRICS_TO_RUN:
+                    self._calculate_scores_for_metric(metric_name)
+
+            self._results_df_cache = prepare_results_dataframe(self._raw_scores)
+        return self._results_df_cache
+
+    def _get_filtered_scores_df(self, base_metrics_to_include: List[str]) -> pd.DataFrame:
+        """
+        Returns a DataFrame of scores, filtered to include only metrics
+        derived from the provided list of base_metrics_to_include.
+        Calculates scores if necessary.
+        """
+        for base_metric_name in base_metrics_to_include:
+            if base_metric_name not in REGISTERED_METRICS:
+                # This check is important before calculation
+                print(
+                    f"Warning: Metric '{base_metric_name}' is not registered and will be skipped."
+                )
+                continue
+            # Ensure scores are calculated for this base metric
+            self._calculate_scores_for_metric(base_metric_name)
+
+        full_df = self._get_internal_scores_df()  # Gets the cached or newly prepared full DF
+
+        if full_df.empty:
+            return pd.DataFrame(columns=["model_name", "metric_name", "score"])
+
+        # Filter the full_df to include only flat metrics corresponding to base_metrics_to_include
+        flat_metrics_to_keep = []
+        all_df_metric_names = full_df["metric_name"].unique()
+
+        valid_base_metrics = [m for m in base_metrics_to_include if m in REGISTERED_METRICS]
+
+        for base_name in valid_base_metrics:
+            for df_m_name in all_df_metric_names:
+                if df_m_name == base_name or df_m_name.startswith(base_name + "_"):
+                    flat_metrics_to_keep.append(df_m_name)
+
+        if not flat_metrics_to_keep:  # No metrics matched
+            return pd.DataFrame(columns=["model_name", "metric_name", "score"])
+
+        return full_df[full_df["metric_name"].isin(list(set(flat_metrics_to_keep)))].copy()
+
+    def to_dataframe(self, metrics: Optional[List[str]] = None) -> pd.DataFrame:
+        """
+        Returns a DataFrame of scores for the specified metrics.
+        If metrics is None, scores for all default metrics are returned.
+
+        :param metrics: A list of base metric names (e.g., "Jaccard", "ROUGE").
+        :return: A pandas DataFrame with columns "model_name", "metric_name", "score".
+                 "metric_name" will contain flat metric names (e.g., "ROUGE_rouge1").
+        """
+        metrics_to_fetch = metrics
+        if metrics_to_fetch is None:
+            metrics_to_fetch = DEFAULT_METRICS_TO_RUN
+
+        return self._get_filtered_scores_df(base_metrics_to_include=metrics_to_fetch)
+
+    def _get_thresholded_results(
+        self,
+        flat_metrics_for_thresholding: List[str],
+        custom_thresholds: Optional[Dict[str, float]],
+        scores_df: pd.DataFrame,
+    ) -> Dict[str, Dict[str, Dict[str, Any]]]:
+        """
+        Calculates and returns thresholded results for all models.
+        Assumes scores_df contains the necessary flat_metrics.
+        """
+        # Determine effective thresholds for each flat_metric_name
+        default_threshold_map = get_default_thresholds()
+
+        # This will store model_name -> {flat_metric_name: {score: val, passed: bool, ...}}
+        all_models_thresholded_output: Dict = {}
+
+        for model_name in self.models:
+            model_scores_df = scores_df[
+                (scores_df["model_name"] == model_name)
+                & (scores_df["metric_name"].isin(flat_metrics_for_thresholding))
+            ]
+
+            if model_scores_df.empty:
+                all_models_thresholded_output[model_name] = {}
+                continue
+
+            scores_for_model_dict = pd.Series(
+                model_scores_df.score.values, index=model_scores_df.metric_name
+            ).to_dict()
+
+            # Determine thresholds to apply for this model's scores
+            thresholds_for_this_model_apply = {}
+            for flat_name, score_val in scores_for_model_dict.items():
+                base_name_candidate = flat_name.split("_")[0]
+                chosen_threshold_value = None
+
+                if custom_thresholds:
+                    if flat_name in custom_thresholds:
+                        chosen_threshold_value = custom_thresholds[flat_name]
+                    elif (
+                        base_name_candidate in custom_thresholds and chosen_threshold_value is None
+                    ):
+                        chosen_threshold_value = custom_thresholds[base_name_candidate]
+
+                if chosen_threshold_value is None:  # Fallback to defaults
+                    # Defaults usually use base names.
+                    if base_name_candidate in default_threshold_map:
+                        chosen_threshold_value = default_threshold_map[base_name_candidate]
+                    elif flat_name in default_threshold_map:  # Less common for defaults
+                        chosen_threshold_value = default_threshold_map[flat_name]
+
+                if chosen_threshold_value is not None:
+                    thresholds_for_this_model_apply[flat_name] = chosen_threshold_value
+
+            thresholded_for_model = apply_thresholds(
+                scores_for_model_dict, thresholds_for_this_model_apply
+            )
+            all_models_thresholded_output[model_name] = thresholded_for_model
+
+        self._thresholded_results_cache = all_models_thresholded_output  # Cache this
+        return all_models_thresholded_output
+
+    def compare(
+        self,
+        metrics: Optional[List[str]] = None,
+        plot: bool = False,
+        custom_thresholds: Optional[Dict[str, float]] = None,
+        output_csv_path: Optional[str] = None,
+        aggregate_func: Optional[Callable] = None,
+        plot_title_suffix: str = "Comparison",
+        radar_metrics_limit: int = 12,
+    ) -> Optional[pd.DataFrame]:
+        """
+        Compares models based on specified metrics, optionally plotting and generating a CSV.
+
+        :param metrics: List of base metric names. If None, uses all default registered metrics.
+        :param plot: If True, generates and shows plots. Defaults to False.
+        :param custom_thresholds: Dictionary of metric names (base or flat) to threshold values.
+                                  Overrides default thresholds.
+        :param output_csv_path: If provided, path to save a CSV report of thresholded results.
+        :param aggregate_func: Aggregation function (e.g., np.mean, np.median) for plotting
+                                when multiple scores exist per model/metric (not typical for default setup).
+        :param plot_title_suffix: Suffix for plot titles.
+        :param radar_metrics_limit: Maximum number of metrics for a radar plot to maintain readability.
+        :return: A pandas DataFrame containing the scores for the compared metrics, or None if no valid metrics.
+        """
+        base_metrics_to_run = metrics
+        if base_metrics_to_run is None:
+            base_metrics_to_run = DEFAULT_METRICS_TO_RUN
+
+        valid_base_metrics = [m for m in base_metrics_to_run if m in REGISTERED_METRICS]
+        if (
+            not base_metrics_to_run and metrics is not None
+        ):  # User specified metrics, but all were invalid
+            print("Warning: No valid metrics specified in 'metrics' list for compare. Aborting.")
+            return None
+        if (
+            not valid_base_metrics
+        ):  # No metrics to run at all (either default list is empty or user list was all invalid)
+            print("Warning: No valid metrics to run for compare. Aborting.")
+            return None
+
+        # 1. Get DataFrame of scores (flat metric names)
+        # This also calculates scores if they haven't been already.
+        current_scores_df = self._get_filtered_scores_df(base_metrics_to_include=valid_base_metrics)
+
+        if current_scores_df.empty:
+            print("No results to compare after processing metrics.")
+            return current_scores_df  # Return empty DF
+
+        # These are the actual (potentially flattened) metric names present in the DataFrame
+        actual_flat_metrics_in_df = sorted(list(current_scores_df["metric_name"].unique()))
+
+        # 2. Apply Thresholds
+        thresholded_results_all_models = self._get_thresholded_results(
+            flat_metrics_for_thresholding=actual_flat_metrics_in_df,
+            custom_thresholds=custom_thresholds,
+            scores_df=current_scores_df,
+        )
+
+        # 3. Plotting
+        if plot:
+            if viz_plt is None:
+                print("Warning: Matplotlib/Seaborn are not installed. Skipping plotting.")
+            else:
+                num_actual_metrics = len(actual_flat_metrics_in_df)
+                # num_models = len(self.models) # Not directly used for plot choice here
+
+                if num_actual_metrics == 0:
+                    print("No metrics available for plotting.")
+                elif num_actual_metrics == 1:
+                    metric_to_plot = actual_flat_metrics_in_df[0]
+                    plot_metric_comparison(
+                        current_scores_df,
+                        metric_name=metric_to_plot,
+                        aggregate_func=aggregate_func,
+                        title=f"{metric_to_plot} {plot_title_suffix}",
+                    )
+                    viz_plt.show()
+                else:  # Multiple metrics
+                    metrics_for_radar = actual_flat_metrics_in_df
+                    if len(actual_flat_metrics_in_df) > radar_metrics_limit:
+                        print(
+                            f"Warning: Too many metrics ({len(actual_flat_metrics_in_df)}) for radar plot. Plotting first {radar_metrics_limit}."
+                            "To change this, adjust radar_metrics_limit parameter."
+                        )
+                        metrics_for_radar = actual_flat_metrics_in_df[:radar_metrics_limit]
+
+                    if (
+                        len(metrics_for_radar) < 3 and len(metrics_for_radar) > 0
+                    ):  # Radar usually needs 3+
+                        print(
+                            f"Warning: Only {len(metrics_for_radar)} metrics available. Radar plot might not be informative. Generating bar plots instead."
+                        )
+                        for metric_to_plot in metrics_for_radar:
+                            plot_metric_comparison(
+                                current_scores_df,
+                                metric_name=metric_to_plot,
+                                aggregate_func=aggregate_func,
+                                title=f"{metric_to_plot} {plot_title_suffix}",
+                            )
+                            viz_plt.show()
+                    elif len(metrics_for_radar) >= 3:
+                        plot_radar_comparison(
+                            current_scores_df,
+                            metrics=metrics_for_radar,
+                            aggregate_func=aggregate_func,
+                            title=f"Models {plot_title_suffix}",
+                        )
+                        viz_plt.show()
+                    else:  # No metrics for radar (e.g. if radar_metrics_limit was 0 or negative)
+                        print("No metrics selected for radar plot.")
+
+        # 4. Generate CSV
+        if output_csv_path:
+            csv_input_threshold_results_list = []
+            csv_input_gen_texts_list = []
+            csv_input_ref_texts_list = []
+
+            for model_name in self.models:
+                if (
+                    model_name in thresholded_results_all_models
+                    and thresholded_results_all_models[model_name]
+                ):
+                    csv_input_threshold_results_list.append(
+                        thresholded_results_all_models[model_name]
+                    )
+                    csv_input_gen_texts_list.append(self.llm_responses[model_name])
+                    csv_input_ref_texts_list.append(self.reference_answer)
+
+            if csv_input_threshold_results_list:
+                generate_deltas_frame(
+                    threshold_results=csv_input_threshold_results_list,
+                    generated_texts=csv_input_gen_texts_list,
+                    reference_texts=csv_input_ref_texts_list,
+                    output_csv_path=output_csv_path,
+                )
+            else:
+                print(
+                    f"Warning: No non-empty thresholded results to write to CSV for path {output_csv_path}."
+                )
+
+        return current_scores_df.copy()
