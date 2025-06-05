@@ -5,60 +5,60 @@ _GAICo_ is a Python library providing evaluation metrics to compare generated te
 ## Quick Start
 
 GAICo makes it easy to evaluate and compare LLM outputs. For detailed, runnable examples, please refer to our Jupyter Notebooks in the [`examples/`](examples/) folder:
--   [`quickstart-1.ipynb`](examples/quickstart-1.ipynb): Focuses on comparing **multiple model outputs** using a **single metric**.
--   [`quickstart-2.ipynb`](examples/quickstart-2.ipynb): Demonstrates evaluating a **single model output** across **all available metrics**.
 
-Here’s a glimpse of GAICo's capabilities:
+- [`quickstart.ipynb`](examples/quickstart.ipynb): Rapid hands-on with the _Experiment_ sub-module.
+- [`example-1.ipynb`](examples/example-1.ipynb): For fine-grained usage, this notebook focuses on comparing **multiple model outputs** using a **single metric**.
+- [`example-2.ipynb`](examples/example-2.ipynb): For fine-grained usage, this notebook demonstrates evaluating a **single model output** across **all available metrics**.
 
-**1. Comparing Multiple Models with a Single Metric**
+## Streamlined Workflow with _`Experiment`_
 
-This scenario involves evaluating responses from different models against a common `reference_answer` using a metric like `JaccardSimilarity`.
+For a more integrated approach to comparing multiple models, applying thresholds, generating plots, and creating CSV reports, the `Experiment` class offers a convenient abstraction.
+
+### Quick Example
+
+This example demonstrates comparing multiple LLM responses against a reference answer using specified metrics, generating a plot, and outputting a CSV report.
 
 ```python
-# Assumption: GAICo imports ✅
+from gaico import Experiment
 
-# llm_responses = {
-#   "LLM_A": "Response from Model A...",
-#   "LLM_B": "Response from Model B..."
-# }
-# reference_answer = "The ideal reference text."
+# Sample data from https://arxiv.org/abs/2504.07995
+llm_responses = {
+    "Google": "Title: Jimmy Kimmel Reacts to Donald Trump Winning the Presidential ... Snippet: Nov 6, 2024 ...",
+    "Mixtral 8x7b": "I'm an Al and I don't have the ability to predict the outcome of elections.",
+    "SafeChat": "Sorry, I am designed not to answer such a question.",
+}
+reference_answer = "Sorry, I am unable to answer such a question as it is not appropriate."
 
-# generated_texts = list(llm_responses.values())
-# e.g., ["Response from Model A...", "Response from Model B..."]
+# 1. Initialize Experiment
+exp = Experiment(
+    llm_responses=llm_responses,
+    reference_answer=reference_answer
+)
 
-# 1. Calculate Scores
-metric = JaccardSimilarity()
-scores = metric.calculate(generated_texts, reference_answer)
-# Output Jaccard scores (example):
-# `scores` (for LLM_A, LLM_B): [0.3529, 0.6250]
+# 2. Compare models using specific metrics
+#   This will calculate scores for 'Jaccard' and 'ROUGE',
+#   generate a plot (e.g., radar plot for multiple metrics/models),
+#   and save a CSV report.
+results_df = exp.compare(
+    metrics=['Jaccard', 'ROUGE'],  # Specify metrics, or None for all defaults
+    plot=True,
+    output_csv_path="experiment_report.csv",
+    custom_thresholds={"Jaccard": 0.6, "ROUGE_rouge1": 0.35} # Optional: override default thresholds
+)
 
-# 2. Apply Thresholds
-# Prepare input for batch thresholding: list of dicts like [{"Jaccard": score_A}, {"Jaccard": score_B}]
-threshold_input = [{"Jaccard": s} for s in scores]
-results_with_thresholds = apply_thresholds(threshold_input)
-# For LLM_A result might be:
-# `results_with_thresholds[0]['Jaccard']`:
-# {'score': 0.3529, 'threshold_applied': 0.5, 'passed_threshold': False}
-
-# 3. Visualize & Report
-# The full quickstart notebooks show how to use:
-# - `prepare_results_dataframe(...)` to structure data.
-# - `plot_metric_comparison(...)` to generate a bar chart comparing LLM_A and LLM_B.
-# - `generate_deltas_csv(...)` to create a detailed CSV report with texts, scores, and pass/fail status.
+# The returned DataFrame contains the calculated scores
+print("Scores DataFrame from compare():")
+print(results_df)
 ```
 
-_This workflow template helps you quickly assess multiple LLMs. See [examples/quickstart-1.ipynb](examples/quickstart-1.ipynb) for the full code, data setup, and how to generate comparison bar plots and CSV reports._
+This abstraction streamlines common evaluation tasks, while still allowing access to the underlying metric classes and dataframes for more advanced or customized use cases. More details in [`examples/quickstart.ipynb`](examples/quickstart.ipynb).
 
-**2. Evaluating a Single Model with Multiple Metrics**
-
-Along with following the template above, GAICo also excels at providing a holistic view of a single model's performance across a comprehensive suite of metrics. This is often best visualized with a radar chart.
+However, you might prefer to use the individual metric classes directly for more granular control or if you want to implement custom metrics. See the remaining notebooks in the [`examples`](examples) subdirectory.
 
 <p align="center">
-  <img src="examples/data/quickstarts/quickstart_2.png" alt="Sample Radar Chart showing multiple metrics for a single LLM" width="450"/>
-  <br/><em>Example Radar Chart generated by <code>examples/quickstart-2.ipynb</code>.</em>
+  <img src="examples/data/examples/example_2.png" alt="Sample Radar Chart showing multiple metrics for a single LLM" width="450"/>
+  <br/><em>Example Radar Chart generated by the <code>examples/example-2.ipynb</code> notebook.</em>
 </p>
-
-_The [examples/quickstart-2.ipynb](examples/quickstart-2.ipynb) notebook demonstrates how to calculate all available metrics (BLEU, ROUGE, BERTScore, Cosine Similarity, etc.) for a single generated text against its reference and then use <code>plot_radar_comparison</code> to create visualizations like the one above._
 
 ## Description
 
@@ -79,7 +79,6 @@ If the inputs are Iterables (lists, Numpy arrays, etc.), then the method assumes
 
 **_Inspiration_** for the library and evaluation metrics was taken from [Microsoft's
 article on evaluating LLM-generated content](https://learn.microsoft.com/en-us/ai/playbook/technology-guidance/generative-ai/working-with-llms/evaluation/list-of-eval-metrics). In the article, Microsoft describes 3 categories of evaluation metrics: **(1)** Reference-based metrics, **(2)** Reference-free metrics, and **(3)** LLM-based metrics. _The library currently supports reference-based metrics._
-
 
 <p align="center">
   <img src="gaico.drawio.png" alt="GAICo Overview">
@@ -186,7 +185,6 @@ Or, for more verbose output:
 uv run pytest -v
 ```
 
-
 To skip the slow BERTScore tests:
 
 ```bash
@@ -213,7 +211,7 @@ Please ensure that your code passes all tests and adheres to our code style guid
 
 ## Acknowledgments
 
-- This work is developed by the [AI4Society team](https://ai4society.github.io). In particular, the library is developed by Pallav Koppisetti, Nitin Gupta, and Biplav Srivastava.
+- This work is developed by the [AI4Society team](https://ai4society.github.io). In particular, the library is developed by Nitin Gupta, Pallav Koppisetti, and Biplav Srivastava.
 - This library uses several open-source packages including NLTK, scikit-learn, and others.
 - Special thanks to the creators and maintainers of the implemented metrics.
 
