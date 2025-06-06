@@ -1,0 +1,52 @@
+name: Deploy Docs to ai4society.github.io
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch: # Allows manual triggering
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read # To checkout the GenAIResultsComparator repo
+    steps:
+      - name: Checkout GenAIResultsComparator
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Needed for plugins like mkdocs-material's git-revision-date-localized
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install MkDocs and dependencies
+        run: |
+          pip install mkdocs mkdocs-material mkdocstrings mkdocstrings-python
+
+      - name: Build MkDocs site
+        run: mkdocs build --verbose # Use --strict to fail on warnings
+
+      - name: Deploy to ai4society.github.io
+        uses: peaceiris/actions-gh-pages@v3 # A popular action for deploying to GH Pages
+        with:
+          # The PAT you stored as a secret
+          personal_token: ${{ secrets.ORG_PAGES_PAT }}
+          # The repository to deploy to (your organization's main GH Pages repo)
+          external_repository: ai4society/ai4society.github.io
+          # The branch in ai4society.github.io to push to
+          # (usually 'main' or 'master' for org/user pages)
+          publish_branch: main
+          # The directory in GenAIResultsComparator containing the built site
+          publish_dir: ./site
+          # The target directory within the external_repository
+          destination_dir: projects/GenAIResultsComparator
+          # Commit information
+          user_name: 'github-actions[bot]'
+          user_email: 'github-actions[bot]@users.noreply.github.com'
+          commit_message: 'Deploy GenAIResultsComparator docs (commit ${{ github.sha }})'
+          # By default, this action cleans the destination_dir before copying.
+          keep_files: false # This is the default, good for ensuring a clean deploy
+          allow_empty_commit: false # Default

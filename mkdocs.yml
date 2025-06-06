@@ -1,8 +1,8 @@
 site_name: GAICo Documentation
-site_url: https://ai4society.github.io/GenAIResultsComparator/
+site_url: https://ai4society.github.io/projects/GenAIResultsComparator/
 repo_url: https://github.com/ai4society/GenAIResultsComparator/
 repo_name: ai4society/GenAIResultsComparator
-edit_uri: edit/main/docs/ # If your docs folder is 'docs' in the root of 'main' branch
+edit_uri: tree/main/docs
 
 theme:
   name: material
