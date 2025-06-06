@@ -2,7 +2,7 @@
 
 _GAICo_ is a Python library providing evaluation metrics to compare generated texts, particularly useful for outputs from Large Language Models (LLMs), often against reference or ground truth texts.
 
-View the documentation at [https://ai4society.github.io/GenAIResultsComparator](https://ai4society.github.io/GenAIResultsComparator).
+View the documentation at [ai4society.github.io/projects/GenAIResultsComparator/index.html](https://ai4society.github.io/projects/GenAIResultsComparator/index.html).
 
 ## Quick Start
 
