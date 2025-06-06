@@ -214,10 +214,11 @@ Please ensure that your code passes all tests and adheres to our code style guid
 If you find this project useful, please consider citing it in your work:
 
 ```bibtex
-@misc{GAICo,
-    author = {AI4Society},
-    title = {GAICo: GenAI Results Comparator},
-    url = {https://github.com/ai4society/GenAIResultsComparator}
+@software{AI4Society_GAICo_GenAI_Results,
+  author = {{AI4Society}},
+  license = {MIT},
+  title = {{GAICo: GenAI Results Comparator}},
+  url = {https://github.com/ai4society/GenAIResultsComparator}
 }
 ```
 
