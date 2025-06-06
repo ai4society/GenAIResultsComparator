@@ -217,9 +217,10 @@ If you find this project useful, please consider citing it in your work:
 
 ```bibtex
 @software{AI4Society_GAICo_GenAI_Results,
-  author = {{AI4Society}},
+  author = {{Nitin Gupta, Pallav Koppisetti, Biplav Srivastava}},
   license = {MIT},
   title = {{GAICo: GenAI Results Comparator}},
+  year = {2025},
   url = {https://github.com/ai4society/GenAIResultsComparator}
 }
 ```
