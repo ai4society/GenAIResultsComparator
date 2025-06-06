@@ -42,5 +42,8 @@ build/
 # Ruff
 .ruff_cache/
 
+# Site
+site/
+
 .DS_Store
 own/

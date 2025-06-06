@@ -111,7 +111,7 @@ article on evaluating LLM-generated content](https://learn.microsoft.com/en-us/a
 
 ## Installation
 
-Currently, LLM Metrics is not available on PyPI. To use it, you'll need to clone the repository and set up the environment using UV.
+Currently, GAICo is not available on PyPI. To use it, you'll need to clone the repository and set up the environment using UV.
 
 1. First, make sure you have UV installed. If not, you can install it by following the instructions on the [official UV website](https://docs.astral.sh/uv/#installation).
 
@@ -144,7 +144,7 @@ pip install -r requirements.txt
 
 However note that the `requirements.txt` is generated automatically with the pre-commit file and might not include all the dependencies (in such case, a manual pip install might be needed).
 
-Now you're ready to use LLM Metrics!
+Now you're ready to use GAICo!
 
 ## Project Structure
 

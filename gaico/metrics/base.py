@@ -60,10 +60,11 @@ class BaseMetric(ABC):
         """
         Calculates the metric for a single or batch of generated and reference texts.
         This method handles both single and batch inputs for generated and reference texts.
-        - If both inputs are single strings, it will call `single_calculate`.
-        - If one is a string and the other an iterable, it broadcasts the string and calls `batch_calculate`.
-        - If both inputs are iterables, they must have the same length, and it will call `batch_calculate`.
-        - If inputs are None , it raises a ValueError.
+
+        1. If both inputs are single strings, it will call `single_calculate`.
+        2. If one is a string and the other an iterable, it broadcasts the string and calls `batch_calculate`.
+        3. If both inputs are iterables, they must have the same length, and it will call `batch_calculate`.
+        4. If inputs are None , it raises a ValueError.
 
         :param generated_texts: A single generated text or an iterable of generated texts
         :type generated_texts: str | Iterable | np.ndarray | pd.Series
