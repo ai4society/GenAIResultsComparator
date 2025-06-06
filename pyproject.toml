@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "GAICo"
-version = "0.1.0"
+version = "0.1.1"
 description = "A Python library for reference-based metrics to compare generated LLM text with ground truth text"
 authors = [
     { name = "Nitin Gupta", email = "g-nitin@users.noreply.github.com" },
