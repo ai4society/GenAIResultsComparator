@@ -209,7 +209,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 Please ensure that your code passes all tests and adheres to our code style guidelines (enforced by pre-commit hooks) before submitting a pull request.
 
-##
+## Citation
 
 If you find this project useful, please consider citing it in your work:
 
@@ -224,7 +224,7 @@ If you find this project useful, please consider citing it in your work:
 
 ## Acknowledgments
 
-- This work is developed by the [AI4Society team](https://ai4society.github.io). In particular, the library is developed by Nitin Gupta, Pallav Koppisetti, and Biplav Srivastava.
+- This work is developed by the [AI4Society team](https://ai4society.github.io). In particular, the library is developed by [Nitin Gupta](https://github.com/g-nitin), [Pallav Koppisetti](https://github.com/pallavkoppisetti), and [Biplav Srivastava](https://github.com/biplav-s).
 - This library uses several open-source packages including NLTK, scikit-learn, and others.
 - Special thanks to the creators and maintainers of the implemented metrics.
 

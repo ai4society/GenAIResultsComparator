@@ -20,10 +20,3 @@ keywords:
   - Natural Language Processing
   - AI Evaluation
 license: MIT
-preferred-citation:
-  type: software
-  authors:
-    - name: AI4Society
-  title: 'GAICo: GenAI Results Comparator'
-  url: 'https://github.com/ai4society/GenAIResultsComparator'
-  license: MIT
