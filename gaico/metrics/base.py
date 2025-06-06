@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, List, Union
+from typing import Any, Iterable, List
 
 import numpy as np
 import pandas as pd
@@ -17,7 +17,7 @@ class BaseMetric(ABC):
     @abstractmethod
     def _single_calculate(
         self, generated_text: str, reference_text: str, **kwargs: Any
-    ) -> Union[float, dict]:
+    ) -> float | dict:
         """
         (Internal) Calculate the metric for single pair of generated and reference texts.
 
@@ -27,36 +27,36 @@ class BaseMetric(ABC):
         :type reference_text: str
         :param kwargs: Additional keyword arguments for specific metrics (additional_params, metric-specific flags etc).
         :return: The calculated metric score
-        :rtype: float or dict (depending on the metric)
+        :rtype: float | dict
         """
         pass
 
     @abstractmethod
     def _batch_calculate(
         self,
-        generated_texts: Union[Iterable, np.ndarray, pd.Series],
-        reference_texts: Union[Iterable, np.ndarray, pd.Series],
+        generated_texts: Iterable | np.ndarray | pd.Series,
+        reference_texts: Iterable | np.ndarray | pd.Series,
         **kwargs: Any,
-    ) -> Union[List[float], List[dict], np.ndarray, pd.Series, float, dict]:
+    ) -> List[float] | List[dict] | np.ndarray | pd.Series | float | dict:
         """
         (Internal) Calculate the metric for a batch of generated and reference texts.
 
         :param generated_texts: Generated texts
-        :type generated_texts: Union[Iterable, np.ndarray, pd.Series]
+        :type generated_texts: Iterable | np.ndarray | pd.Series
         :param reference_texts: reference texts
-        :type reference_texts: Union[Iterable, np.ndarray, pd.Series]
+        :type reference_texts: Iterable | np.ndarray | pd.Series
         :param kwargs: Additional keyword arguments for specific metrics (additional_params, metric-specific flags etc).
         :return: A list of metric scores or a single aggregated score
-        :rtype: Union[List[float], List[dict], float, dict]
+        :rtype: List[float] | List[dict] | np.ndarray | pd.Series | float | dict
         """
         pass
 
     def calculate(
         self,
-        generated_texts: Union[str, Iterable, np.ndarray, pd.Series],
-        reference_texts: Union[str, Iterable, np.ndarray, pd.Series],
+        generated_texts: str | Iterable | np.ndarray | pd.Series,
+        reference_texts: str | Iterable | np.ndarray | pd.Series,
         **kwargs: Any,
-    ) -> Union[float, List[float], dict, List[dict], np.ndarray, pd.Series, None]:
+    ) -> float | List[float] | dict | List[dict] | np.ndarray | pd.Series | None:
         """
         Calculates the metric for a single or batch of generated and reference texts.
         This method handles both single and batch inputs for generated and reference texts.
@@ -66,12 +66,12 @@ class BaseMetric(ABC):
         - If inputs are None , it raises a ValueError.
 
         :param generated_texts: A single generated text or an iterable of generated texts
-        :type generated_texts: Union[str, Iterable, np.ndarray, pd.Series]
+        :type generated_texts: str | Iterable | np.ndarray | pd.Series
         :param reference_texts: A single reference text or an iterable of reference texts
-        :type reference_texts: Union[str, Iterable, np.ndarray, pd.Series]
+        :type reference_texts: str | Iterable | np.ndarray | pd.Series
         :param kwargs: Additional keyword arguments for specific metrics (additional_params, metric-specific flags etc).
         :return: The calculated metric score(s) or None if inputs are invalid.
-        :rtype: Union[float, List[float], dict, List[dict], np.ndarray, pd.Series, None]
+        :rtype: float | List[float] | dict | List[dict] | np.ndarray | pd.Series | None
         """
         is_gen_str = isinstance(generated_texts, str)
         is_ref_str = isinstance(reference_texts, str)

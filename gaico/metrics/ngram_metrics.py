@@ -1,4 +1,4 @@
-from typing import Any, Callable, Dict, Iterable, List, Optional, Union
+from typing import Any, Callable, Dict, Iterable, List, Optional, cast
 
 import nltk
 import numpy as np
@@ -20,7 +20,7 @@ class BLEU(BaseMetric):
     def __init__(
         self,
         n: int = 4,
-        smoothing_function: Union[Callable, SmoothingFunction] = SmoothingFunction().method1,
+        smoothing_function: Callable | SmoothingFunction = SmoothingFunction().method1,
     ):
         """
         Initialize the BLEU scorer with the specified parameters.
@@ -28,7 +28,7 @@ class BLEU(BaseMetric):
         :param n: The max n-gram order to use for BLEU calculation, defaults to 4
         :type n: int
         :param smoothing_function: The smoothing function to use for BLEU, defaults to SmoothingFunction.method1 from NLTK
-        :type smoothing_function: Union[Callable, SmoothingFunction], optional
+        :type smoothing_function: Callable | SmoothingFunction
         """
         self.n = n
         self.smoothing_function = smoothing_function
@@ -47,27 +47,28 @@ class BLEU(BaseMetric):
         :param reference_text: The reference text to compare against
         :type reference_text: str
         :param kwargs: Additional parameters to pass to the NLTK sentence_bleu function
+        :type kwargs: Any
         :return: The BLEU score for the text pair
         :rtype: float
         """
 
         # Split texts into words and calculate sentence-level BLEU score
-        return float(
-            sentence_bleu(
-                [reference_text.split()],
-                generated_text.split(),
-                smoothing_function=self.smoothing_function,
-                **kwargs,
-            )
+        score = sentence_bleu(
+            [reference_text.split()],
+            generated_text.split(),
+            smoothing_function=self.smoothing_function,
+            **kwargs,
         )
+        score = cast(float, score)  # Signal to mypy that score is a float
+        return float(score)  # Ensure the score is returned as a float
 
     def _batch_calculate(
         self,
-        generated_texts: Union[Iterable, np.ndarray, pd.Series],
-        reference_texts: Union[Iterable, np.ndarray, pd.Series],
+        generated_texts: Iterable | np.ndarray | pd.Series,
+        reference_texts: Iterable | np.ndarray | pd.Series,
         use_corpus_bleu: bool = True,
         **kwargs: Any,
-    ) -> Union[float, List[float], np.ndarray, pd.Series]:
+    ) -> float | List[float] | np.ndarray | pd.Series:
         """
         Calculate BLEU scores for a batch of generated and reference texts.
 
@@ -78,14 +79,15 @@ class BLEU(BaseMetric):
             Calculates individual BLEU scores for each sentence pair. Uses the `sentence_bleu` method from NLTK
 
         :param generated_texts: Generated texts
-        :type generated_texts: Union[Iterable, np.ndarray, pd.Series]
+        :type generated_texts: Iterable | np.ndarray | pd.Series
         :param reference_texts: Reference texts
-        :type reference_texts: Union[Iterable, np.ndarray, pd.Series]
+        :type reference_texts: Iterable | np.ndarray | pd.Series
         :param use_corpus_bleu: Whether to use corpus-level BLEU calculation, defaults to True
         :type use_corpus_bleu: bool
         :param kwargs: Additional parameters to pass to NLTK BLEU functions
+        :type kwargs: Any
         :return: Either a single corpus-level BLEU score or a list/array/series of sentence-level BLEU scores.
-        :rtype: Union[float, List[float], np.ndarray, pd.Series]
+        :rtype: float | List[float] | np.ndarray | pd.Series
         """
 
         if use_corpus_bleu:
@@ -100,12 +102,14 @@ class BLEU(BaseMetric):
                 references = [[ref.split()] for ref in reference_texts]
 
             # Calculate and return the corpus-level BLEU score
-            return corpus_bleu(
+            score = corpus_bleu(
                 references,
                 hypotheses,
                 smoothing_function=self.smoothing_function,
                 **kwargs,
             )
+            score = cast(float, score)  # Signal to mypy that score is a float
+            return float(score)  # Ensure the score is returned as a float
         else:
             # Calculate individual BLEU scores for each sentence pair
             if isinstance(generated_texts, np.ndarray) and isinstance(reference_texts, np.ndarray):
@@ -151,12 +155,12 @@ class ROUGE(BaseMetric):
         :type rouge_types: Optional[List[str]]
         :param use_stemmer: Whether to use stemming for ROUGE calculation, defaults to True
         :type use_stemmer: bool
-        :param additional_params: Additional parameters to pass to the ROUGE calculation, defaults to None
+        :param kwargs: Additional parameters to pass to the ROUGE calculation, defaults to None
             Default only passes the `use_stemmer` parameter
-        :type additional_params: Dict[str, Any], optional
+        :type kwargs: Any
         """
-        params = {"use_stemmer": use_stemmer}
-        params.update(kwargs)
+        self.params = {"use_stemmer": use_stemmer}
+        self.params.update(kwargs)
 
         # Check if rouge_types is valid
         if rouge_types:
@@ -167,14 +171,14 @@ class ROUGE(BaseMetric):
 
         self.rouge_types = rouge_types or ["rouge1", "rouge2", "rougeL"]
 
-        self.scorer = rouge_scorer.RougeScorer(self.rouge_types, **params)
+        self.scorer = rouge_scorer.RougeScorer(self.rouge_types, **self.params)
 
     def _single_calculate(
         self,
         generated_text: str,
         reference_text: str,
         **kwargs: Any,
-    ) -> Union[Dict[str, float], float]:
+    ) -> Dict[str, float] | float:
         """
         Calculate the ROUGE score for a pair of generated and reference texts.
 
@@ -182,9 +186,13 @@ class ROUGE(BaseMetric):
         :type generated_text: str
         :param reference_text: The reference text to compare against
         :type reference_text: str
+        :param kwargs: Additional parameters for the ROUGE scorer, defaults to None
+        :type kwargs: Any
         :return: Either a single score or a dictionary of scores containing ROUGE types
         :rtype: Union[dict, float]
         """
+        self.params.update(kwargs)
+
         # For some texts, such as empty strings, the scorer may return 0
         # To account for such cases, ensure that each score is converted to float
         scores = self.scorer.score(reference_text, generated_text)
@@ -197,25 +205,26 @@ class ROUGE(BaseMetric):
 
     def _batch_calculate(
         self,
-        generated_texts: Union[Iterable, np.ndarray, pd.Series],
-        reference_texts: Union[Iterable, np.ndarray, pd.Series],
+        generated_texts: Iterable | np.ndarray | pd.Series,
+        reference_texts: Iterable | np.ndarray | pd.Series,
         **kwargs: Any,
-    ) -> Union[List[float], List[dict], np.ndarray, pd.Series]:
+    ) -> list[float] | list[dict] | np.ndarray | pd.Series:
         """
         Calculate ROUGE scores for a batch of generated and reference texts.
         Supports iterables, numpy arrays, and pandas Series as input and output.
 
         :param generated_texts: Generated texts
-        :type generated_texts: Union[Iterable, np.ndarray, pd.Series]
+        :type generated_texts: Iterable | np.ndarray | pd.Series
         :param reference_texts: Reference texts
-        :type reference_texts: Union[Iterable, np.ndarray, pd.Series]
+        :type reference_texts: Iterable | np.ndarray | pd.Series
+        :param kwargs: Additional parameters for the ROUGE scorer, defaults to None
+        :type kwargs: Any
         :return: A list, numpy array, or pandas Series of Dictionary of ROUGE scores
-        :rtype: Union[List[dict], np.ndarray, pd.Series]
+        :rtype: list[dict] | np.ndarray | pd.Series
         """
-
         # `self.scorer` takes care of calculating ROUGE scores based on the supplied ROUGE types
-        scores = [
-            self._single_calculate(gen, ref, **kwargs)
+        scores: list[Dict[str, float]] = [
+            cast(Dict[str, float], self._single_calculate(gen, ref, **kwargs))
             for gen, ref in zip(generated_texts, reference_texts)
         ]
 
@@ -230,16 +239,12 @@ class ROUGE(BaseMetric):
 
 
 class JSDivergence(BaseMetric):
-    """
-    Jensen-Shannon Divergence metric implementation using the `scipy` library.
-    """
+    """Jensen-Shannon Divergence metric implementation using the `scipy` library."""
 
     def __init__(
         self,
     ):
-        """
-        Initialize the Jensen-Shannon Divergence metric.
-        """
+        """Initialize the Jensen-Shannon Divergence metric."""
         pass
 
     def _single_calculate(
@@ -256,7 +261,7 @@ class JSDivergence(BaseMetric):
         :param reference_text: The reference text to compare against
         :type reference_text: str
         :param kwargs: Additional parameters for scipy's jensenshannon function
-        :type kwargs: Dict[str, Any], optional
+        :type kwargs: Any
         :return: The Jensen-Shannon Divergence score for the text pair
         :rtype: float
         """
@@ -276,21 +281,22 @@ class JSDivergence(BaseMetric):
 
     def _batch_calculate(
         self,
-        generated_texts: Union[Iterable, np.ndarray, pd.Series],
-        reference_texts: Union[Iterable, np.ndarray, pd.Series],
+        generated_texts: Iterable | np.ndarray | pd.Series,
+        reference_texts: Iterable | np.ndarray | pd.Series,
         **kwargs: Any,
-    ) -> Union[np.ndarray, pd.Series, List[float]]:
+    ) -> np.ndarray | pd.Series | list[float]:
         """
         Calculate Jensen-Shannon Divergence scores for a batch of generated and reference texts.
         Supports iterables, numpy arrays, and pandas Series as input and output.
 
         :param generated_texts: Generated texts
-        :type generated_texts: Union[Iterable, np.ndarray, pd.Series]
+        :type generated_texts: Iterable | np.ndarray | pd.Series
         :param reference_texts: Reference texts
-        :type reference_texts: Union[Iterable, np.ndarray, pd.Series]
+        :type reference_texts: Iterable | np.ndarray | pd.Series
         :param kwargs: Additional parameters for scipy's jensenshannon function, defaults to None
-        :type kwargs: Dict[str, Any], optional
+        :type kwargs: Any
         :return: A list, array, or Series of JSD scores
+        :rtype: np.ndarray | pd.Series | list[float]
         """
 
         if isinstance(generated_texts, np.ndarray) and isinstance(reference_texts, np.ndarray):

@@ -18,9 +18,7 @@ pd = None
 sns = None
 
 try:
-    from math import (
-        pi as _math_pi_temp,
-    )  # Import the value of pi using a temporary alias
+    from math import pi as _math_pi_temp  # Import the value of pi using a temporary alias
 
     import matplotlib.pyplot as _plt_temp  # Import pyplot using a temporary alias
 
@@ -84,6 +82,7 @@ def plot_metric_comparison(
         - figsize (tuple, optional): Figure size. Defaults to (10, 6).
         - axis (Optional[matplotlib.axes.Axes], optional): Matplotlib Axes to plot on.
         - Other kwargs are passed to seaborn.barplot.
+    :type kwargs: Any
     :raises ImportError: If required libraries (matplotlib, seaborn, pandas, numpy) are not installed.
     :raises ValueError: If 'metric_name' is not provided in kwargs.
     :return: The matplotlib Axes object containing the plot.
@@ -197,6 +196,7 @@ def plot_radar_comparison(
         - line_width (float, optional): Width of plot lines. Defaults to 1.0.
         - y_ticks (Optional[List[float]], optional): Custom y-axis ticks.
         - axis (Optional[matplotlib.axes.Axes], optional): Matplotlib polar Axes to plot on.
+    :type kwargs: Any
     :raises ImportError: If required libraries (matplotlib, numpy, pandas) are not installed.
     :raises ValueError: If aggregation results in no data or metrics.
     :return: The matplotlib Axes object containing the plot.

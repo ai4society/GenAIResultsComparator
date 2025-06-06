@@ -1,19 +1,19 @@
 import os
 from collections import Counter
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 
 import numpy as np
 import pandas as pd
 
 
-def to_iterable(obj: Any) -> Union[np.ndarray, pd.Series, List]:
+def to_iterable(obj: Any) -> np.ndarray | pd.Series | List:
     """
     Convert object to an iterable, preserving numpy arrays and pandas Series.
 
     :param obj: The object to convert
     :type obj: Any
     :return: An iterable version of the object
-    :rtype: Union[np.ndarray, pd.Series, List]
+    :rtype: np.ndarray | pd.Series | List
     """
     if isinstance(obj, (np.ndarray, pd.Series)):
         return obj
@@ -48,14 +48,12 @@ def get_ngrams(text: str, n: int) -> Dict[str, int]:
     return Counter(" ".join(ngram) for ngram in ngrams)  # Count the n-grams
 
 
-def batch_get_ngrams(
-    texts: Union[np.ndarray, pd.Series, List[str]], n: int
-) -> List[Dict[str, int]]:
+def batch_get_ngrams(texts: np.ndarray | pd.Series | List[str], n: int) -> List[Dict[str, int]]:
     """
     Generate n-grams for a batch of texts.
 
     :param texts: The input texts
-    :type texts: Union[np.ndarray, pd.Series, List[str]]
+    :type texts: np.ndarray | pd.Series | List[str]
     :param n: The number of words in each n-gram
     :type n: int
     :return: A list of dictionaries of n-grams and their counts
@@ -134,9 +132,9 @@ def prepare_results_dataframe(
 
 
 def generate_deltas_frame(
-    threshold_results: Union[Dict[str, Dict[str, Any]], List[Dict[str, Dict[str, Any]]]],
-    generated_texts: Optional[Union[str, List[str]]] = None,
-    reference_texts: Optional[Union[str, List[str]]] = None,
+    threshold_results: Dict[str, Dict[str, Any]] | List[Dict[str, Dict[str, Any]]],
+    generated_texts: Optional[str | List[str]] = None,
+    reference_texts: Optional[str | List[str]] = None,
     output_csv_path: Optional[str] = None,
 ) -> pd.DataFrame:
     """
@@ -145,9 +143,13 @@ def generate_deltas_frame(
     :param threshold_results: Output from apply_thresholds (handles both single and batch)
         Single: {"BLEU": {"score": 0.6, "threshold_applied": 0.5, "passed_threshold": True}, ...}
         Batch: [{"BLEU": {"score": 0.6, ...}, ...}, {"BLEU": {"score": 0.4, ...}, ...}]
+    :type threshold_results: Dict[str, Dict[str, Any]] | List[Dict[str, Dict[str, Any]]]
     :param generated_texts: Optional generated text string(s)
+    :type generated_texts: Optional[str | List[str]]
     :param reference_texts: Optional reference text string(s)
+    :type reference_texts: Optional[str | List[str]]
     :param output_csv_path: Optional path to save the CSV file
+    :type output_csv_path: Optional[str]
     :return: A Pandas DataFrame containing the results
     :rtype: pd.DataFrame
     """

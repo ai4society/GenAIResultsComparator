@@ -1,5 +1,4 @@
-from typing import List, Dict, Any, Union, Optional
-
+from typing import Any, Dict, List, Optional, TypeAlias
 
 # Default threshold for each metric
 DEFAULT_THRESHOLD: Dict[str, float] = {
@@ -13,6 +12,9 @@ DEFAULT_THRESHOLD: Dict[str, float] = {
     "SequenceMatcher": 0.5,
 }
 
+# Type alias for results with scores and thresholds
+ThresholdedResults: TypeAlias = Dict[str, float | Any]
+
 
 def get_default_thresholds() -> Dict[str, float]:
     """
@@ -21,23 +23,24 @@ def get_default_thresholds() -> Dict[str, float]:
 
     :return: A dictionary of default thresholds for each metric.
         e.g., {"BLEU": 0.5, "JSD": 0.5}
+    :rtype: Dict[str, float]
     """
     return DEFAULT_THRESHOLD.copy()
 
 
 def apply_thresholds(
-    results: Dict[str, Union[float, Any]] | List[Dict[str, Union[float, Any]]],
+    results: ThresholdedResults | List[ThresholdedResults],
     thresholds: Optional[Dict[str, float]] = None,
-) -> (
-    Dict[str, Dict[str, Union[float, bool, None]]]
-    | List[Dict[str, Dict[str, Union[float, bool, None]]]]
-):
+) -> Dict[str, ThresholdedResults] | List[Dict[str, ThresholdedResults]]:
     """
     Apply thresholds to scores for single pair or batch of generated and reference texts.
+    Type ThresholdedResults is a dictionary where keys are metric names and values are either scores or dictionaries with scores.
+    Specifically, it is of type Dict[str, float | Any].
 
     :param results: Either a single dictionary of scores or a list of score dictionaries
         Single: {"BLEU": 0.6, "JSD": 0.1}
         Batch: [{"BLEU": 0.6, "JSD": 0.1}, {"BLEU": 0.4, "JSD": 0.2}]
+    :rtype results: ThresholdedResults | List[ThresholdedResults]
     :param thresholds: Dictionary of metric names to threshold values.
         Defaults to get_default_thresholds() if not provided.
     :return: For single input, returns a dictionary. For batch input, returns a list.
@@ -48,10 +51,18 @@ def apply_thresholds(
     current_threshold = thresholds if thresholds is not None else get_default_thresholds()
 
     def single_result(
-        result: Dict[str, Union[float, Any]],
-    ) -> Dict[str, Dict[str, Union[float, bool, None]]]:
+        result: ThresholdedResults,
+    ) -> Dict[str, ThresholdedResults]:
         """
         Apply thresholds to a single result dictionary.
+
+        Type ThresholdedResults is a dictionary where keys are metric names and values are either scores or dictionaries with scores.
+        Specifically, it is of type Dict[str, float | Any].
+
+        :param result: A dictionary of scores for a single pair of generated and reference texts.
+        :type result: ThresholdedResults
+        :return: A dictionary where each metric's score is accompanied by its threshold and pass/fail status.
+        :rtype: Dict[str, ThresholdedResults]
         """
         pair_results = {}
         for metric_name, score in result.items():
@@ -83,13 +94,16 @@ def apply_thresholds(
 def calculate_pass_fail_percent(
     results: Dict[str, List[float]],
     thresholds: Optional[Dict[str, float]] = None,
-) -> Dict[str, Dict[str, Union[float, int]]]:
+) -> Dict[str, Dict[str, float | int]]:
     """
     Calculate pass/fail percentages for each metric across results.
 
     :param results: Dictionary where keys are metric names and values are lists of scores
+    :type results: Dict[str, List[float]]
     :param thresholds: Dictionary of thresholds for each metric
+    :type thresholds: Optional[Dict[str, float]]
     :return: Dictionary with metric names as keys and pass/fail statistics as values
+    :rtype: Dict[str, Dict[str, float | int]]
     """
     current_thresholds = thresholds if thresholds is not None else get_default_thresholds()
 

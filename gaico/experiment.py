@@ -51,7 +51,11 @@ class Experiment:
         Initializes the Experiment.
 
         :param llm_responses: A dictionary mapping model names (str) to their generated text responses (str).
+        :type llm_responses: Dict[str, str]
         :param reference_answer: A single reference text (str) to compare against.
+        :type reference_answer: str
+        :raises TypeError: If llm_responses is not a dictionary or reference_answer is not a string.
+        :raises ValueError: If llm_responses does not contain string keys and values.
         """
         if not isinstance(llm_responses, dict):
             raise TypeError("llm_responses must be a dictionary.")
@@ -72,7 +76,14 @@ class Experiment:
         self._thresholded_results_cache: Optional[Dict[str, Dict[str, Dict[str, Any]]]] = None
 
     def _calculate_scores_for_metric(self, metric_name: str) -> None:
-        """Calculates scores for a given base metric across all models if not already done."""
+        """
+        Calculates scores for a given base metric across all models if not already done.
+
+        :param metric_name: The name of the metric to calculate (e.g., "Jaccard", "ROUGE").
+        :type metric_name: str
+        :return: None
+        :rtype: None
+        """
         if metric_name not in REGISTERED_METRICS:
             # This should be caught by callers, but as a safeguard:
             raise ValueError(f"Metric '{metric_name}' is not registered.")
@@ -113,6 +124,12 @@ class Experiment:
         Returns a DataFrame of scores, filtered to include only metrics
         derived from the provided list of base_metrics_to_include.
         Calculates scores if necessary.
+
+        :param base_metrics_to_include: A list of base metric names (e.g., "Jaccard", "ROUGE").
+        :type base_metrics_to_include: List[str]
+        :return: A pandas DataFrame with columns "model_name", "metric_name", "score".
+                 "metric_name" will contain flat metric names (e.g., "ROUGE_rouge1").
+        :rtype: pd.DataFrame
         """
         for base_metric_name in base_metrics_to_include:
             if base_metric_name not in REGISTERED_METRICS:
@@ -150,9 +167,11 @@ class Experiment:
         Returns a DataFrame of scores for the specified metrics.
         If metrics is None, scores for all default metrics are returned.
 
-        :param metrics: A list of base metric names (e.g., "Jaccard", "ROUGE").
+        :param metrics: A list of base metric names (e.g., "Jaccard", "ROUGE"). Defaults to None.
+        :type metrics: Optional[List[str]]
         :return: A pandas DataFrame with columns "model_name", "metric_name", "score".
                  "metric_name" will contain flat metric names (e.g., "ROUGE_rouge1").
+        :rtype: pd.DataFrame
         """
         metrics_to_fetch = metrics
         if metrics_to_fetch is None:
@@ -169,6 +188,17 @@ class Experiment:
         """
         Calculates and returns thresholded results for all models.
         Assumes scores_df contains the necessary flat_metrics.
+        :param flat_metrics_for_thresholding: List of flat metric names to apply thresholds to.
+        :type flat_metrics_for_thresholding: List[str]
+        :param custom_thresholds: Optional dictionary mapping flat metric names to custom threshold values.
+                                  If provided, these will override default thresholds.
+        :type custom_thresholds: Optional[Dict[str, float]]
+        :param scores_df: DataFrame containing scores with columns "model_name", "metric_name", "score".
+                          This should already be filtered to include only relevant flat metrics.
+        :type scores_df: pd.DataFrame
+        :return: A dictionary mapping model names to their thresholded results.
+                 Each model's results are a dictionary of flat metric names to their score and pass/fail status.
+        :rtype: Dict[str, Dict[str, Dict[str, Any]]]
         """
         # Determine effective thresholds for each flat_metric_name
         default_threshold_map = get_default_thresholds()
@@ -236,15 +266,23 @@ class Experiment:
         Compares models based on specified metrics, optionally plotting and generating a CSV.
 
         :param metrics: List of base metric names. If None, uses all default registered metrics.
+        :type metrics: Optional[List[str]]
         :param plot: If True, generates and shows plots. Defaults to False.
+        :type plot: bool
         :param custom_thresholds: Dictionary of metric names (base or flat) to threshold values.
                                   Overrides default thresholds.
+        :type custom_thresholds: Optional[Dict[str, float]]
         :param output_csv_path: If provided, path to save a CSV report of thresholded results.
+        :type output_csv_path: Optional[str]
         :param aggregate_func: Aggregation function (e.g., np.mean, np.median) for plotting
                                 when multiple scores exist per model/metric (not typical for default setup).
+        :type aggregate_func: Optional[Callable]
         :param plot_title_suffix: Suffix for plot titles.
+        :type plot_title_suffix: str
         :param radar_metrics_limit: Maximum number of metrics for a radar plot to maintain readability.
+        :type radar_metrics_limit: int
         :return: A pandas DataFrame containing the scores for the compared metrics, or None if no valid metrics.
+        :rtype: Optional[pd.DataFrame]
         """
         base_metrics_to_run = metrics
         if base_metrics_to_run is None:

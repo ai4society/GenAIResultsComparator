@@ -1,8 +1,9 @@
-from typing import Any, Dict, Iterable, List, Optional, Union
+from typing import Any, Dict, Iterable, List, Optional, cast
 
 import numpy as np
 import pandas as pd
 from bert_score import BERTScorer
+from torch import Tensor
 
 from .base import BaseMetric
 
@@ -30,14 +31,14 @@ class BERTScore(BaseMetric):
             Should be one of "precision", "recall", or "f1" to return a single score of type float
             Wrap in a list to return multiple scores of type dict
             Default returns a dictionary of all scores. Equivalent to passing ["precision", "recall", "f1"]
-        :type output_val: Optional[List[str]], optional
+        :type output_val: Optional[List[str]]
         :param num_layers: Number of layers to use from BERT, defaults to 8
         :type num_layers: int
         :param batch_size: Batch size for processing, defaults to 64
         :type batch_size: int
         :param additional_params: Additional parameters to pass to the BERTScorer class from the bert_score library, defaults to None
             Default only passes the model_type, num_layers, and batch_size
-        :type additional_params: Dict[str, Any], optional
+        :type additional_params: Dict[str, Any]
         """
         params = {
             "model_type": model_type,
@@ -65,7 +66,7 @@ class BERTScore(BaseMetric):
         generated_text: str,
         reference_text: str,
         **kwargs: Any,
-    ) -> Union[dict[str, float], float]:
+    ) -> dict[str, float] | float:
         """
         Calculate the BERTScore for a pair of generated and reference texts.
 
@@ -74,13 +75,18 @@ class BERTScore(BaseMetric):
         :param reference_text: The reference text to compare against
         :type reference_text: str
         :param kwargs: Additional parameters to pass to the score method of the BERTScorer class, defaults to None
-        :type kwargs: Dict[str, Any], optional
+        :type kwargs: Any
         :return: Either a single score or a dictionary of scores containing precision, recall, and F1
-        :rtype: Union[dict[str, float], float]
+        :rtype: dict[str, float] | float
         """
 
-        P, R, F1 = self.scorer.score([generated_text], [reference_text], **kwargs)
-
+        P: Tensor
+        R: Tensor
+        F1: Tensor
+        P, R, F1 = cast(
+            tuple[Tensor, Tensor, Tensor],
+            self.scorer.score([generated_text], [reference_text], **kwargs),
+        )
         out_dict = {"precision": P.item(), "recall": R.item(), "f1": F1.item()}
 
         # Return based on output_val
@@ -94,27 +100,32 @@ class BERTScore(BaseMetric):
 
     def _batch_calculate(
         self,
-        generated_texts: Union[Iterable, np.ndarray, pd.Series],
-        reference_texts: Union[Iterable, np.ndarray, pd.Series],
+        generated_texts: Iterable | np.ndarray | pd.Series,
+        reference_texts: Iterable | np.ndarray | pd.Series,
         **kwargs: Any,
-    ) -> Union[List[float], List[dict], np.ndarray, pd.Series]:
+    ) -> list[float] | list[dict] | np.ndarray | pd.Series:
         """
         Calculate BERTScores for a batch of generated and reference texts.
         Supports iterables, numpy arrays, and pandas Series as input and output.
 
         :param generated_texts: Generated texts
-        :type generated_texts: Union[Iterable, np.ndarray, pd.Series]
+        :type generated_texts: Iterable | np.ndarray | pd.Series
         :param reference_texts: Reference texts
-        :type reference_texts: Union[Iterable, np.ndarray, pd.Series]
+        :type reference_texts: Iterable | np.ndarray | pd.Series
         :param kwargs: Additional parameters to pass to the score method of the BERTScorer class
-        :type kwargs: Dict[str, Any], optional
+        :type kwargs: Any
         :return: A list, numpy array, or pandas Series of dictionaries containing precision, recall, and F1 scores.
             If `output_val` is set to a single value, returns a list, numpy array, or pandas Series of that value.
-        :rtype: Union[List[float], List[dict], np.ndarray, pd.Series]
+        :rtype: list[float] | list[dict] | np.ndarray | pd.Series
         """
-
-        P, R, F1 = self.scorer.score(list(generated_texts), list(reference_texts), **kwargs)
-
+        P: Tensor
+        R: Tensor
+        F1: Tensor
+        P, R, F1 = cast(
+            tuple[Tensor, Tensor, Tensor],
+            self.scorer.score(list(generated_texts), list(reference_texts), **kwargs),
+        )
+        # Convert tensors to lists
         scores = [
             {"precision": p.item(), "recall": r.item(), "f1": f.item()} for p, r, f in zip(P, R, F1)
         ]
