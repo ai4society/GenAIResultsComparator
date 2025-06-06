@@ -1,5 +1,7 @@
 # Welcome to GAICo
 
+![quickstart](https://raw.githubusercontent.com/ai4society/GenAIResultsComparator/refs/heads/main/quickstart.gif)
+
 The library provides a set of metrics for evaluating **2 text strings as inputs**. **Outputs are on a scale of 0 to 1** (normalized), where 1 indicates a perfect match between the two texts.
 
 **_Class Structure:_** All metrics are implemented as classes, and they can be easily extended to add new metrics. The metrics start with the `BaseMetric` class under the `gaico/base.py` file.
