@@ -19,7 +19,7 @@ If the inputs are Iterables (lists, Numpy arrays, etc.), then the method assumes
 article on evaluating LLM-generated content](https://learn.microsoft.com/en-us/ai/playbook/technology-guidance/generative-ai/working-with-llms/evaluation/list-of-eval-metrics). In the article, Microsoft describes 3 categories of evaluation metrics: **(1)** Reference-based metrics, **(2)** Reference-free metrics, and **(3)** LLM-based metrics. _The library currently supports reference-based metrics._
 
 <figure markdown="span">
-  ![GAICo Overview](https://raw.githubusercontent.com/ai4society/GenAIResultsComparator/refs/heads/main/gaico.drawio.png?token=GHSAT0AAAAAACUP64G2LY3IXWOPWPFANBOY2CDF6NA){ width="500" }
+  ![GAICo Overview](https://raw.githubusercontent.com/ai4society/GenAIResultsComparator/refs/heads/main/gaico.drawio.png){ width="500" }
   <figcaption><em>Overview of the workflow supported by the <i>GAICo</i> library</em></figcaption>
 </figure>
 
