@@ -48,5 +48,5 @@ jobs:
           user_email: 'github-actions[bot]@users.noreply.github.com'
           commit_message: 'Deploy GenAIResultsComparator docs (commit ${{ github.sha }})'
           # By default, this action cleans the destination_dir before copying.
-          keep_files: false # This is the default, good for ensuring a clean deploy
-          allow_empty_commit: false # Default
+        #   keep_files: false # This is the default, good for ensuring a clean deploy
+        #   allow_empty_commit: false # Default
