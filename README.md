@@ -113,40 +113,60 @@ article on evaluating LLM-generated content](https://learn.microsoft.com/en-us/a
 
 ## Installation
 
-Currently, GAICo is not available on PyPI. To use it, you'll need to clone the repository and set up the environment using UV.
-
-1. First, make sure you have UV installed. If not, you can install it by following the instructions on the [official UV website](https://docs.astral.sh/uv/#installation).
-
-2. Clone the repository:
-
-   ```shell
-   git clone https://github.com/ai4society/GenAIResultsComparator.git
-   cd GenAIResultsComparator
-   ```
-
-3. Ensure the dependencies are installed by creating a virtual env. (python 3.12 is recommended):
-
-   ```shell
-   uv venv
-   uv sync
-   ```
-
-4. (Optional) Activate the virtual environment (doing this avoids prepending `uv run` to any proceeding commands):
-   ```shell
-   source .venv/bin/activate
-   ```
-
-_If you don't want to use `uv`,_ you can install the dependencies with the following commands:
+You can install GAICo directly from PyPI using pip:
 
 ```shell
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
+pip install GAICo
 ```
 
-However note that the `requirements.txt` is generated automatically with the pre-commit file and might not include all the dependencies (in such case, a manual pip install might be needed).
+To include optional dependencies for visualization features (matplotlib, seaborn), install with:
 
-Now you're ready to use GAICo!
+```shell
+pip install GAICo[visualization]
+```
+
+### For Developers (Installing from source)
+
+If you want to contribute to GAICo or install it from source for development:
+
+1. Clone the repository:
+
+    ```shell
+    git clone https://github.com/ai4society/GenAIResultsComparator.git
+    cd GenAIResultsComparator
+    ```
+
+2. Set up a virtual environment and install dependencies:
+
+    We recommend using [UV](https://docs.astral.sh/uv/#installation) for managing environments and dependencies.
+
+    ```shell
+    # Create a virtual environment (e.g., Python 3.12 recommended)
+    uv venv
+    # Activate the environment
+    source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+    # Install the package in editable mode with development and visualization extras
+    uv pip install -e ".[dev,visualization]"
+    ```
+
+    _If you don't want to use `uv`,_ you can install the dependencies with the following commands:
+
+    ```shell
+    # Create a virtual environment (e.g., Python 3.12 recommended)
+    python3 -m venv .venv
+    # Activate the environment
+    source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+    # Install the package in editable mode with development and visualization extras
+    pip install -e ".[dev,visualization]"
+    ```
+
+    *(Note: The `dev` extra includes dependencies for testing, linting, building, and documentation, as well as visualization dependencies.)*
+
+3. Set up pre-commit hooks (optional but recommended for contributors):
+
+    ```shell
+    pre-commit install
+    ```
 
 ## Project Structure
 
@@ -160,9 +180,11 @@ The project structure is as follows:
 ├── uv.lock
 ├── pyproject.toml
 ├── .pre-commit-config.yaml
-├── gaico/  # Contains the library code
+├── gaico/        # Contains the library code
 ├── examples/     # Contains example scripts
-└── tests/        # Contains test scripts
+├── tests/        # Contains test scripts
+└── docs/         # Contains documentation files
+
 ```
 
 ### Code Style

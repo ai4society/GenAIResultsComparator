@@ -6,7 +6,14 @@ build-backend = "hatchling.build"
 name = "GAICo"
 version = "0.1.0"
 description = "A Python library for reference-based metrics to compare generated LLM text with ground truth text"
-authors = [{ name = "AI4Society", email = "ai4societyteam@gmail.com" }]
+authors = [
+    { name = "Nitin Gupta", email = "g-nitin@users.noreply.github.com" },
+    { name = "Pallav Koppisetti", email = "pallavkoppisetti@users.noreply.github.com" },
+    { name = "Biplav Srivastava", email = "biplav-s@users.noreply.github.com" }
+]
+maintainers = [
+    { name = "AI4Society Team", email = "ai4societyteam@gmail.com" }
+]
 requires-python = ">=3.10, <3.13"
 readme = "README.md"
 license = { file = "LICENSE" }
@@ -43,7 +50,10 @@ dependencies = [
 ]
 
 [project.urls]
+Homepage = "https://github.com/ai4society/GenAIResultsComparator"
+Documentation = "https://ai4society.github.io/projects/GenAIResultsComparator/index.html"
 Repository = "https://github.com/ai4society/GenAIResultsComparator"
+"Bug Tracker" = "https://github.com/ai4society/GenAIResultsComparator/issues"
 
 [project.optional-dependencies]
 visualization = [
@@ -55,9 +65,9 @@ visualization = [
 dev = [
     "build>=1.2.2.post1",
     "flake8>=7.2.0",
-    "hatchling>=1.27.0",
     "hypothesis>=6.131.17",
     "jupyter>=1.1.1",
+    "matplotlib>=3.10.3",
     "mkdocs>=1.6.1",
     "mkdocs-material>=9.6.14",
     "mkdocstrings>=0.29.1",
