@@ -72,9 +72,8 @@ If you find this project useful, please consider citing it in your work:
 
 ## Acknowledgments
 
-- This work is developed by the [AI4Society team](https://ai4society.github.io). In particular, the library is developed by [Nitin Gupta](https://github.com/g-nitin), [Pallav Koppisetti](https://github.com/pallavkoppisetti), and [Biplav Srivastava](https://github.com/biplav-s).
-- This library uses several open-source packages including NLTK, scikit-learn, and others.
-- Special thanks to the creators and maintainers of the implemented metrics.
+- The library is developed by [Nitin Gupta](https://github.com/g-nitin), [Pallav Koppisetti](https://github.com/pallavkoppisetti), and [Biplav Srivastava](https://github.com/biplav-s). Members of [AI4Society](https://ai4society.github.io) contributed to this tool as part of ongoing discussions. Major contributors are credited.
+- This library uses several open-source packages including NLTK, scikit-learn, and others. Special thanks to the creators and maintainers of the implemented metrics.
 
 ## Contact
 
