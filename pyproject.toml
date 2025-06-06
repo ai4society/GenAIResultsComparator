@@ -7,9 +7,9 @@ name = "GAICo"
 version = "0.1.1"
 description = "A Python library for reference-based metrics to compare generated LLM text with ground truth text"
 authors = [
-    { name = "Nitin Gupta", email = "g-nitin@users.noreply.github.com" },
-    { name = "Pallav Koppisetti", email = "pallavkoppisetti@users.noreply.github.com" },
-    { name = "Biplav Srivastava", email = "biplav-s@users.noreply.github.com" }
+    { name = "Nitin Gupta", email = "nitin1209@gmail.com" },
+    { name = "Pallav Koppisetti", email = "pallav.koppisetti5@gmail.com" },
+    { name = "Biplav Srivastava", email = "prof.biplav@gmail.com" }
 ]
 maintainers = [
     { name = "AI4Society Team", email = "ai4societyteam@gmail.com" }
