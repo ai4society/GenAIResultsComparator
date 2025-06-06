@@ -1,0 +1,22 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: 'GAICo: GenAI Results Comparator'
+message: 'If you use this software, please cite it as below.'
+type: software
+authors:
+  - name: AI4Society
+    email: ai4societyteam@gmail.com
+    website: 'https://ai4society.github.io'
+repository-code: 'https://github.com/ai4society/GenAIResultsComparator'
+abstract: >-
+  A Python library providing evaluation metrics to compare
+  generated texts from Large Language Models (LLMs) against
+  reference texts. Features streamlined workflows for model
+  comparison and evaluation.
+keywords:
+  - Python
+  - Natural Language Processing
+  - AI Evaluation
+license: MIT
