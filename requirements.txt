@@ -403,7 +403,6 @@ huggingface-hub==0.31.2 \
     --hash=sha256:7053561376ed7f6ffdaecf09cc54d70dc784ac6315fa4bb9b93e19662b029675 \
     --hash=sha256:8138cd52aa2326b4429bb00a4a1ba8538346b7b8a808cdce30acb6f1f1bdaeec
     # via
-    #   sentence-transformers
     #   tokenizers
     #   transformers
 hypothesis==6.131.17 \
@@ -1171,9 +1170,7 @@ pillow==11.2.1 \
     --hash=sha256:ea926cfbc3957090becbcbbb65ad177161a2ff2ad578b5a6ec9bb1e1cd78753c \
     --hash=sha256:f0d3348c95b766f54b76116d53d4cb171b52992a1027e7ca50c81b43b9d9e363 \
     --hash=sha256:f6b0c664ccb879109ee3ca702a9272d877f4fcd21e5eb63c26422fd6e415365e
-    # via
-    #   matplotlib
-    #   sentence-transformers
+    # via matplotlib
 platformdirs==4.3.8 \
     --hash=sha256:3d512d96e16bcb959a814c9f348431070822a6496326a4be0911c40b5a74c2bc \
     --hash=sha256:ff7059bb7eb1179e2685604f4aaf157cfd9535242bd23742eadc3c13542139b4
@@ -1680,9 +1677,7 @@ scikit-learn==1.6.1 \
     --hash=sha256:d056391530ccd1e501056160e3c9673b4da4805eb67eb2bdf4e983e1f9c9204e \
     --hash=sha256:dc4765af3386811c3ca21638f63b9cf5ecf66261cc4815c1db3f1e7dc7b79db2 \
     --hash=sha256:fa909b1a36e000a03c382aade0bd2063fd5680ff8b8e501660c0f59f021a6415
-    # via
-    #   gaico
-    #   sentence-transformers
+    # via gaico
 scipy==1.15.3 \
     --hash=sha256:05dc6abcd105e1a29f95eada46d4a3f251743cfd7d3ae8ddb4088047f24ea477 \
     --hash=sha256:06efcba926324df1696931a57a176c80848ccd67ce6ad020c810736bfd58eb1c \
@@ -1715,7 +1710,6 @@ scipy==1.15.3 \
     # via
     #   gaico
     #   scikit-learn
-    #   sentence-transformers
 seaborn==0.13.2 \
     --hash=sha256:636f8336facf092165e27924f223d3c62ca560b1f2bb5dff7ab7fad265361987 \
     --hash=sha256:93e60a40988f4d65e9f4885df477e2fdaff6b73a9ded434c1ab356dd57eefff7
@@ -1727,10 +1721,6 @@ send2trash==1.8.3 \
     --hash=sha256:0c31227e0bd08961c7665474a3d1ef7193929fedda4233843689baa056be46c9 \
     --hash=sha256:b18e7a3966d99871aefeb00cfbcfdced55ce4871194810fc71f4aa484b953abf
     # via jupyter-server
-sentence-transformers==4.1.0 \
-    --hash=sha256:382a7f6be1244a100ce40495fb7523dbe8d71b3c10b299f81e6b735092b3b8ca \
-    --hash=sha256:f125ffd1c727533e0eca5d4567de72f84728de8f7482834de442fd90c2c3d50b
-    # via gaico
 setuptools==80.7.1 \
     --hash=sha256:ca5cc1069b85dc23070a6628e6bcecb3292acac802399c7f8edc0100619f9009 \
     --hash=sha256:f6ffc5f0142b1bd8d0ca94ee91b30c0ca862ffd50826da1ea85258a06fd94552
@@ -1872,9 +1862,7 @@ torch==2.7.0 \
     --hash=sha256:c9afea41b11e1a1ab1b258a5c31afbd646d6319042bfe4f231b408034b51128b \
     --hash=sha256:f56d4b2510934e072bab3ab8987e00e60e1262fb238176168f5e0c43a1320c6d \
     --hash=sha256:fd5cfbb4c3bbadd57ad1b27d56a28008f8d8753733411a140fcfb84d7f933a25
-    # via
-    #   bert-score
-    #   sentence-transformers
+    # via bert-score
 tornado==6.5.1 \
     --hash=sha256:02420a0eb7bf617257b9935e2b754d1b63897525d8a289c9d65690d580b4dcf7 \
     --hash=sha256:13ce6e3396c24e2808774741331638ee6c2f50b114b97a55c5b442df65fd9692 \
@@ -1902,7 +1890,6 @@ tqdm==4.67.1 \
     #   bert-score
     #   huggingface-hub
     #   nltk
-    #   sentence-transformers
     #   transformers
 traitlets==5.14.3 \
     --hash=sha256:9ed0579d3502c94b4b3732ac120375cda96f923114522847de4b3bb98b96b6b7 \
@@ -1925,9 +1912,7 @@ traitlets==5.14.3 \
 transformers==4.51.3 \
     --hash=sha256:e292fcab3990c6defe6328f0f7d2004283ca81a7a07b2de9a46d67fd81ea1409 \
     --hash=sha256:fd3279633ceb2b777013234bbf0b4f5c2d23c4626b05497691f00cfda55e8a83
-    # via
-    #   bert-score
-    #   sentence-transformers
+    # via bert-score
 triton==3.3.0 ; platform_machine == 'x86_64' and sys_platform == 'linux' \
     --hash=sha256:3161a2bf073d6b22c4e2f33f951f3e5e3001462b2570e6df9cd57565bdec2984 \
     --hash=sha256:b68c778f6c4218403a6bd01be7484f6dc9e20fe2083d22dd8aef33e3b87a10a3 \
@@ -1955,7 +1940,6 @@ typing-extensions==4.13.2 \
     #   mypy
     #   referencing
     #   rich
-    #   sentence-transformers
     #   torch
 tzdata==2025.2 \
     --hash=sha256:1a403fada01ff9221ca8044d701868fa132215d84beb92242d9acd2147f667a8 \
