@@ -63,10 +63,7 @@ class BLEU(BaseMetric):
         :type smoothing_function: Optional[Callable]
         """
         if not _nltk_available:
-            raise ImportError(
-                "NLTK is not installed, which is required for BLEU metric. "
-                "Please install it with: pip install GAICo[bleu]"
-            )
+            raise ImportError("NLTK is not installed, which is required for BLEU metric. ")
         self.n = n
         # _SmoothingFunction_cls will be None if nltk failed to import
         self.smoothing_function = (
@@ -295,7 +292,7 @@ class JSDivergence(BaseMetric):
                 missing_deps.append("scipy")
             raise ImportError(
                 f"{', '.join(missing_deps)} is not installed, which is required for JSDivergence metric. "
-                "Please install it with: pip install GAICo[jsd]"
+                "Please install it with: pip install gaico[jsd]"
             )
 
     def _single_calculate(

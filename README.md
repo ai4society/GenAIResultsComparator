@@ -64,7 +64,7 @@ However, you might prefer to use the individual metric classes directly for more
 
 ## Description
 
-At the core, the library provides a set of metrics for evaluating text strings given as inputs and produce outputs on a scale of 0 to 1 (normalized), where 1 indicates a perfect match between the two texts. These scores are use to analyze LLM outputs as well as visualize
+At the core, the library provides a set of metrics for evaluating text strings given as inputs and produce outputs on a scale of 0 to 1 (normalized), where 1 indicates a perfect match between the two texts. These scores are use to analyze LLM outputs as well as visualize.
 
 **_Class Structure:_** All metrics are implemented as classes, and they can be easily extended to add new metrics. The metrics start with the `BaseMetric` class under the `gaico/base.py` file.
 
@@ -96,8 +96,9 @@ article on evaluating LLM-generated content](https://learn.microsoft.com/en-us/a
 - [Project Structure](#project-structure)
 - [Development](#development)
 - [Contributing](#contributing)
-- [License](#license)
+- [Citation](#citation)
 - [Acknowledgments](#acknowledgments)
+- [License](#license)
 - [Contact](#contact)
 
 ## Features
@@ -106,20 +107,20 @@ article on evaluating LLM-generated content](https://learn.microsoft.com/en-us/a
   - N-gram-based metrics (_BLEU_, _ROUGE_, _JS divergence_)
   - Text similarity metrics (_Jaccard_, _Cosine_, _Levenshtein_, _Sequence Matcher_)
   - Semantic similarity metrics (_BERTScore_)
-- Visualization capabilities using matplotlib and seaborn for plots like bar charts and radar plots.
-- Exportation of results to CSV files, including scores and threshold pass/fail status.
-- Streamlined `Experiment` class for easy comparison of multiple models, applying thresholds, plotting, and reporting.
+- Provides visualization capabilities using matplotlib and seaborn for plots like bar charts and radar plots.
+- Allows exportation of results to CSV files, including scores and threshold pass/fail status.
+- Provides streamlined `Experiment` class for easy comparison of multiple models, applying thresholds, plotting, and reporting.
 - Supports batch processing for efficient computation.
 - Optimized for different input types (lists, numpy arrays, pandas Series).
-- Extendable architecture for easy addition of new metrics.
-- Comprehensive testing suite.
+- Has extendable architecture for easy addition of new metrics.
+- Supports automated testing of metrics using [Pytest](https://docs.pytest.org/en/stable/).
 
 ## Installation
 
 You can install GAICo directly from PyPI using pip:
 
 ```shell
-pip install GAICo
+pip install gaico
 ```
 
 The default installation includes core metrics and some visualization modules which are lightweight. For optional features:
@@ -127,31 +128,39 @@ The default installation includes core metrics and some visualization modules wh
 - To include the **BERTScore** metric (which has larger dependencies like PyTorch):
 
   ```shell
-  pip install GAICo[bertscore]
-  ```
-
-- To include the **BLEU** metric (requires NLTK):
-
-  ```shell
-  pip install GAICo[bleu]
+  pip install gaico[bertscore]
   ```
 
 - To include the **CosineSimilarity** metric (requires scikit-learn):
 
   ```shell
-  pip install GAICo[cosine]
+  pip install gaico[cosine]
   ```
 
-- To include the **JSDivergence** metric (requires NLTK and SciPy):
+- To include the **JSDivergence** metric (requires SciPy):
 
   ```shell
-  pip install GAICo[jsd]
+  pip install gaico[jsd]
   ```
 
 - To install with **all optional features**:
   ```shell
-  pip install GAICo[bertscore,bleu,cosine,jsd]
+  pip install gaico[bertscore,cosine,jsd]
   ```
+
+### Installation Size Comparison
+
+The following table provides an _estimated_ overview of the relative disk space impact of different installation options. Actual sizes may vary depending on your operating system, Python version, and existing packages. These are primarily to illustrate the relative impact of optional dependencies.
+
+_Note:_ Core dependencies include: `levenshtein`, `matplotlib`, `numpy`, `pandas`, `rouge-score`, and `seaborn`.
+
+| Installation Command                      | Dependencies                                                 | Estimated Total Size Impact |
+| ----------------------------------------- | ------------------------------------------------------------ | --------------------------- |
+| `pip install gaico`                       | Core                                                         | 210 MB                      |
+| `pip install gaico[jsd]`                  | Core + `scipy`                                               | 310 MB                      |
+| `pip install gaico[cosine]`               | Core + `scikit-learn`                                        | 360 MB                      |
+| `pip install gaico[bertscore]`            | Core + `bert-score` (includes `torch`, `transformers`, etc.) | 800 MB                      |
+| `pip install gaico[bertscore,cosine,jsd]` | Core + all dependencies from above                           | 950 MB                      |
 
 ### For Developers (Installing from source)
 

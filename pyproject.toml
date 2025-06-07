@@ -56,9 +56,6 @@ Repository = "https://github.com/ai4society/GenAIResultsComparator"
 bertscore = [
     "bert-score>=0.3.13",
 ]
-bleu = [
-    "nltk>=3.9.1",
-]
 jsd = [
     "nltk>=3.9.1",
     "scipy>=1.15.3",
@@ -69,7 +66,7 @@ cosine = [
 
 [dependency-groups]
 dev = [
-    "GAICo[bertscore,bleu,jsd,cosine]",
+    "gaico[bertscore,jsd,cosine]",
     "build>=1.2.2.post1",
     "flake8>=7.2.0",
     "hypothesis>=6.131.17",

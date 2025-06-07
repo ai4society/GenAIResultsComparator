@@ -636,9 +636,6 @@ dependencies = [
 bertscore = [
     { name = "bert-score" },
 ]
-bleu = [
-    { name = "nltk" },
-]
 cosine = [
     { name = "scikit-learn" },
 ]
@@ -651,7 +648,7 @@ jsd = [
 dev = [
     { name = "build" },
     { name = "flake8" },
-    { name = "gaico", extra = ["bertscore", "bleu", "cosine", "jsd"] },
+    { name = "gaico", extra = ["bertscore", "cosine", "jsd"] },
     { name = "hypothesis" },
     { name = "jupyter" },
     { name = "matplotlib" },
@@ -674,7 +671,6 @@ requires-dist = [
     { name = "bert-score", marker = "extra == 'bertscore'", specifier = ">=0.3.13" },
     { name = "levenshtein", specifier = ">=0.27.1" },
     { name = "matplotlib", specifier = ">=3.10.3" },
-    { name = "nltk", marker = "extra == 'bleu'", specifier = ">=3.9.1" },
     { name = "nltk", marker = "extra == 'jsd'", specifier = ">=3.9.1" },
     { name = "numpy", specifier = ">=2.2.5" },
     { name = "pandas", specifier = ">=2.2.3" },
@@ -683,13 +679,13 @@ requires-dist = [
     { name = "scipy", marker = "extra == 'jsd'", specifier = ">=1.15.3" },
     { name = "seaborn", specifier = ">=0.13.2" },
 ]
-provides-extras = ["bertscore", "bleu", "jsd", "cosine"]
+provides-extras = ["bertscore", "jsd", "cosine"]
 
 [package.metadata.requires-dev]
 dev = [
     { name = "build", specifier = ">=1.2.2.post1" },
     { name = "flake8", specifier = ">=7.2.0" },
-    { name = "gaico", extras = ["bertscore", "bleu", "jsd", "cosine"] },
+    { name = "gaico", extras = ["bertscore", "jsd", "cosine"] },
     { name = "hypothesis", specifier = ">=6.131.17" },
     { name = "jupyter", specifier = ">=1.1.1" },
     { name = "matplotlib", specifier = ">=3.10.3" },
