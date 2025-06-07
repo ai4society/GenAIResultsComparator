@@ -4,10 +4,29 @@ import pytest
 
 from gaico.metrics import BERTScore
 
+# Import the flag to check for dependency availability
+from gaico.metrics.semantic_similarity_metrics import __semantic_deps_available__
+
+
+# This test checks GAICo's BERTScore wrapper's __init__ validation.
+# It should run even if bert-score/torch are not installed,
+# as the ValueError should be raised before the ImportError for missing deps.
+def test_bertscore_invalid_output_val_init_standalone():
+    with pytest.raises(ValueError, match="`output_val` must be a list"):
+        BERTScore(output_val=["f1"])
+    with pytest.raises(ValueError, match="`output_val` must be one of"):
+        BERTScore(output_val=["f2"])
+
 
 # Mark tests as potentially slow due to model download/loading
 @pytest.mark.bertscore
 class TestBERTScore:
+    # Skip all tests in this class if bert-score or its dependencies are not installed
+    pytestmark = pytest.mark.skipif(
+        not __semantic_deps_available__,
+        reason="bert-score and/or its dependencies (torch) not installed, skipping BERTScore calculation tests.",
+    )
+
     # Use class scope to load model only once per test class run
     @pytest.fixture(scope="class")
     def bert_scorer_default(self):
@@ -168,9 +187,3 @@ class TestBERTScore:
         assert all(
             isinstance(score, float) for score_dict in scores for score in score_dict.values()
         )
-
-    def test_bertscore_invalid_output_val_init(self):
-        with pytest.raises(ValueError, match="`output_val` must be a list"):
-            BERTScore(output_val="f1")
-        with pytest.raises(ValueError, match="`output_val` must be one of"):
-            BERTScore(output_val=["f2"])

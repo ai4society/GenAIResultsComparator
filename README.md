@@ -119,11 +119,24 @@ You can install GAICo directly from PyPI using pip:
 pip install GAICo
 ```
 
-To include optional dependencies for visualization features (matplotlib, seaborn), install with:
+The default installation includes core metrics. For optional features:
 
-```shell
-pip install GAICo[visualization]
-```
+- To include **visualization** features (matplotlib, seaborn):
+
+  ```shell
+  pip install GAICo[visualization]
+  ```
+
+- To include the **BERTScore** metric (which has larger dependencies like PyTorch):
+
+  ```shell
+  pip install GAICo[bertscore]
+  ```
+
+- To install with **all optional features**:
+  ```shell
+  pip install GAICo[visualization,bertscore]
+  ```
 
 ### For Developers (Installing from source)
 
@@ -131,42 +144,42 @@ If you want to contribute to GAICo or install it from source for development:
 
 1. Clone the repository:
 
-    ```shell
-    git clone https://github.com/ai4society/GenAIResultsComparator.git
-    cd GenAIResultsComparator
-    ```
+   ```shell
+   git clone https://github.com/ai4society/GenAIResultsComparator.git
+   cd GenAIResultsComparator
+   ```
 
 2. Set up a virtual environment and install dependencies:
 
-    We recommend using [UV](https://docs.astral.sh/uv/#installation) for managing environments and dependencies.
+   We recommend using [UV](https://docs.astral.sh/uv/#installation) for managing environments and dependencies.
 
-    ```shell
-    # Create a virtual environment (e.g., Python 3.12 recommended)
-    uv venv
-    # Activate the environment
-    source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-    # Install the package in editable mode with development and visualization extras
-    uv pip install -e ".[dev,visualization]"
-    ```
+   ```shell
+   # Create a virtual environment (e.g., Python 3.12 recommended)
+   uv venv
+   # Activate the environment
+   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+    # Install the package in editable mode with all development dependencies
+    uv pip install -e ".[dev]"
+   ```
 
-    _If you don't want to use `uv`,_ you can install the dependencies with the following commands:
+   _If you don't want to use `uv`,_ you can install the dependencies with the following commands:
 
-    ```shell
-    # Create a virtual environment (e.g., Python 3.12 recommended)
-    python3 -m venv .venv
-    # Activate the environment
-    source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-    # Install the package in editable mode with development and visualization extras
-    pip install -e ".[dev,visualization]"
-    ```
+   ```shell
+   # Create a virtual environment (e.g., Python 3.12 recommended)
+   python3 -m venv .venv
+   # Activate the environment
+   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+   # Install the package in editable mode with development and visualization extras
+   pip install -e ".[dev]"
+   ```
 
-    *(Note: The `dev` extra includes dependencies for testing, linting, building, and documentation, as well as visualization dependencies.)*
+   _(Note: The `dev` extra installs GAICo with all its optional features like `visualization` and `bertscore`, plus dependencies for testing, linting, building, and documentation.)_
 
 3. Set up pre-commit hooks (optional but recommended for contributors):
 
-    ```shell
-    pre-commit install
-    ```
+   ```shell
+   pre-commit install
+   ```
 
 ## Project Structure
 

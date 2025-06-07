@@ -38,7 +38,6 @@ classifiers = [ # Classifiers for better discoverability
     "Operating System :: OS Independent",
 ]
 dependencies = [
-    "bert-score>=0.3.13",
     "levenshtein>=0.27.1",
     "nltk>=3.9.1",
     "numpy>=2.2.5",
@@ -58,6 +57,9 @@ Repository = "https://github.com/ai4society/GenAIResultsComparator"
 visualization = [
     "matplotlib>=3.10.3",
     "seaborn>=0.13.2",
+]
+bertscore = [
+    "bert-score>=0.3.13",
 ]
 
 [dependency-groups]

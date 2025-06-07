@@ -2,10 +2,30 @@ from typing import Any, Dict, Iterable, List, Optional, cast
 
 import numpy as np
 import pandas as pd
-from bert_score import BERTScorer
-from torch import Tensor
 
 from .base import BaseMetric
+
+# Conditionally import bert_score and torch
+_BERTScorer_cls = None
+_Tensor_cls = None
+_semantic_deps_available = False
+
+try:
+    from bert_score import BERTScorer as _ImportedBERTScorer
+
+    _BERTScorer_cls = _ImportedBERTScorer
+    # torch is a dependency of bert_score
+    from torch import Tensor as _ImportedTensor
+
+    _Tensor_cls = _ImportedTensor
+    _semantic_deps_available = True
+except ImportError:
+    # bert_score or its dependencies (like torch) are not installed.
+    # The BERTScore class __init__ will handle raising an error.
+    pass
+
+# This variable can be imported by tests to skip them if dependencies are missing.
+__semantic_deps_available__ = _semantic_deps_available
 
 
 class BERTScore(BaseMetric):
@@ -48,8 +68,6 @@ class BERTScore(BaseMetric):
         if additional_params:
             params.update(additional_params)
 
-        self.scorer = BERTScorer(**params)
-
         # Check if output_val is valid
         if output_val:
             if not isinstance(output_val, list):  # Check if it is a list
@@ -60,6 +78,15 @@ class BERTScore(BaseMetric):
 
         # Ensure output_val is a list
         self.output_val = output_val or ["precision", "recall", "f1"]
+
+        # Now check for dependencies before initializing the scorer
+        if not _semantic_deps_available:
+            raise ImportError(
+                "BERTScore dependencies (bert-score, torch) are not installed. "
+                "Please install them with: pip install GAICo[bertscore]"
+            )
+
+        self.scorer = _BERTScorer_cls(**params)  # type: ignore
 
     def _single_calculate(
         self,
@@ -80,12 +107,15 @@ class BERTScore(BaseMetric):
         :rtype: dict[str, float] | float
         """
 
-        P: Tensor
-        R: Tensor
-        F1: Tensor
+        P: _Tensor_cls  # type: ignore
+        R: _Tensor_cls  # type: ignore
+        F1: _Tensor_cls  # type: ignore
         P, R, F1 = cast(
-            tuple[Tensor, Tensor, Tensor],
-            self.scorer.score([generated_text], [reference_text], **kwargs),
+            tuple[_Tensor_cls, _Tensor_cls, _Tensor_cls],  # type: ignore
+            self.scorer.score([generated_text], [reference_text], **kwargs),  # type: ignore
+        )
+        assert P is not None and R is not None and F1 is not None, (
+            "BERTScore tensors should not be None"
         )
         out_dict = {"precision": P.item(), "recall": R.item(), "f1": F1.item()}
 
@@ -118,17 +148,25 @@ class BERTScore(BaseMetric):
             If `output_val` is set to a single value, returns a list, numpy array, or pandas Series of that value.
         :rtype: list[float] | list[dict] | np.ndarray | pd.Series
         """
-        P: Tensor
-        R: Tensor
-        F1: Tensor
+        P: _Tensor_cls  # type: ignore
+        R: _Tensor_cls  # type: ignore
+        F1: _Tensor_cls  # type: ignore
         P, R, F1 = cast(
-            tuple[Tensor, Tensor, Tensor],
-            self.scorer.score(list(generated_texts), list(reference_texts), **kwargs),
+            tuple[_Tensor_cls, _Tensor_cls, _Tensor_cls],  # type: ignore
+            self.scorer.score(list(generated_texts), list(reference_texts), **kwargs),  # type: ignore
         )
+
         # Convert tensors to lists
-        scores = [
-            {"precision": p.item(), "recall": r.item(), "f1": f.item()} for p, r, f in zip(P, R, F1)
-        ]
+        scores: List[dict[str, float]] = []
+        p: _Tensor_cls  # type: ignore
+        r: _Tensor_cls  # type: ignore
+        f: _Tensor_cls  # type: ignore
+        for p, r, f in zip(P, R, F1):
+            assert p is not None and r is not None and f is not None, (
+                "BERTScore tensors should not be None"
+            )
+            score_dict = {"precision": p.item(), "recall": r.item(), "f1": f.item()}
+            scores.append(score_dict)
 
         # Define final scores based on output_val
         scores = [{key: score[key] for key in self.output_val} for score in scores]
