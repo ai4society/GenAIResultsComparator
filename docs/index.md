@@ -1,6 +1,11 @@
 # Welcome to GAICo
 
-![quickstart](https://raw.githubusercontent.com/ai4society/GenAIResultsComparator/refs/heads/main/quickstart.gif)
+<figure markdown="span">
+  <img src="https://raw.githubusercontent.com/ai4society/GenAIResultsComparator/refs/heads/main/quickstart.gif" alt="GIF Showing GAICo's Quickstart" style="display: block; margin: auto; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+  <figcaption><em>GAICo Quickstart Demonstration</em></figcaption>
+</figure>
+
+_GenAI Results Comparator (GAICo) is a Python library_ to help compare, analyze and visualize outputs from Large Language Models (LLMs), often against a reference text.
 
 The library provides a set of metrics for evaluating **2 text strings as inputs**. **Outputs are on a scale of 0 to 1** (normalized), where 1 indicates a perfect match between the two texts.
 
@@ -24,6 +29,74 @@ article on evaluating LLM-generated content](https://learn.microsoft.com/en-us/a
   ![GAICo Overview](https://raw.githubusercontent.com/ai4society/GenAIResultsComparator/refs/heads/main/gaico.drawio.png){ width="500" }
   <figcaption><em>Overview of the workflow supported by the <i>GAICo</i> library</em></figcaption>
 </figure>
+
+## Installation
+
+You can install GAICo directly from PyPI using pip:
+
+```shell
+pip install GAICo
+```
+
+The default installation includes core metrics. For optional features:
+
+- To include **visualization** features (matplotlib, seaborn):
+
+  ```shell
+  pip install GAICo[visualization]
+  ```
+
+- To include the **BERTScore** metric (which has larger dependencies like PyTorch):
+
+  ```shell
+  pip install GAICo[bertscore]
+  ```
+
+- To install with **all optional features**:
+  ```shell
+  pip install GAICo[visualization,bertscore]
+  ```
+
+### For Developers (Installing from source)
+
+If you want to contribute to GAICo or install it from source for development:
+
+1. Clone the repository:
+   ```shell
+   git clone https://github.com/ai4society/GenAIResultsComparator.git
+   cd GenAIResultsComparator
+   ```
+2. Set up a virtual environment and install dependencies:
+
+    We recommend using [UV](https://docs.astral.sh/uv/#installation) for managing environments and dependencies.
+
+    ```shell
+    # Create a virtual environment (e.g., Python 3.12 recommended)
+    uv venv
+    # Activate the environment
+    source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+      # Install the package in editable mode with all development dependencies
+      uv pip install -e ".[dev]"
+    ```
+
+    _If you don't want to use `uv`,_ you can install the dependencies with the following commands:
+
+    ```shell
+    # Create a virtual environment (e.g., Python 3.12 recommended)
+    python3 -m venv .venv
+    # Activate the environment
+    source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+    # Install the package in editable mode with development and visualization extras
+    pip install -e ".[dev]"
+    ```
+
+    _(Note: The `dev` extra installs GAICo with all its optional features like `visualization` and `bertscore`, plus dependencies for testing, linting, building, and documentation.)_
+
+3. Set up pre-commit hooks (optional but recommended for contributors):
+
+    ```shell
+    pre-commit install
+    ```
 
 ## Code Style
 
@@ -65,9 +138,10 @@ If you find this project useful, please consider citing it in your work:
 
 ```bibtex
 @software{AI4Society_GAICo_GenAI_Results,
-  author = {{AI4Society}},
+  author = {{Nitin Gupta, Pallav Koppisetti, Biplav Srivastava}},
   license = {MIT},
   title = {{GAICo: GenAI Results Comparator}},
+  year = {2025},
   url = {https://github.com/ai4society/GenAIResultsComparator}
 }
 ```

@@ -43,7 +43,6 @@ plugins:
 
 nav:
   - Home: index.md
-  - Installation: installation.md
   - Quick Start: quickstart.md
   - FAQ: faq.md
   - User Guide:
