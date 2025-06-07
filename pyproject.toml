@@ -4,8 +4,8 @@ build-backend = "hatchling.build"
 
 [project]
 name = "GAICo"
-version = "0.1.2"
-description = "A Python library for reference-based metrics to compare generated LLM text with ground truth text"
+version = "0.1.3"
+description = "GenAI Results Comparator, GAICo, is a Python library to help compare, analyze and visualize outputs from Large Language Models (LLMs), often against a reference text. In doing so, one can use a range of extensible metrics from the literature."
 authors = [
     { name = "Nitin Gupta", email = "nitin1209@gmail.com" },
     { name = "Pallav Koppisetti", email = "pallav.koppisetti5@gmail.com" },
@@ -39,12 +39,10 @@ classifiers = [ # Classifiers for better discoverability
 ]
 dependencies = [
     "levenshtein>=0.27.1",
-    "nltk>=3.9.1",
     "numpy>=2.2.5",
     "pandas>=2.2.3",
     "rouge-score>=0.1.2",
     "scikit-learn>=1.6.1",
-    "scipy>=1.15.3",
 ]
 
 [project.urls]
@@ -60,6 +58,13 @@ visualization = [
 ]
 bertscore = [
     "bert-score>=0.3.13",
+]
+bleu = [
+    "nltk>=3.9.1",
+]
+jsd = [
+    "nltk>=3.9.1",
+    "scipy>=1.15.3",
 ]
 
 [dependency-groups]

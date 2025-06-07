@@ -90,9 +90,17 @@ class Experiment:
 
         metric_cls = REGISTERED_METRICS[metric_name]
         # Use default initialization for metric classes
-        # Specific configurations (e.g., ROUGE types, BERTScore output_val) use class defaults.
-        # Users wanting specific sub-metrics should rely on the flattened names post-prepare_results_dataframe.
-        metric_instance = metric_cls()
+        try:
+            metric_instance = metric_cls()
+        except ImportError as e:
+            # This ImportError is raised by metric's __init__ if deps are missing
+            print(
+                f"Warning: Metric '{metric_name}' cannot be initialized due to missing dependencies and will be skipped. Details: {e}"
+            )
+            self._raw_scores.setdefault(self.models[0], {})[metric_name] = (
+                None  # Mark as attempted but failed
+            )
+            return  # Skip calculation for this metric
 
         for model_name, gen_text in self.llm_responses.items():
             if model_name not in self._raw_scores:
@@ -100,9 +108,41 @@ class Experiment:
 
             if metric_name not in self._raw_scores[model_name]:  # Calculate if not present
                 score = metric_instance.calculate(gen_text, self.reference_answer)
-                self._raw_scores[model_name][metric_name] = score
+                self._raw_scores[model_name][metric_name] = (
+                    score  # Score can be None if metric_instance failed init earlier
+                )
                 self._results_df_cache = None  # Invalidate DataFrame cache
                 self._thresholded_results_cache = None  # Invalidate threshold cache
+
+    def _get_runnable_metrics(self, requested_metrics: List[str]) -> List[str]:
+        """
+        Filters a list of requested metric names, returning only those
+        that can be successfully instantiated (i.e., their dependencies are met).
+        """
+        runnable = []
+        for metric_name in requested_metrics:
+            if metric_name not in REGISTERED_METRICS:
+                print(f"Warning: Metric '{metric_name}' is not registered and will be skipped.")
+                continue
+
+            metric_cls = REGISTERED_METRICS[metric_name]
+            try:
+                # Attempt to instantiate to check for ImportErrors from __init__
+                _ = metric_cls()
+                runnable.append(metric_name)
+            except ImportError as e:
+                print(
+                    f"Warning: Metric '{metric_name}' will be skipped due to missing dependencies: {e}"
+                )
+            except Exception as e:  # Catch other potential init errors
+                print(
+                    f"Warning: Metric '{metric_name}' failed to initialize and will be skipped: {e}"
+                )
+        return runnable
+
+    def _ensure_scores_calculated(self, base_metrics_to_calculate: List[str]):
+        for metric_name in base_metrics_to_calculate:
+            self._calculate_scores_for_metric(metric_name)
 
     def _get_internal_scores_df(self) -> pd.DataFrame:
         """
@@ -113,11 +153,14 @@ class Experiment:
             if not self._raw_scores:  # No scores calculated yet
                 # This might happen if _get_scores_df is called before any metric calculation.
                 # Calculate all default metrics as a baseline.
-                for metric_name in DEFAULT_METRICS_TO_RUN:
-                    self._calculate_scores_for_metric(metric_name)
+                # Ensure only runnable default metrics are calculated
+                runnable_default_metrics = self._get_runnable_metrics(DEFAULT_METRICS_TO_RUN)
+                self._ensure_scores_calculated(runnable_default_metrics)
 
             self._results_df_cache = prepare_results_dataframe(self._raw_scores)
-        return self._results_df_cache
+        return (
+            self._results_df_cache.copy() if self._results_df_cache is not None else pd.DataFrame()
+        )
 
     def _get_filtered_scores_df(self, base_metrics_to_include: List[str]) -> pd.DataFrame:
         """
@@ -131,15 +174,8 @@ class Experiment:
                  "metric_name" will contain flat metric names (e.g., "ROUGE_rouge1").
         :rtype: pd.DataFrame
         """
-        for base_metric_name in base_metrics_to_include:
-            if base_metric_name not in REGISTERED_METRICS:
-                # This check is important before calculation
-                print(
-                    f"Warning: Metric '{base_metric_name}' is not registered and will be skipped."
-                )
-                continue
-            # Ensure scores are calculated for this base metric
-            self._calculate_scores_for_metric(base_metric_name)
+        # Ensure scores are calculated only for runnable metrics from the include list
+        self._ensure_scores_calculated(base_metrics_to_include)
 
         full_df = self._get_internal_scores_df()  # Gets the cached or newly prepared full DF
 
@@ -150,10 +186,9 @@ class Experiment:
         flat_metrics_to_keep = []
         all_df_metric_names = full_df["metric_name"].unique()
 
-        valid_base_metrics = [m for m in base_metrics_to_include if m in REGISTERED_METRICS]
-
-        for base_name in valid_base_metrics:
-            for df_m_name in all_df_metric_names:
+        # Iterate over the originally requested & runnable metrics
+        for base_name in base_metrics_to_include:
+            for df_m_name in all_df_metric_names:  # df_m_name can be 'ROUGE' or 'ROUGE_rouge1'
                 if df_m_name == base_name or df_m_name.startswith(base_name + "_"):
                     flat_metrics_to_keep.append(df_m_name)
 
@@ -173,11 +208,12 @@ class Experiment:
                  "metric_name" will contain flat metric names (e.g., "ROUGE_rouge1").
         :rtype: pd.DataFrame
         """
-        metrics_to_fetch = metrics
-        if metrics_to_fetch is None:
-            metrics_to_fetch = DEFAULT_METRICS_TO_RUN
+        requested_metrics = metrics if metrics is not None else DEFAULT_METRICS_TO_RUN
 
-        return self._get_filtered_scores_df(base_metrics_to_include=metrics_to_fetch)
+        # Filter to only metrics that can actually run (dependencies met)
+        runnable_metrics = self._get_runnable_metrics(requested_metrics)
+
+        return self._get_filtered_scores_df(base_metrics_to_include=runnable_metrics)
 
     def _get_thresholded_results(
         self,
@@ -284,25 +320,27 @@ class Experiment:
         :return: A pandas DataFrame containing the scores for the compared metrics, or None if no valid metrics.
         :rtype: Optional[pd.DataFrame]
         """
-        base_metrics_to_run = metrics
-        if base_metrics_to_run is None:
-            base_metrics_to_run = DEFAULT_METRICS_TO_RUN
+        requested_base_metrics = metrics if metrics is not None else DEFAULT_METRICS_TO_RUN
 
-        valid_base_metrics = [m for m in base_metrics_to_run if m in REGISTERED_METRICS]
-        if (
-            not base_metrics_to_run and metrics is not None
-        ):  # User specified metrics, but all were invalid
-            print("Warning: No valid metrics specified in 'metrics' list for compare. Aborting.")
-            return None
-        if (
-            not valid_base_metrics
-        ):  # No metrics to run at all (either default list is empty or user list was all invalid)
-            print("Warning: No valid metrics to run for compare. Aborting.")
+        # Determine which of the requested metrics are actually runnable based on available dependencies
+        runnable_base_metrics = self._get_runnable_metrics(requested_base_metrics)
+
+        if not runnable_base_metrics:
+            if metrics:  # User specified metrics, but none were runnable
+                print(
+                    "Warning: None of the specified metrics are runnable due to missing dependencies or registration. Aborting compare."
+                )
+            else:  # Default metrics were requested, but none are runnable
+                print(
+                    "Warning: No default metrics are runnable due to missing dependencies. Aborting compare."
+                )
             return None
 
         # 1. Get DataFrame of scores (flat metric names)
-        # This also calculates scores if they haven't been already.
-        current_scores_df = self._get_filtered_scores_df(base_metrics_to_include=valid_base_metrics)
+        # This will calculate scores for the runnable_base_metrics.
+        current_scores_df = self._get_filtered_scores_df(
+            base_metrics_to_include=runnable_base_metrics
+        )
 
         if current_scores_df.empty:
             print("No results to compare after processing metrics.")

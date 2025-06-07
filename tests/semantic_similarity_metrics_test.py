@@ -13,9 +13,9 @@ from gaico.metrics.semantic_similarity_metrics import __semantic_deps_available_
 # as the ValueError should be raised before the ImportError for missing deps.
 def test_bertscore_invalid_output_val_init_standalone():
     with pytest.raises(ValueError, match="`output_val` must be a list"):
-        BERTScore(output_val=["f1"])
+        BERTScore(output_val="f1")  # type: ignore
     with pytest.raises(ValueError, match="`output_val` must be one of"):
-        BERTScore(output_val=["f2"])
+        BERTScore(output_val=["f2"])  # type: ignore
 
 
 # Mark tests as potentially slow due to model download/loading

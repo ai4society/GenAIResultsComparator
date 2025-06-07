@@ -11,11 +11,11 @@ _Tensor_cls = None
 _semantic_deps_available = False
 
 try:
-    from bert_score import BERTScorer as _ImportedBERTScorer
+    from bert_score import BERTScorer as _ImportedBERTScorer  # type: ignore
 
     _BERTScorer_cls = _ImportedBERTScorer
     # torch is a dependency of bert_score
-    from torch import Tensor as _ImportedTensor
+    from torch import Tensor as _ImportedTensor  # type: ignore
 
     _Tensor_cls = _ImportedTensor
     _semantic_deps_available = True

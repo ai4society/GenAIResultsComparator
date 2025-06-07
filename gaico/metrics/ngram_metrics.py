@@ -1,13 +1,45 @@
 from typing import Any, Callable, Dict, Iterable, List, Optional, cast
 
-import nltk
 import numpy as np
 import pandas as pd
-from nltk.translate.bleu_score import SmoothingFunction, corpus_bleu, sentence_bleu
 from rouge_score import rouge_scorer
-from scipy.spatial.distance import jensenshannon
 
 from .base import BaseMetric
+
+# Conditional imports for NLTK (BLEU, JSDivergence)
+_nltk_available = False
+_SmoothingFunction_cls = None
+_corpus_bleu_func = None
+_sentence_bleu_func = None
+_FreqDist_cls = None
+try:
+    # import nltk  # Check if nltk itself is available
+    from nltk import FreqDist as _ImportedFreqDist
+    from nltk.translate.bleu_score import SmoothingFunction as _ImportedSmoothingFunction
+    from nltk.translate.bleu_score import corpus_bleu as _ImportedCorpusBleu
+    from nltk.translate.bleu_score import sentence_bleu as _ImportedSentenceBleu
+
+    _SmoothingFunction_cls = _ImportedSmoothingFunction
+    _corpus_bleu_func = _ImportedCorpusBleu
+    _sentence_bleu_func = _ImportedSentenceBleu
+    _FreqDist_cls = _ImportedFreqDist
+    _nltk_available = True
+except ImportError:
+    pass  # Handled in class __init__
+
+# Conditional imports for SciPy (JSDivergence)
+_scipy_available = False
+_jensenshannon_func = None
+try:
+    from scipy.spatial.distance import jensenshannon as _ImportedJensenShannon
+
+    _jensenshannon_func = _ImportedJensenShannon
+    _scipy_available = True
+except ImportError:
+    pass  # Handled in class __init__
+
+__nltk_available__ = _nltk_available
+__scipy_available__ = _scipy_available
 
 
 class BLEU(BaseMetric):
@@ -20,7 +52,7 @@ class BLEU(BaseMetric):
     def __init__(
         self,
         n: int = 4,
-        smoothing_function: Callable | SmoothingFunction = SmoothingFunction().method1,
+        smoothing_function: Optional[Callable] = None,
     ):
         """
         Initialize the BLEU scorer with the specified parameters.
@@ -28,10 +60,20 @@ class BLEU(BaseMetric):
         :param n: The max n-gram order to use for BLEU calculation, defaults to 4
         :type n: int
         :param smoothing_function: The smoothing function to use for BLEU, defaults to SmoothingFunction.method1 from NLTK
-        :type smoothing_function: Callable | SmoothingFunction
+        :type smoothing_function: Optional[Callable]
         """
+        if not _nltk_available:
+            raise ImportError(
+                "NLTK is not installed, which is required for BLEU metric. "
+                "Please install it with: pip install GAICo[bleu]"
+            )
         self.n = n
-        self.smoothing_function = smoothing_function
+        # _SmoothingFunction_cls will be None if nltk failed to import
+        self.smoothing_function = (
+            smoothing_function
+            if smoothing_function is not None
+            else _SmoothingFunction_cls().method1  # type: ignore
+        )
 
     def _single_calculate(
         self,
@@ -53,10 +95,10 @@ class BLEU(BaseMetric):
         """
 
         # Split texts into words and calculate sentence-level BLEU score
-        score = sentence_bleu(
+        score = _sentence_bleu_func(  # type: ignore
             [reference_text.split()],
             generated_text.split(),
-            smoothing_function=self.smoothing_function,
+            smoothing_function=self.smoothing_function,  # type: ignore
             **kwargs,
         )
         score = cast(float, score)  # Signal to mypy that score is a float
@@ -102,10 +144,10 @@ class BLEU(BaseMetric):
                 references = [[ref.split()] for ref in reference_texts]
 
             # Calculate and return the corpus-level BLEU score
-            score = corpus_bleu(
+            score = _corpus_bleu_func(  # type: ignore
                 references,
                 hypotheses,
-                smoothing_function=self.smoothing_function,
+                smoothing_function=self.smoothing_function,  # type: ignore
                 **kwargs,
             )
             score = cast(float, score)  # Signal to mypy that score is a float
@@ -245,7 +287,16 @@ class JSDivergence(BaseMetric):
         self,
     ):
         """Initialize the Jensen-Shannon Divergence metric."""
-        pass
+        if not _nltk_available or not _scipy_available:
+            missing_deps = []
+            if not _nltk_available:
+                missing_deps.append("nltk")
+            if not _scipy_available:
+                missing_deps.append("scipy")
+            raise ImportError(
+                f"{', '.join(missing_deps)} is not installed, which is required for JSDivergence metric. "
+                "Please install it with: pip install GAICo[jsd]"
+            )
 
     def _single_calculate(
         self,
@@ -266,8 +317,8 @@ class JSDivergence(BaseMetric):
         :rtype: float
         """
 
-        gen_freq = nltk.FreqDist(generated_text.split())
-        ref_freq = nltk.FreqDist(reference_text.split())
+        gen_freq = _FreqDist_cls(generated_text.split())  # type: ignore
+        ref_freq = _FreqDist_cls(reference_text.split())  # type: ignore
         all_words = set(gen_freq.keys()) | set(ref_freq.keys())
 
         gen_probs = [gen_freq.freq(word) for word in all_words]
@@ -277,7 +328,7 @@ class JSDivergence(BaseMetric):
         if all(x == 0 for x in ref_probs) or all(x == 0 for x in gen_probs):
             return 0.0
 
-        return 1.0 - float((jensenshannon(gen_probs, ref_probs, **kwargs)))
+        return 1.0 - float((_jensenshannon_func(gen_probs, ref_probs, **kwargs)))  # type: ignore
 
     def _batch_calculate(
         self,

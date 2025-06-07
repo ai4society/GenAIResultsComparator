@@ -1,16 +1,16 @@
 # GAICo: GenAI Results Comparator
 
-_GenAI Results Comparator is a Python library_ to help compare, analyze and visualize outputs from Large Language Models (LLMs), often against a reference text.
+_GenAI Results Comparator, GAICo, is a Python library_ to help compare, analyze and visualize outputs from Large Language Models (LLMs), often against a reference text. In doing so, one can use a range of extensible metrics from the literature.
 
-View the documentation at [ai4society.github.io/projects/GenAIResultsComparator/index.html](https://ai4society.github.io/projects/GenAIResultsComparator/index.html).
+View the documentation at [ai4society.github.io/projects/GenAIResultsComparator](https://ai4society.github.io/projects/GenAIResultsComparator).
 
 ## Quick Start
 
 GAICo makes it easy to evaluate and compare LLM outputs. For detailed, runnable examples, please refer to our Jupyter Notebooks in the [`examples/`](examples/) folder:
 
-- [`quickstart.ipynb`](examples/quickstart.ipynb): Rapid hands-on with the _Experiment_ sub-module.
-- [`example-1.ipynb`](examples/example-1.ipynb): For fine-grained usage, this notebook focuses on comparing **multiple model outputs** using a **single metric**.
-- [`example-2.ipynb`](examples/example-2.ipynb): For fine-grained usage, this notebook demonstrates evaluating a **single model output** across **all available metrics**.
+- [`quickstart.ipynb`](https://github.com/ai4society/GenAIResultsComparator/blob/main/examples/quickstart.ipynb): Rapid hands-on with the _Experiment_ sub-module.
+- [`example-1.ipynb`](https://github.com/ai4society/GenAIResultsComparator/blob/main/examples/example-1.ipynb): For fine-grained usage, this notebook focuses on comparing **multiple model outputs** using a **single metric**.
+- [`example-2.ipynb`](https://github.com/ai4society/GenAIResultsComparator/blob/main/examples/example-2.ipynb): For fine-grained usage, this notebook demonstrates evaluating a **single model output** across **all available metrics**.
 
 ## Streamlined Workflow with _`Experiment`_
 
@@ -106,6 +106,8 @@ article on evaluating LLM-generated content](https://learn.microsoft.com/en-us/a
   - N-gram-based metrics (BLEU, ROUGE, JS divergence)
   - Text similarity metrics (Jaccard, Cosine, Levenshtein, Sequence Matcher)
   - Semantic similarity metrics (BERTScore)
+- Visualization capabilities using matplotlib and seaborn
+- Exportation of results to CSV files
 - Supports batch processing for efficient computation
 - Optimized for different input types (lists, numpy arrays, pandas Series)
 - Extendable architecture for easy addition of new metrics
@@ -133,9 +135,21 @@ The default installation includes core metrics. For optional features:
   pip install GAICo[bertscore]
   ```
 
+- To include the **BLEU** metric (requires NLTK):
+
+  ```shell
+  pip install GAICo[bleu]
+  ```
+
+- To include the **JSDivergence** metric (requires NLTK and SciPy):
+
+  ```shell
+  pip install GAICo[jsd]
+  ```
+
 - To install with **all optional features**:
   ```shell
-  pip install GAICo[visualization,bertscore]
+  pip install GAICo[visualization,bertscore,bleu,jsd]
   ```
 
 ### For Developers (Installing from source)
@@ -158,8 +172,8 @@ If you want to contribute to GAICo or install it from source for development:
    uv venv
    # Activate the environment
    source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-    # Install the package in editable mode with all development dependencies
-    uv pip install -e ".[dev]"
+   # Install the package in editable mode with all development dependencies (includes all optional features)
+   uv pip install -e ".[dev]"
    ```
 
    _If you don't want to use `uv`,_ you can install the dependencies with the following commands:
@@ -267,7 +281,7 @@ If you find this project useful, please consider citing it in your work:
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](https://github.com/ai4society/GenAIResultsComparator/blob/main/LICENSE) file for details.
 
 ## Contact
 
