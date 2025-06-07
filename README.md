@@ -64,7 +64,7 @@ However, you might prefer to use the individual metric classes directly for more
 
 ## Description
 
-The library provides a set of metrics for evaluating **2 text strings as inputs**. **Outputs are on a scale of 0 to 1** (normalized), where 1 indicates a perfect match between the two texts.
+At the core, the library provides a set of metrics for evaluating text strings given as inputs and produce outputs on a scale of 0 to 1 (normalized), where 1 indicates a perfect match between the two texts. These scores are use to analyze LLM outputs as well as visualize
 
 **_Class Structure:_** All metrics are implemented as classes, and they can be easily extended to add new metrics. The metrics start with the `BaseMetric` class under the `gaico/base.py` file.
 
@@ -103,15 +103,16 @@ article on evaluating LLM-generated content](https://learn.microsoft.com/en-us/a
 ## Features
 
 - Implements various metrics for text comparison:
-  - N-gram-based metrics (BLEU, ROUGE, JS divergence)
-  - Text similarity metrics (Jaccard, Cosine, Levenshtein, Sequence Matcher)
-  - Semantic similarity metrics (BERTScore)
-- Visualization capabilities using matplotlib and seaborn
-- Exportation of results to CSV files
-- Supports batch processing for efficient computation
-- Optimized for different input types (lists, numpy arrays, pandas Series)
-- Extendable architecture for easy addition of new metrics
-- Testing suite
+  - N-gram-based metrics (_BLEU_, _ROUGE_, _JS divergence_)
+  - Text similarity metrics (_Jaccard_, _Cosine_, _Levenshtein_, _Sequence Matcher_)
+  - Semantic similarity metrics (_BERTScore_)
+- Visualization capabilities using matplotlib and seaborn for plots like bar charts and radar plots.
+- Exportation of results to CSV files, including scores and threshold pass/fail status.
+- Streamlined `Experiment` class for easy comparison of multiple models, applying thresholds, plotting, and reporting.
+- Supports batch processing for efficient computation.
+- Optimized for different input types (lists, numpy arrays, pandas Series).
+- Extendable architecture for easy addition of new metrics.
+- Comprehensive testing suite.
 
 ## Installation
 
@@ -121,13 +122,7 @@ You can install GAICo directly from PyPI using pip:
 pip install GAICo
 ```
 
-The default installation includes core metrics. For optional features:
-
-- To include **visualization** features (matplotlib, seaborn):
-
-  ```shell
-  pip install GAICo[visualization]
-  ```
+The default installation includes core metrics and some visualization modules which are lightweight. For optional features:
 
 - To include the **BERTScore** metric (which has larger dependencies like PyTorch):
 
@@ -141,6 +136,12 @@ The default installation includes core metrics. For optional features:
   pip install GAICo[bleu]
   ```
 
+- To include the **CosineSimilarity** metric (requires scikit-learn):
+
+  ```shell
+  pip install GAICo[cosine]
+  ```
+
 - To include the **JSDivergence** metric (requires NLTK and SciPy):
 
   ```shell
@@ -149,7 +150,7 @@ The default installation includes core metrics. For optional features:
 
 - To install with **all optional features**:
   ```shell
-  pip install GAICo[visualization,bertscore,bleu,jsd]
+  pip install GAICo[bertscore,bleu,cosine,jsd]
   ```
 
 ### For Developers (Installing from source)

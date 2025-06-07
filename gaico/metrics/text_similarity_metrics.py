@@ -4,10 +4,25 @@ from typing import Any, Iterable, cast
 import numpy as np
 import pandas as pd
 from Levenshtein import distance, ratio
-from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
 
 from .base import BaseMetric
+
+# Conditional imports for scikit-learn (CosineSimilarity)
+_sklearn_available = False
+_CountVectorizer_cls = None
+_cosine_similarity_func = None
+try:
+    from sklearn.feature_extraction.text import CountVectorizer as _ImportedCountVectorizer
+    from sklearn.metrics.pairwise import cosine_similarity as _ImportedCosineSimilarity
+
+    _CountVectorizer_cls = _ImportedCountVectorizer
+    _cosine_similarity_func = _ImportedCosineSimilarity
+    _sklearn_available = True
+except ImportError:
+    pass  # Handled in CosineSimilarity class __init__
+
+# This variable can be imported by tests to skip them if dependencies are missing.
+__sklearn_available__ = _sklearn_available
 
 
 class JaccardSimilarity(BaseMetric):
@@ -104,7 +119,12 @@ class CosineSimilarity(BaseMetric):
         :param kwargs: Parameters for the CountVectorizer
         :type kwargs: Any
         """
-        self.vectorizer = CountVectorizer(**kwargs)
+        if not _sklearn_available:
+            raise ImportError(
+                "scikit-learn is not installed, which is required for CosineSimilarity metric. "
+                "Please install it with: pip install GAICo[cosine]"
+            )
+        self.vectorizer = _CountVectorizer_cls(**kwargs)  # type: ignore
 
     def _single_calculate(
         self,
@@ -130,12 +150,12 @@ class CosineSimilarity(BaseMetric):
         if not generated_text.strip() or not reference_text.strip():
             return 0.0
 
-        vectors = self.vectorizer.fit_transform([generated_text, reference_text])
+        vectors = self.vectorizer.fit_transform([generated_text, reference_text])  # type: ignore
         vectors = cast(np.ndarray, vectors)  # Ensure vectors are numpy arrays
 
         # For entirely similar text, the cosine similarity might be slightly greater than 1 due to floating point precision
         # Hence, we clip the value to be in the range [0, 1]
-        similarity = cosine_similarity(vectors[0], vectors[1], **kwargs)[0][0]
+        similarity = _cosine_similarity_func(vectors[0], vectors[1], **kwargs)[0][0]  # type: ignore
         return min(max(similarity, 0.0), 1.0)
 
     def _batch_calculate(
@@ -173,9 +193,9 @@ class CosineSimilarity(BaseMetric):
                 results.append(0.0)  # One empty - no match
             else:
                 # Both non-empty - calculate similarity
-                vectors = self.vectorizer.fit_transform([gen_list[i], ref_list[i]])
+                vectors = self.vectorizer.fit_transform([gen_list[i], ref_list[i]])  # type: ignore
                 vectors = cast(np.ndarray, vectors)  # Ensure vectors are numpy arrays
-                similarity = cosine_similarity(vectors[0], vectors[1], **kwargs)[0][0]
+                similarity = _cosine_similarity_func(vectors[0], vectors[1], **kwargs)[0][0]  # type: ignore
                 results.append(min(max(similarity, 0.0), 1.0))  # Clip to [0, 1]
 
         # Return results in the appropriate format

@@ -7,7 +7,7 @@
 
 _GenAI Results Comparator (GAICo) is a Python library_ to help compare, analyze and visualize outputs from Large Language Models (LLMs), often against a reference text.
 
-The library provides a set of metrics for evaluating **2 text strings as inputs**. **Outputs are on a scale of 0 to 1** (normalized), where 1 indicates a perfect match between the two texts.
+At the core, the library provides a set of metrics for evaluating text strings given as inputs and produce outputs on a scale of 0 to 1 (normalized), where 1 indicates a perfect match between the two texts. These scores are use to analyze LLM outputs as well as visualize
 
 **_Class Structure:_** All metrics are implemented as classes, and they can be easily extended to add new metrics. The metrics start with the `BaseMetric` class under the `gaico/base.py` file.
 
@@ -30,6 +30,20 @@ article on evaluating LLM-generated content](https://learn.microsoft.com/en-us/a
   <figcaption><em>Overview of the workflow supported by the <i>GAICo</i> library</em></figcaption>
 </figure>
 
+## Features
+
+- Implements various metrics for text comparison:
+  - N-gram-based metrics (_BLEU_, _ROUGE_, _JS divergence_)
+  - Text similarity metrics (_Jaccard_, _Cosine_, _Levenshtein_, _Sequence Matcher_)
+  - Semantic similarity metrics (_BERTScore_)
+- Visualization capabilities using matplotlib and seaborn for plots like bar charts and radar plots.
+- Exportation of results to CSV files, including scores and threshold pass/fail status.
+- Streamlined `Experiment` class for easy comparison of multiple models, applying thresholds, plotting, and reporting.
+- Supports batch processing for efficient computation.
+- Optimized for different input types (lists, numpy arrays, pandas Series).
+- Extendable architecture for easy addition of new metrics.
+- Comprehensive testing suite.
+
 ## Installation
 
 You can install GAICo directly from PyPI using pip:
@@ -38,13 +52,7 @@ You can install GAICo directly from PyPI using pip:
 pip install GAICo
 ```
 
-The default installation includes core metrics. For optional features:
-
-- To include **visualization** features (matplotlib, seaborn):
-
-  ```shell
-  pip install GAICo[visualization]
-  ```
+The default installation includes core metrics and some visualization modules which are lightweight. For optional features:
 
 - To include the **BERTScore** metric (which has larger dependencies like PyTorch):
 
@@ -52,9 +60,27 @@ The default installation includes core metrics. For optional features:
   pip install GAICo[bertscore]
   ```
 
+- To include the **BLEU** metric (requires NLTK):
+
+  ```shell
+  pip install GAICo[bleu]
+  ```
+
+- To include the **CosineSimilarity** metric (requires scikit-learn):
+
+  ```shell
+  pip install GAICo[cosine]
+  ```
+
+- To include the **JSDivergence** metric (requires NLTK and SciPy):
+
+  ```shell
+  pip install GAICo[jsd]
+  ```
+
 - To install with **all optional features**:
   ```shell
-  pip install GAICo[visualization,bertscore]
+  pip install GAICo[bertscore,bleu,cosine,jsd]
   ```
 
 ### For Developers (Installing from source)
@@ -62,75 +88,43 @@ The default installation includes core metrics. For optional features:
 If you want to contribute to GAICo or install it from source for development:
 
 1. Clone the repository:
+
    ```shell
    git clone https://github.com/ai4society/GenAIResultsComparator.git
    cd GenAIResultsComparator
    ```
+
 2. Set up a virtual environment and install dependencies:
 
-    We recommend using [UV](https://docs.astral.sh/uv/#installation) for managing environments and dependencies.
+   We recommend using [UV](https://docs.astral.sh/uv/#installation) for managing environments and dependencies.
 
-    ```shell
-    # Create a virtual environment (e.g., Python 3.12 recommended)
-    uv venv
-    # Activate the environment
-    source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-      # Install the package in editable mode with all development dependencies
-      uv pip install -e ".[dev]"
-    ```
+   ```shell
+   # Create a virtual environment (e.g., Python 3.12 recommended)
+   uv venv
+   # Activate the environment
+   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+   # Install the package in editable mode with all development dependencies (includes all optional features)
+   uv pip install -e ".[dev]"
+   ```
 
-    _If you don't want to use `uv`,_ you can install the dependencies with the following commands:
+   _If you don't want to use `uv`,_ you can install the dependencies with the following commands:
 
-    ```shell
-    # Create a virtual environment (e.g., Python 3.12 recommended)
-    python3 -m venv .venv
-    # Activate the environment
-    source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-    # Install the package in editable mode with development and visualization extras
-    pip install -e ".[dev]"
-    ```
+   ```shell
+   # Create a virtual environment (e.g., Python 3.12 recommended)
+   python3 -m venv .venv
+   # Activate the environment
+   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+   # Install the package in editable mode with development and visualization extras
+   pip install -e ".[dev]"
+   ```
 
-    _(Note: The `dev` extra installs GAICo with all its optional features like `visualization` and `bertscore`, plus dependencies for testing, linting, building, and documentation.)_
+   _(Note: The `dev` extra installs GAICo with all its optional features like `visualization` and `bertscore`, plus dependencies for testing, linting, building, and documentation.)_
 
 3. Set up pre-commit hooks (optional but recommended for contributors):
 
-    ```shell
-    pre-commit install
-    ```
-
-## Code Style
-
-We use `pre-commit` hooks to maintain code quality and consistency. The configuration for these hooks is in the `.pre-commit-config.yaml` file. These hooks run automatically on `git commit`, but you can also run them manually:
-
-```
-pre-commit run --all-files
-```
-
-## Running Tests
-
-Navigate to the project root in your terminal and run:
-
-```bash
-uv run pytest
-```
-
-Or, for more verbose output:
-
-```bash
-uv run pytest -v
-```
-
-To skip the slow BERTScore tests:
-
-```bash
-uv run pytest -m "not bertscore"
-```
-
-To run only the slow BERTScore tests:
-
-```bash
-uv run pytest -m bertscore
-```
+   ```shell
+   pre-commit install
+   ```
 
 ## Citation
 

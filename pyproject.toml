@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "GAICo"
-version = "0.1.3"
+version = "0.1.4"
 description = "GenAI Results Comparator, GAICo, is a Python library to help compare, analyze and visualize outputs from Large Language Models (LLMs), often against a reference text. In doing so, one can use a range of extensible metrics from the literature."
 authors = [
     { name = "Nitin Gupta", email = "nitin1209@gmail.com" },
@@ -15,7 +15,7 @@ maintainers = [
     { name = "AI4Society Team", email = "ai4societyteam@gmail.com" }
 ]
 requires-python = ">=3.10, <3.13"
-readme = "README.md"
+readme = {file = "PYPI_DESCRIPTION.md", content-type = "text/markdown"}
 license = { file = "LICENSE" }
 keywords = [
     "nlp",
@@ -39,10 +39,11 @@ classifiers = [ # Classifiers for better discoverability
 ]
 dependencies = [
     "levenshtein>=0.27.1",
+    "matplotlib>=3.10.3",
     "numpy>=2.2.5",
     "pandas>=2.2.3",
     "rouge-score>=0.1.2",
-    "scikit-learn>=1.6.1",
+    "seaborn>=0.13.2",
 ]
 
 [project.urls]
@@ -52,10 +53,6 @@ Repository = "https://github.com/ai4society/GenAIResultsComparator"
 "Bug Tracker" = "https://github.com/ai4society/GenAIResultsComparator/issues"
 
 [project.optional-dependencies]
-visualization = [
-    "matplotlib>=3.10.3",
-    "seaborn>=0.13.2",
-]
 bertscore = [
     "bert-score>=0.3.13",
 ]
@@ -66,9 +63,13 @@ jsd = [
     "nltk>=3.9.1",
     "scipy>=1.15.3",
 ]
+cosine = [
+    "scikit-learn>=1.7.0",
+]
 
 [dependency-groups]
 dev = [
+    "GAICo[bertscore,bleu,jsd,cosine]",
     "build>=1.2.2.post1",
     "flake8>=7.2.0",
     "hypothesis>=6.131.17",

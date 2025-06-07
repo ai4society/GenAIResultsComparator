@@ -9,6 +9,9 @@ from gaico.metrics import (
     SequenceMatcherSimilarity,
 )
 
+# Import the availability flag for sklearn
+from gaico.metrics.text_similarity_metrics import __sklearn_available__
+
 
 # JaccardSimilarity Tests
 class TestJaccardSimilarity:
@@ -34,7 +37,11 @@ class TestJaccardSimilarity:
     def test_calculate_different(self, jaccard_scorer, text_pair_different):
         gen, ref = text_pair_different
         score = jaccard_scorer.calculate(gen, ref)
-        assert score == pytest.approx(0.2)
+        # "apple banana cherry" vs "dog elephant fox"
+        # Intersection: {} (0)
+        # Union: {"apple", "banana", "cherry", "dog", "elephant", "fox"} (6)
+        # Score: 0 / 6 = 0.0
+        assert score == pytest.approx(0.0)  # Corrected expected value
 
     def test_calculate_empty(self, jaccard_scorer, text_pair_empty):
         gen, ref = text_pair_empty
@@ -61,6 +68,7 @@ class TestJaccardSimilarity:
         scores = jaccard_scorer.calculate(sample_generated_texts_np, sample_reference_texts_np)
         assert isinstance(scores, np.ndarray)
         assert len(scores) == len(sample_generated_texts_np)
+        # Jaccard returns float, so np.float64 is expected
         assert scores.dtype == np.float64
 
     def test_batch_calculate_pd(
@@ -69,13 +77,18 @@ class TestJaccardSimilarity:
         scores = jaccard_scorer.calculate(sample_generated_texts_pd, sample_reference_texts_pd)
         assert isinstance(scores, pd.Series)
         assert len(scores) == len(sample_generated_texts_pd)
+        # Jaccard returns float, so np.float64 is expected
         assert scores.dtype == np.float64
 
 
 # CosineSimilarity Tests
+@pytest.mark.skipif(
+    not __sklearn_available__, reason="scikit-learn not installed, skipping CosineSimilarity tests"
+)
 class TestCosineSimilarity:
     @pytest.fixture(scope="class")
     def cosine_scorer(self):
+        # This fixture will only run if sklearn is available due to the class-level skipif
         return CosineSimilarity()
 
     def test_calculate_simple(self, cosine_scorer, text_pair_simple):
@@ -83,8 +96,12 @@ class TestCosineSimilarity:
         score = cosine_scorer.calculate(gen, ref)
         assert isinstance(score, float)
         assert 0.0 <= score <= 1.0
-        # Exact value depends on vectorization, check range and > 0
-        assert score > 0.5 and score < 1.0
+        # "the cat sat on the mat" vs "the cat was on the mat"
+        # Vectors: gen_vec=[1,1,1,1,1,0], ref_vec=[1,1,0,1,1,1] (order: the,cat,sat,on,mat,was)
+        # Dot product: 1*1 + 1*1 + 1*0 + 1*1 + 1*1 + 0*1 = 4
+        # Norm gen: sqrt(5), Norm ref: sqrt(5)
+        # Score: 4 / (sqrt(5)*sqrt(5)) = 4 / 5 = 0.8
+        assert score == pytest.approx(0.8)
 
     def test_calculate_identical(self, cosine_scorer, text_pair_identical):
         gen, ref = text_pair_identical
@@ -94,21 +111,19 @@ class TestCosineSimilarity:
     def test_calculate_different(self, cosine_scorer, text_pair_different):
         gen, ref = text_pair_different
         score = cosine_scorer.calculate(gen, ref)
-        assert score == pytest.approx(1 / 3)
+        # "apple banana cherry" vs "dog elephant fox"
+        # No common words, vectors are orthogonal.
+        assert score == pytest.approx(0.0)  # Corrected expected value
 
     def test_calculate_empty(self, cosine_scorer, text_pair_empty):
         gen, ref = text_pair_empty
-        # TODO
-        # CountVectorizer on empty strings results in zero vectors. Cosine sim is often 1 or NaN.
-        # sklearn handles this; check it doesn't crash and returns a value (likely 0 or 1 depending on version/handling)
-        # Let's assume it should logically be 0 if vectors are zero? Or 1 if identical zero vectors?
-        # Checking the implementation: fit_transform on ["", ""] gives zero vectors. cosine_similarity gives [[1.]].
+        # Implementation handles this: if both empty, returns 1.0
         score = cosine_scorer.calculate(gen, ref)
-        assert score == pytest.approx(1.0)  # Cosine of identical zero vectors
+        assert score == pytest.approx(1.0)
 
     def test_calculate_one_empty(self, cosine_scorer, text_pair_one_empty):
         gen, ref = text_pair_one_empty
-        # One zero vector, one non-zero. Cosine sim is 0.
+        # Implementation handles this: if one empty, returns 0.0
         score = cosine_scorer.calculate(gen, ref)
         assert score == pytest.approx(0.0)
 
@@ -142,7 +157,7 @@ class TestCosineSimilarity:
 class TestLevenshteinDistance:
     @pytest.fixture(scope="class")
     def levenshtein_scorer(self):
-        return LevenshteinDistance()
+        return LevenshteinDistance()  # Default is calculate_ratio=True
 
     # Test Ratio (Default)
     def test_calculate_ratio_simple(self, levenshtein_scorer, text_pair_simple):
@@ -155,7 +170,7 @@ class TestLevenshteinDistance:
 
     def test_calculate_ratio_identical(self, levenshtein_scorer, text_pair_identical):
         gen, ref = text_pair_identical
-        score = levenshtein_scorer.calculate(gen, ref, calculate_ratio=True)
+        score = levenshtein_scorer.calculate(gen, ref)
         assert score == pytest.approx(1.0)
 
     def test_calculate_ratio_different(self, levenshtein_scorer, text_pair_different):
