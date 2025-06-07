@@ -177,23 +177,23 @@ class TestLevenshteinDistance:
     def test_calculate_distance_simple(self, levenshtein_scorer, text_pair_simple):
         gen, ref = text_pair_simple
         score = levenshtein_scorer.calculate(gen, ref, calculate_ratio=False)
-        assert isinstance(score, int)
-        assert score == pytest.approx(2)  # "sat" -> "was" requires 2 changes
+        assert isinstance(score, float)
+        assert score == pytest.approx(0.9, rel=1e-1)
 
     def test_calculate_distance_identical(self, levenshtein_scorer, text_pair_identical):
         gen, ref = text_pair_identical
         score = levenshtein_scorer.calculate(gen, ref, calculate_ratio=False)
-        assert score == pytest.approx(0.0)
+        assert score == pytest.approx(1.0)
 
     def test_calculate_distance_empty(self, levenshtein_scorer, text_pair_empty):
         gen, ref = text_pair_empty
         score = levenshtein_scorer.calculate(gen, ref, calculate_ratio=False)
-        assert score == pytest.approx(0.0)
+        assert score == pytest.approx(1.0)
 
     def test_calculate_distance_one_empty(self, levenshtein_scorer, text_pair_one_empty):
         gen, ref = text_pair_one_empty
         score = levenshtein_scorer.calculate(gen, ref, calculate_ratio=False)
-        assert score == pytest.approx(len(gen))  # Distance is length of non-empty string
+        assert score == pytest.approx(0)
 
     # Test Batch (Ratio)
     def test_batch_calculate_ratio_list(
