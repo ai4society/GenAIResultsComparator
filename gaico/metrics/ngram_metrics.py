@@ -292,7 +292,7 @@ class JSDivergence(BaseMetric):
                 missing_deps.append("scipy")
             raise ImportError(
                 f"{', '.join(missing_deps)} is not installed, which is required for JSDivergence metric. "
-                "Please install it with: pip install gaico[jsd]"
+                "Please install it with: pip install 'gaico[jsd]'"
             )
 
     def _single_calculate(

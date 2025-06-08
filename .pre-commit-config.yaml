@@ -42,4 +42,13 @@ repos:
         pass_filenames: false # Run pytest on the whole project, not just changed files
         always_run: false
         stages:
-          - "pre-push"
+            - "pre-push"
+    # Hook for generating PYPI_DESCRIPTION.md
+    -   id: generate-pypi-description
+        name: Generate PYPI_DESCRIPTION.md
+        entry: python scripts/generate_pypi_description.py
+        language: system
+        # Run if README.md or relevant scripts in the scripts/ folder change
+        files: ^(README.md|scripts/generate_pypi_description.py|scripts/readme_parser.py)$
+        pass_filenames: false
+        stages: [pre-commit] # Run on commit

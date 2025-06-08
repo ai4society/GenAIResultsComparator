@@ -122,7 +122,7 @@ class CosineSimilarity(BaseMetric):
         if not _sklearn_available:
             raise ImportError(
                 "scikit-learn is not installed, which is required for CosineSimilarity metric. "
-                "Please install it with: pip install gaico[cosine]"
+                "Please install it with: pip install 'gaico[cosine]'"
             )
         self.vectorizer = _CountVectorizer_cls(**kwargs)  # type: ignore
 

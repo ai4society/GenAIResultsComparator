@@ -34,13 +34,12 @@ plugins:
             show_root_heading: true # Shows the module/class name as a heading
             show_source: false # Set to true if you want to show source code
             members_order: source # Order members as they appear in source
-            # Docstring style is usually auto-detected well.
-            # Explicitly: google, numpy, sphinx (pep257)
             docstring_style: sphinx
             heading_level: 2 # Adjust heading levels for API docs
             separate_signature: true # Shows signature on a new line from docstring
             # show_signature_annotations: true # Ensures type hints are shown
-
+  - macros:
+      module_name: project_macros
 nav:
   - Home: index.md
   - Quick Start: quickstart.md

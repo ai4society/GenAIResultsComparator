@@ -401,6 +401,12 @@ hf-xet==1.1.3 ; platform_machine == 'aarch64' or platform_machine == 'amd64' or 
     --hash=sha256:c3b508b5f583a75641aebf732853deb058953370ce8184f5dabc49f803b0819b \
     --hash=sha256:fd2da210856444a34aad8ada2fc12f70dabed7cc20f37e90754d1d9b43bc0534
     # via huggingface-hub
+hjson==3.1.0 \
+    --hash=sha256:55af475a27cf83a7969c808399d7bccdec8fb836a07ddbd574587593b9cdcf75 \
+    --hash=sha256:65713cdcf13214fb554eb8b4ef803419733f4f5e551047c9b711098ab7186b89
+    # via
+    #   mkdocs-macros-plugin
+    #   super-collections
 httpcore==1.0.9 \
     --hash=sha256:2d400746a40668fc9dec9810239072b40b4484b640a8c38fd654a024c7a1bf55 \
     --hash=sha256:6e34463af53fd2ab5d807f399a9b45ea31c3dfa2276f15a2c3f00afff6e176e8
@@ -511,6 +517,7 @@ jinja2==3.1.6 \
     #   jupyterlab
     #   jupyterlab-server
     #   mkdocs
+    #   mkdocs-macros-plugin
     #   mkdocs-material
     #   mkdocstrings
     #   nbconvert
@@ -834,6 +841,7 @@ mkdocs==1.6.1 \
     --hash=sha256:db91759624d1647f3f34aa0c3f327dd2601beae39a366d6e064c03468d35c20e
     # via
     #   mkdocs-autorefs
+    #   mkdocs-macros-plugin
     #   mkdocs-material
     #   mkdocstrings
 mkdocs-autorefs==1.4.2 \
@@ -846,6 +854,9 @@ mkdocs-get-deps==0.2.0 \
     --hash=sha256:162b3d129c7fad9b19abfdcb9c1458a651628e4b1dea628ac68790fb3061c60c \
     --hash=sha256:2bf11d0b133e77a0dd036abeeb06dec8775e46efa526dc70667d8863eefc6134
     # via mkdocs
+mkdocs-macros-plugin==1.3.7 \
+    --hash=sha256:02432033a5b77fb247d6ec7924e72fc4ceec264165b1644ab8d0dc159c22ce59 \
+    --hash=sha256:17c7fd1a49b94defcdb502fd453d17a1e730f8836523379d21292eb2be4cb523
 mkdocs-material==9.6.14 \
     --hash=sha256:39d795e90dce6b531387c255bd07e866e027828b7346d3eba5ac3de265053754 \
     --hash=sha256:3b9cee6d3688551bf7a8e8f41afda97a3c39a12f0325436d76c86706114b721b
@@ -1084,6 +1095,7 @@ packaging==25.0 \
     #   jupyterlab-server
     #   matplotlib
     #   mkdocs
+    #   mkdocs-macros-plugin
     #   nbconvert
     #   pytest
     #   sphinx
@@ -1131,7 +1143,9 @@ parso==0.8.4 \
 pathspec==0.12.1 \
     --hash=sha256:a0d503e138a4c123b27490a4f7beda6a01c6f288df0e4a8b79c7eb0dc7b4cc08 \
     --hash=sha256:a482d51503a1ab33b1c67a6c3813a26953dbdc71c31dacaef9a838c4e29f5712
-    # via mkdocs
+    # via
+    #   mkdocs
+    #   mkdocs-macros-plugin
 pexpect==4.9.0 ; sys_platform != 'emscripten' and sys_platform != 'win32' \
     --hash=sha256:7236d1e080e4936be2dc3e326cec0af72acf9212a7e1d060210e70a47e253523 \
     --hash=sha256:ee7d41123f3c9911050ea2c2dac107568dc43b2d3b0c7557a33212c398ead30f
@@ -1279,6 +1293,7 @@ python-dateutil==2.9.0.post0 \
     #   ghp-import
     #   jupyter-client
     #   matplotlib
+    #   mkdocs-macros-plugin
     #   pandas
 python-json-logger==3.3.0 \
     --hash=sha256:12b7e74b17775e7d565129296105bbe3910842d9d0eb083fc83a6a617aa8df84 \
@@ -1346,6 +1361,7 @@ pyyaml==6.0.2 \
     #   jupyter-events
     #   mkdocs
     #   mkdocs-get-deps
+    #   mkdocs-macros-plugin
     #   pre-commit
     #   pymdown-extensions
     #   pyyaml-env-tag
@@ -1801,10 +1817,18 @@ stack-data==0.6.3 \
     --hash=sha256:836a778de4fec4dcd1dcd89ed8abff8a221f58308462e1c4aa2a3cf30148f0b9 \
     --hash=sha256:d5558e0c25a4cb0853cddad3d77da9891a08cb85dd9f9f91b9f8cd66e511e695
     # via ipython
+super-collections==0.5.3 \
+    --hash=sha256:907d35b25dc4070910e8254bf2f5c928348af1cf8a1f1e8259e06c666e902cff \
+    --hash=sha256:94c1ec96c0a0d5e8e7d389ed8cde6882ac246940507c5e6b86e91945c2968d46
+    # via mkdocs-macros-plugin
 sympy==1.14.0 \
     --hash=sha256:d3d3fe8df1e5a0b42f0e7bdf50541697dbe7d23746e894990c030e2b05e72517 \
     --hash=sha256:e091cc3e99d2141a0ba2847328f5479b05d94a6635cb96148ccb3f34671bd8f5
     # via torch
+termcolor==3.1.0 \
+    --hash=sha256:591dd26b5c2ce03b9e43f391264626557873ce1d379019786f99b0c2bee140aa \
+    --hash=sha256:6a6dd7fbee581909eeec6a756cff1d7f7c376063b14e4a298dc4980309e55970
+    # via mkdocs-macros-plugin
 terminado==0.18.1 \
     --hash=sha256:a4468e1b37bb318f8a86514f65814e1afc977cf29b3992a4500d9dd305dcceb0 \
     --hash=sha256:de09f2c4b85de4765f7714688fff57d3e75bad1f909b589fde880460c753fd2e

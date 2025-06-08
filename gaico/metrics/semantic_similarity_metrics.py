@@ -83,7 +83,7 @@ class BERTScore(BaseMetric):
         if not _semantic_deps_available:
             raise ImportError(
                 "BERTScore dependencies (bert-score, torch) are not installed. "
-                "Please install them with: pip install gaico[bertscore]"
+                "Please install them with: pip install 'gaico[bertscore]'"
             )
 
         self.scorer = _BERTScorer_cls(**params)  # type: ignore
