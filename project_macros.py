@@ -3,8 +3,7 @@
 
 # Assuming 'scripts' is a package in the project root and project is installed editable,
 # or mkdocs environment has project root in sys.path.
-# This allows 'from scripts.readme_parser import ...' to work.
-from scripts.readme_parser import extract_section, get_readme_content
+from .scripts.readme_parser import extract_section, get_readme_content
 
 # Global cache for README content to avoid multiple reads during one mkdocs build
 _readme_content_cache = None
