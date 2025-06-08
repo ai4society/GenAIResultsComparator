@@ -22,8 +22,11 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install MkDocs and dependencies
+      - name: Install project and MkDocs dependencies
         run: |
+          # This will install GAICo in editable mode AND its dev dependencies
+          pip install -e ".[dev]"
+          # Then install MkDocs and its plugins
           pip install mkdocs mkdocs-material mkdocstrings mkdocstrings-python mkdocs-macros-plugin
 
       - name: Build MkDocs site

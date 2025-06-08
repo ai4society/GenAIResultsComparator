@@ -1,7 +1,15 @@
+import os
+import sys
+
+# Add the project root to sys.path
+project_root = os.path.dirname(os.path.abspath(__file__))
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
+
 # This file will be used by mkdocs-macros-plugin
 # Configured in mkdocs.yml as module_name: project_macros
 
-from scripts.readme_parser import extract_section, get_readme_content
+from scripts.readme_parser import extract_section, get_readme_content  # # noqa
 
 # Global cache for README content to avoid multiple reads during one mkdocs build
 _readme_content_cache = None
