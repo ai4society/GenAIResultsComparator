@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "GAICo"
-version = "0.1.4"
+version = "0.1.5"
 description = "GenAI Results Comparator, GAICo, is a Python library to help compare, analyze and visualize outputs from Large Language Models (LLMs), often against a reference text. In doing so, one can use a range of extensible metrics from the literature."
 authors = [
     { name = "Nitin Gupta", email = "nitin1209@gmail.com" },

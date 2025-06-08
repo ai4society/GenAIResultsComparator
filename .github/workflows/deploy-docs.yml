@@ -20,11 +20,11 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: "3.12"
 
       - name: Install MkDocs and dependencies
         run: |
-          pip install mkdocs mkdocs-material mkdocstrings mkdocstrings-python
+          pip install mkdocs mkdocs-material mkdocstrings mkdocstrings-python mkdocs-macros-plugin
 
       - name: Build MkDocs site
         run: mkdocs build --verbose # Use --strict to fail on warnings
@@ -44,9 +44,9 @@ jobs:
           # The target directory within the external_repository
           destination_dir: projects/GenAIResultsComparator
           # Commit information
-          user_name: 'github-actions[bot]'
-          user_email: 'github-actions[bot]@users.noreply.github.com'
-          commit_message: 'Deploy GenAIResultsComparator docs (commit ${{ github.sha }})'
+          user_name: "github-actions[bot]"
+          user_email: "github-actions[bot]@users.noreply.github.com"
+          commit_message: "Deploy GenAIResultsComparator docs (commit ${{ github.sha }})"
           # By default, this action cleans the destination_dir before copying.
         #   keep_files: false # This is the default, good for ensuring a clean deploy
         #   allow_empty_commit: false # Default

@@ -1,6 +1,6 @@
 # Examples
 
-Detailed, runnable examples are available as Jupyter Notebooks in the [`examples/`](https://github.com/ai4society/GenAIResultsComparator/tree/main/examples) folder:
+Detailed, runnable examples are available as Jupyter Notebooks in the [`examples`](https://github.com/ai4society/GenAIResultsComparator/tree/main/examples) folder:
 
 - [`quickstart.ipynb`](https://github.com/ai4society/GenAIResultsComparator/blob/main/examples/quickstart.ipynb):
 

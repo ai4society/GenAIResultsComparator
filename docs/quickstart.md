@@ -1,6 +1,6 @@
 # Quick Start
 
-GAICo makes it easy to evaluate and compare LLM outputs. For detailed, runnable examples, please refer to our Jupyter Notebooks in the [`examples/`](examples/) folder:
+GAICo makes it easy to evaluate and compare LLM outputs. For detailed, runnable examples, please refer to our Jupyter Notebooks in the [`examples/`](https://github.com/ai4society/GenAIResultsComparator/blob/main/examples/) folder:
 
 - [`quickstart.ipynb`](https://github.com/ai4society/GenAIResultsComparator/blob/main/examples/quickstart.ipynb): Rapid hands-on with the _Experiment_ sub-module.
 - [`example-1.ipynb`](https://github.com/ai4society/GenAIResultsComparator/blob/main/examples/example-1.ipynb): For fine-grained usage, this notebook focuses on comparing **multiple model outputs** using a **single metric**.
