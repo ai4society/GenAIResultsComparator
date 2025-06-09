@@ -241,12 +241,7 @@ def plot_radar_comparison(
             "Pivot table is empty after aggregation. Cannot generate radar plot.",
             UserWarning,
         )
-        if axis_val is None:
-            fig, axis_val = plt.subplots(figsize=figsize_val, subplot_kw=dict(polar=True))
-        axis_val.set_title(title_val + " (No Data)")
-        plt.tight_layout()
-        return axis_val
-
+        return None
     if metrics_list_user:
         # Keep only metrics present in both user list and pivot_df columns
         metrics_to_plot = [m for m in metrics_list_user if m in pivot_df.columns]
