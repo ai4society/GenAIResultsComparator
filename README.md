@@ -1,5 +1,21 @@
 # GAICo: GenAI Results Comparator
 
+<!-- BADGES_START -->
+<p align="center">
+  <a href="https://pypi.org/project/GAICo/"><img alt="PyPI version" src="https://img.shields.io/pypi/v/GAICo.svg?style=flat-square"></a>
+  <a href="https://pypi.org/project/GAICo/"><img alt="Python versions" src="https://img.shields.io/pypi/pyversions/GAICo.svg?style=flat-square"></a>
+  <a href="https://github.com/ai4society/GenAIResultsComparator/blob/main/LICENSE"><img alt="License" src="https://img.shields.io/github/license/ai4society/GenAIResultsComparator?style=flat-square"></a>
+  <a href="https://ai4society.github.io/projects/GenAIResultsComparator/"><img alt="Documentation" src="https://img.shields.io/badge/docs-mkdocs%20material-blue.svg?style=flat-square"></a>
+  <a href="https://github.com/ai4society/GenAIResultsComparator/actions/workflows/deploy-docs.yml"><img alt="Deploy Docs" src="https://github.com/ai4society/GenAIResultsComparator/actions/workflows/deploy-docs.yml/badge.svg?branch=main&style=flat-square"></a>
+
+  <!-- Uncomment below if repository blows up -->
+  <!-- <br/>
+  <a href="https://pypistats.org/packages/gaico"><img alt="PyPI Downloads" src="https://img.shields.io/pypi/dm/GAICo.svg?style=flat-square"></a>
+  <a href="https://github.com/ai4society/GenAIResultsComparator/stargazers"><img alt="GitHub Stars" src="https://img.shields.io/github/stars/ai4society/GenAIResultsComparator?style=social"></a>
+  <a href="https://github.com/ai4society/GenAIResultsComparator/network/members"><img alt="GitHub Forks" src="https://img.shields.io/github/forks/ai4society/GenAIResultsComparator?style=social"></a> -->
+</p>
+<!-- BADGES_END -->
+
 <!-- TAGLINE_START -->
 
 _GenAI Results Comparator, GAICo, is a Python library_ to help compare, analyze and visualize outputs from Large Language Models (LLMs), often against a reference text. In doing so, one can use a range of extensible metrics from the literature.
@@ -7,6 +23,8 @@ _GenAI Results Comparator, GAICo, is a Python library_ to help compare, analyze 
 <!-- TAGLINE_END -->
 
 View the documentation at [ai4society.github.io/projects/GenAIResultsComparator](https://ai4society.github.io/projects/GenAIResultsComparator).
+
+View the PyPI page at [pypi.org/project/gaico/](https://pypi.org/project/gaico/)
 
 ## Quick Start
 
@@ -141,63 +159,97 @@ article on evaluating LLM-generated content](https://learn.microsoft.com/en-us/a
 
 ## Installation
 
+<!-- INSTALLATION_STANDARD_INTRO_START -->
+
+GAICo can be installed using pip. We strongly recommend using a [Python virtual environment](https://docs.python.org/3/tutorial/venv.html) to manage dependencies and avoid conflicts with other packages.
+
+<!-- INSTALLATION_STANDARD_INTRO_END -->
+
+<!-- INSTALLATION_STANDARD_SETUP_START -->
+
+- **Create and activate a virtual environment** (e.g., named `gaico-env`):
+
+  ```shell
+    # For Python 3.10+
+    python3 -m venv gaico-env
+    source gaico-env/bin/activate  # On macOS/Linux
+    # gaico-env\Scripts\activate   # On Windows
+  ```
+
+<!-- INSTALLATION_STANDARD_SETUP_END -->
 <!-- INSTALLATION_PYPI_BASIC_START -->
 
-You can install GAICo directly from PyPI using pip:
+- **Install GAICo:**
+  Once your virtual environment is active, install GAICo using pip:
 
-```shell
-pip install gaico
-```
+  ```shell
+    pip install gaico
+  ```
+
+This installs the core GAICo library.
 
 <!-- INSTALLATION_PYPI_BASIC_END -->
 
-_Note that the recommended way to install is using a [virtual environment](https://docs.python.org/3/tutorial/venv.html) to avoid conflicts with other packages._ You can create a virtual environment using the following commands:
+<!-- INSTALLATION_JUPYTER_GUIDE_START -->
+
+### Using GAICo with Jupyter Notebooks/Lab
+
+If you plan to use GAICo within Jupyter Notebooks or JupyterLab (recommended for exploring examples and interactive analysis), install them into the _same activated virtual environment_:
 
 ```shell
-# Create a virtual environment (e.g., Python 3.12 or lower recommended)
-python3 -m venv .venv
-# Activate the environment
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-
-# Then install GAICo:
-pip install gaico
+# (Ensure your 'gaico-env' is active)
+pip install notebook  # For Jupyter Notebook
+# OR
+# pip install jupyterlab # For JupyterLab
 ```
+
+Then, launch Jupyter from the same terminal where your virtual environment is active:
+
+```shell
+# (Ensure your 'gaico-env' is active)
+jupyter notebook
+# OR
+# jupyter lab
+```
+
+New notebooks created in this session should automatically use the `gaico-env` Python environment. For troubleshooting kernel issues, please see our [FAQ document](faq.md).
+
+<!-- INSTALLATION_JUPYTER_GUIDE_END -->
 
 <!-- INSTALLATION_OPTIONAL_INTRO_START -->
 
-The default installation includes core metrics and some visualization modules which are lightweight. For optional features:
+### Optional Installations for GAICo
+
+The default installation includes core metrics and is lightweight. For optional features and metrics that have larger dependencies:
 
 <!-- INSTALLATION_OPTIONAL_INTRO_END -->
 
 <!-- INSTALLATION_OPTIONAL_FEATURES_START -->
 
 - To include the **BERTScore** metric (which has larger dependencies like PyTorch):
-
   ```shell
   pip install 'gaico[bertscore]'
   ```
-
 - To include the **CosineSimilarity** metric (requires scikit-learn):
-
   ```shell
   pip install 'gaico[cosine]'
   ```
-
-- To include the **JSDivergence** metric (requires SciPy):
-
+- To include the **JSDivergence** metric (requires SciPy and NLTK):
   ```shell
   pip install 'gaico[jsd]'
   ```
-
 - To install with **all optional features**:
-
   ```shell
   pip install 'gaico[bertscore,cosine,jsd]'
   ```
-
+  _(Note: All optional features are also installed if you use the `dev` extra for development installs.)_
   <!-- INSTALLATION_OPTIONAL_FEATURES_END -->
 
+<!-- INSTALLATION_SIZE_TABLE_INTRO_START -->
+
 ### Installation Size Comparison
+
+<!-- INSTALLATION_SIZE_TABLE_INTRO_END -->
 
 <!-- INSTALLATION_SIZE_TABLE_CONTENT_START -->
 
@@ -208,46 +260,60 @@ _Note:_ Core dependencies include: `levenshtein`, `matplotlib`, `numpy`, `pandas
 | Installation Command                        | Dependencies                                                 | Estimated Total Size Impact |
 | ------------------------------------------- | ------------------------------------------------------------ | --------------------------- |
 | `pip install gaico`                         | Core                                                         | 210 MB                      |
-| `pip install 'gaico[jsd]'`                  | Core + `scipy`                                               | 310 MB                      |
+| `pip install 'gaico[jsd]'`                  | Core + `scipy`, `nltk`                                       | 310 MB                      |
 | `pip install 'gaico[cosine]'`               | Core + `scikit-learn`                                        | 360 MB                      |
 | `pip install 'gaico[bertscore]'`            | Core + `bert-score` (includes `torch`, `transformers`, etc.) | 800 MB                      |
 | `pip install 'gaico[bertscore,cosine,jsd]'` | Core + all dependencies from above                           | 950 MB                      |
 
 <!-- INSTALLATION_SIZE_TABLE_CONTENT_END -->
 
+<!-- INSTALLATION_DEVELOPER_GUIDE_START -->
+
 ### For Developers (Installing from source)
 
 If you want to contribute to GAICo or install it from source for development:
 
-1. Clone the repository:
-   ```shell
-   git clone https://github.com/ai4society/GenAIResultsComparator.git
-   cd GenAIResultsComparator
-   ```
-2. We recommend using [UV](https://docs.astral.sh/uv/#installation) for managing environments and dependencies.
-   ```shell
-   # Create a virtual environment (e.g., Python 3.12 recommended)
-   uv venv
-   # Activate the environment
-   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-   # Install the package in editable mode with all development dependencies (includes all optional features)
-   uv pip install -e ".[dev]"
-   ```
-3. _If you don't want to use `uv`,_ you can install the dependencies with the following commands:
-   ```shell
-   # Create a virtual environment (e.g., Python 3.12 recommended)
-   python3 -m venv .venv
-   # Activate the environment
-   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-   # Install the package in editable mode with development and visualization extras
-   pip install -e ".[dev]"
-   ```
-4. Set up pre-commit hooks (optional but recommended for contributors):
-   ```shell
-   pre-commit install
-   ```
-   _(Note: The `dev` extra installs GAICo with all its optional features like `bertscore`, plus dependencies for testing, linting, building, and documentation.)_
-   <!-- INSTALLATION_SECTION_END -->
+1.  Clone the repository:
+
+    ```shell
+    git clone https://github.com/ai4society/GenAIResultsComparator.git
+    cd GenAIResultsComparator
+    ```
+
+2.  Set up a virtual environment and install dependencies:
+    We recommend using [UV](https://docs.astral.sh/uv/#installation) for managing environments and dependencies.
+
+    ```shell
+    # Create a virtual environment (e.g., Python 3.10-3.12 recommended)
+    uv venv
+    # Activate the environment
+    source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+    # Install the package in editable mode with all development dependencies
+    # (includes all optional features like bertscore, cosine, jsd)
+    uv pip install -e ".[dev]"
+    ```
+
+    _If you prefer not to use `uv`,_ you can use `pip`:
+
+    ```shell
+    # Create a virtual environment (e.g., Python 3.10-3.12 recommended)
+    python3 -m venv .venv
+    # Activate the environment
+    source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+    # Install the package in editable mode with development extras
+    pip install -e ".[dev]"
+    ```
+
+    _(The `dev` extra installs GAICo with all its optional features, plus dependencies for testing, linting, building, and documentation.)_
+
+3.  Set up pre-commit hooks (optional but recommended for contributors):
+
+    ```shell
+    pre-commit install
+    ```
+
+    <!-- INSTALLATION_DEVELOPER_GUIDE_END -->
+    <!-- INSTALLATION_SECTION_END -->
 
 ## Project Structure
 
@@ -260,11 +326,16 @@ The project structure is as follows:
 ├── .gitignore
 ├── uv.lock
 ├── pyproject.toml
-├── .pre-commit-config.yaml
-├── gaico/        # Contains the library code
-├── examples/     # Contains example scripts
-├── tests/        # Contains test scripts
-└── docs/         # Contains documentation files
+├── project_macros.py        # Used by mkdocs-macros-plugin (documentation)
+├── PYPI_DESCRIPTION.MD      # The PyPI description file
+├── .pre-commit-config.yaml  # Pre-Commit Hooks
+├── .mkdocs.yml              # Configuration for mkdocs (documentation)
+├── gaico/                   # Contains the library code
+├── examples/                # Contains example scripts
+├── tests/                   # Contains test
+├── scripts/                 # Contains scripts for github deployment and markdown generation
+├── docs/                    # Contains documentation files
+└── .github/workflows/       # Contains workflows for deploying to PyPI and the documentations site.
 
 ```
 

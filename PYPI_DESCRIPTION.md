@@ -6,8 +6,6 @@
 
 **Documentation:** [ai4society.github.io/projects/GenAIResultsComparator](https://ai4society.github.io/projects/GenAIResultsComparator/index.html)
 
-**PyPI:** [gaico](https://pypi.org/project/gaico/)
-
 ## Overview
 
 _GenAI Results Comparator, GAICo, is a Python library_ to help compare, analyze and visualize outputs from Large Language Models (LLMs), often against a reference text. In doing so, one can use a range of extensible metrics from the literature.
@@ -71,40 +69,71 @@ For more detailed examples, please refer to our Jupyter Notebooks in the [`examp
 
 ## Installation
 
-You can install GAICo directly from PyPI using pip:
+GAICo can be installed using pip. We strongly recommend using a [Python virtual environment](https://docs.python.org/3/tutorial/venv.html) to manage dependencies and avoid conflicts with other packages.
+
+- **Create and activate a virtual environment** (e.g., named `gaico-env`):
+
+  ```shell
+    # For Python 3.10+
+    python3 -m venv gaico-env
+    source gaico-env/bin/activate  # On macOS/Linux
+    # gaico-env\Scripts\activate   # On Windows
+  ```
+
+- **Install GAICo:**
+  Once your virtual environment is active, install GAICo using pip:
+
+  ```shell
+    pip install gaico
+  ```
+
+This installs the core GAICo library.
+
+### Using GAICo with Jupyter Notebooks/Lab
+
+If you plan to use GAICo within Jupyter Notebooks or JupyterLab (recommended for exploring examples and interactive analysis), install them into the _same activated virtual environment_:
 
 ```shell
-pip install gaico
+# (Ensure your 'gaico-env' is active)
+pip install notebook  # For Jupyter Notebook
+# OR
+# pip install jupyterlab # For JupyterLab
 ```
 
-The default installation includes core metrics and some visualization modules which are lightweight. For optional features:
+Then, launch Jupyter from the same terminal where your virtual environment is active:
+
+```shell
+# (Ensure your 'gaico-env' is active)
+jupyter notebook
+# OR
+# jupyter lab
+```
+
+New notebooks created in this session should automatically use the `gaico-env` Python environment. For troubleshooting kernel issues, please see our [FAQ document](faq.md).
+
+### Optional Installations for GAICo
+
+The default installation includes core metrics and is lightweight. For optional features and metrics that have larger dependencies:
 
 - To include the **BERTScore** metric (which has larger dependencies like PyTorch):
-
   ```shell
   pip install 'gaico[bertscore]'
   ```
-
 - To include the **CosineSimilarity** metric (requires scikit-learn):
-
   ```shell
   pip install 'gaico[cosine]'
   ```
-
-- To include the **JSDivergence** metric (requires SciPy):
-
+- To include the **JSDivergence** metric (requires SciPy and NLTK):
   ```shell
   pip install 'gaico[jsd]'
   ```
-
 - To install with **all optional features**:
-
   ```shell
   pip install 'gaico[bertscore,cosine,jsd]'
   ```
+  _(Note: All optional features are also installed if you use the `dev` extra for development installs.)_
 
 ### Installation Size Comparison
-
 The following table provides an _estimated_ overview of the relative disk space impact of different installation options. Actual sizes may vary depending on your operating system, Python version, and existing packages. These are primarily to illustrate the relative impact of optional dependencies.
 
 _Note:_ Core dependencies include: `levenshtein`, `matplotlib`, `numpy`, `pandas`, `rouge-score`, and `seaborn`.
@@ -112,10 +141,54 @@ _Note:_ Core dependencies include: `levenshtein`, `matplotlib`, `numpy`, `pandas
 | Installation Command                        | Dependencies                                                 | Estimated Total Size Impact |
 | ------------------------------------------- | ------------------------------------------------------------ | --------------------------- |
 | `pip install gaico`                         | Core                                                         | 210 MB                      |
-| `pip install 'gaico[jsd]'`                  | Core + `scipy`                                               | 310 MB                      |
+| `pip install 'gaico[jsd]'`                  | Core + `scipy`, `nltk`                                       | 310 MB                      |
 | `pip install 'gaico[cosine]'`               | Core + `scikit-learn`                                        | 360 MB                      |
 | `pip install 'gaico[bertscore]'`            | Core + `bert-score` (includes `torch`, `transformers`, etc.) | 800 MB                      |
 | `pip install 'gaico[bertscore,cosine,jsd]'` | Core + all dependencies from above                           | 950 MB                      |
+
+### For Developers (Installing from source)
+
+If you want to contribute to GAICo or install it from source for development:
+
+1.  Clone the repository:
+
+    ```shell
+    git clone https://github.com/ai4society/GenAIResultsComparator.git
+    cd GenAIResultsComparator
+    ```
+
+2.  Set up a virtual environment and install dependencies:
+    We recommend using [UV](https://docs.astral.sh/uv/#installation) for managing environments and dependencies.
+
+    ```shell
+    # Create a virtual environment (e.g., Python 3.10-3.12 recommended)
+    uv venv
+    # Activate the environment
+    source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+    # Install the package in editable mode with all development dependencies
+    # (includes all optional features like bertscore, cosine, jsd)
+    uv pip install -e ".[dev]"
+    ```
+
+    _If you prefer not to use `uv`,_ you can use `pip`:
+
+    ```shell
+    # Create a virtual environment (e.g., Python 3.10-3.12 recommended)
+    python3 -m venv .venv
+    # Activate the environment
+    source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+    # Install the package in editable mode with development extras
+    pip install -e ".[dev]"
+    ```
+
+    _(The `dev` extra installs GAICo with all its optional features, plus dependencies for testing, linting, building, and documentation.)_
+
+3.  Set up pre-commit hooks (optional but recommended for contributors):
+
+    ```shell
+    pre-commit install
+    ```
+
 
 ## Citation
 

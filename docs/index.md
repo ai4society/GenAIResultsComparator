@@ -5,6 +5,8 @@
   <figcaption><em>GAICo Quickstart Demonstration</em></figcaption>
 </figure>
 
+{{ readme("BADGES") }}
+
 {{ readme("TAGLINE") }}
 
 {{ readme("DESCRIPTION_FULL") }}
