@@ -60,7 +60,7 @@ bertscore = [
   "bert-score>=0.3.13",
 ]
 cosine = [
-  "scikit-learn>=1.4.0", # Jan 2024
+  "scikit-learn==1.5.0",
 ]
 jsd = [
   "nltk>=3.9.1",
