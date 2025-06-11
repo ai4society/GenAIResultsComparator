@@ -2,6 +2,12 @@
 
 This directory contains example notebooks demonstrating various use cases of the GAICo library. Each example is designed to showcase practical applications and provide detailed guidance on using different metrics for specific scenarios.
 
+## Table of Contents
+
+- [Examples](#examples)
+- [Advanced Examples](#advanced-examples)
+- [Citations](#citations)
+
 ## Examples
 
 ### 1. `quickstart.ipynb`
@@ -16,7 +22,11 @@ This directory contains example notebooks demonstrating various use cases of the
 
 - Evaluating a single model on multiple metrics.
 
-### 4. `DeepSeek-example.ipynb`: Testing _DeepSeek R1_
+### 4. `example-finance.ipynb`: Finance Dataset Analysis
+
+- Evaluating models on various questions from the finance domain.
+
+### 5. `DeepSeek-example.ipynb`: Testing _DeepSeek R1_
 
 - The aim for this notebook was to aid with evaluating DeepSeek R1 for [AI4Society's Point of View (POV)](https://drive.google.com/file/d/1ErR1xT7ftvmHiUyYrdUbjyd4qCK_FxKX/view?usp=sharing).
 - **Note**: All results remove the `<think>` tags for the DeepSeek models.
@@ -36,3 +46,17 @@ The `advanced-examples` directory contains advances notebooks showcasing more co
 ### 3. `viz-example.ipynb`: Visualizations
 
 - Hands-on visualizations for LLM results.
+
+## Citations
+
+- `example-1.ipynb` and `example-2.ipynb`
+
+  ```
+  Srivastava, B., Lakkaraju, K., Gupta, N., Nagpal, V., Muppasani, B. C., & Jones, S. E. (2025). SafeChat: A Framework for Building Trustworthy Collaborative Assistants and a Case Study of its Usefulness. arXiv preprint arXiv:2504.07995.
+  ```
+
+- `example-finance.ipynb`
+
+  ```
+  Lakkaraju, K., Jones, S. E., Vuruma, S. K. R., Pallagani, V., Muppasani, B. C., & Srivastava, B. (2023, November). Llms for financial advisement: A fairness and efficacy study in personal decision making. In Proceedings of the Fourth ACM International Conference on AI in Finance (pp. 100-107).
+  ```

@@ -118,7 +118,10 @@ This `calculate()` method takes two parameters:
 
 If the inputs are Iterables (lists, Numpy arrays, etc.), then the method assumes that there exists a one-to-one mapping between the generated texts and reference texts, meaning that the first generated text corresponds to the first reference text, and so on.
 
-**_Note:_** While the library can be used to compare strings, it's main purpose is to aid with comparing results from various LLMs.
+**_Notes:_**
+
+- While the library can be used to compare strings, it's main purpose is to aid with comparing results from various LLMs.
+- Due to size constraints, `pip install gaico` will install 5/8 [metrics](#features) supported by the library. For the remaining, the library supports [optional installs](#optional-installations-for-gaico), which would only add the needed metric.
 
 **_Inspiration_** for the library and evaluation metrics was taken from [Microsoft's
 article on evaluating LLM-generated content](https://learn.microsoft.com/en-us/ai/playbook/technology-guidance/generative-ai/working-with-llms/evaluation/list-of-eval-metrics). In the article, Microsoft describes 3 categories of evaluation metrics: **(1)** Reference-based metrics, **(2)** Reference-free metrics, and **(3)** LLM-based metrics. _The library currently supports reference-based metrics._
