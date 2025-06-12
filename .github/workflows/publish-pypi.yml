@@ -56,7 +56,6 @@ jobs:
         # This step assumes you have configured Trusted Publishing on PyPI for this repository and workflow.
         run: >-
           uv publish
-          --attestations
           --no-prompt
           dist/*.whl
           dist/*.tar.gz
