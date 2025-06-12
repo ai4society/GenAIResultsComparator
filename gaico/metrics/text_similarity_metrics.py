@@ -144,19 +144,35 @@ class CosineSimilarity(BaseMetric):
         :return: The Cosine Similarity score
         :rtype: float
         """
+        # Ensure inputs are strings
+        gen_str = str(generated_text)
+        ref_str = str(reference_text)
+
         # Handle empty strings:
-        if not generated_text.strip() and not reference_text.strip():
+        if not gen_str.strip() and not ref_str.strip():
             return 1.0
-        if not generated_text.strip() or not reference_text.strip():
+        if not gen_str.strip() or not ref_str.strip():
             return 0.0
 
-        vectors = self.vectorizer.fit_transform([generated_text, reference_text])  # type: ignore
-        vectors = cast(np.ndarray, vectors)  # Ensure vectors are numpy arrays
+        try:
+            vectors = self.vectorizer.fit_transform([gen_str, ref_str])
+            vectors = cast(np.ndarray, vectors)  # Ensure vectors are numpy arrays
 
-        # For entirely similar text, the cosine similarity might be slightly greater than 1 due to floating point precision
-        # Hence, we clip the value to be in the range [0, 1]
-        similarity = _cosine_similarity_func(vectors[0], vectors[1], **kwargs)[0][0]  # type: ignore
-        return min(max(similarity, 0.0), 1.0)
+            # For entirely similar text, the cosine similarity might be slightly greater than 1 due to floating point precision
+            # Hence, we clip the value to be in the range [0, 1]
+            similarity = _cosine_similarity_func(vectors[0:1], vectors[1:2], **kwargs)[0][0]  # type: ignore
+            return min(max(similarity, 0.0), 1.0)
+
+        except ValueError as e:
+            if "empty vocabulary" in str(e):
+                # This means both texts, after vectorizer processing (e.g. stop word removal),
+                # resulted in no usable tokens.
+                # Since the initial strip checks passed, both had some content.
+                # If they both become empty after processing, they are "similar" in this regard.
+                return 1.0
+            else:
+                # Re-raise other ValueErrors
+                raise ValueError(f"Error calculating cosine similarity: {str(e)}") from e
 
     def _batch_calculate(
         self,
@@ -177,15 +193,20 @@ class CosineSimilarity(BaseMetric):
         :rtype: np.ndarray | pd.Series | list[float]
         """
 
-        # Convert to lists for easier manipulation
-        gen_list = list(generated_texts)
-        ref_list = list(reference_texts)
+        # Convert to lists for easier manipulation and to ensure type consistency
+        gen_list = list(map(str, generated_texts))
+        ref_list = list(map(str, reference_texts))
 
-        # Handle empty strings for each pair
+        if len(gen_list) != len(ref_list):
+            raise ValueError("Generated texts and reference texts must have the same length.")
+
         results = []
         for i in range(len(gen_list)):
-            gen_stripped = gen_list[i].strip() if isinstance(gen_list[i], str) else ""
-            ref_stripped = ref_list[i].strip() if isinstance(ref_list[i], str) else ""
+            gen_text = gen_list[i]
+            ref_text = ref_list[i]
+
+            gen_stripped = gen_text.strip()
+            ref_stripped = ref_text.strip()
 
             if not gen_stripped and not ref_stripped:
                 results.append(1.0)  # Both empty - perfect match
@@ -193,16 +214,26 @@ class CosineSimilarity(BaseMetric):
                 results.append(0.0)  # One empty - no match
             else:
                 # Both non-empty - calculate similarity
-                vectors = self.vectorizer.fit_transform([gen_list[i], ref_list[i]])  # type: ignore
-                vectors = cast(np.ndarray, vectors)  # Ensure vectors are numpy arrays
-                similarity = _cosine_similarity_func(vectors[0], vectors[1], **kwargs)[0][0]  # type: ignore
-                results.append(min(max(similarity, 0.0), 1.0))  # Clip to [0, 1]
+                try:
+                    vectors = self.vectorizer.fit_transform([gen_text, ref_text])
+                    vectors = cast(np.ndarray, vectors)  # Ensure vectors are numpy arrays
+
+                    similarity = _cosine_similarity_func(vectors[0:1], vectors[1:2], **kwargs)[0][0]  # type: ignore
+                    results.append(min(max(similarity, 0.0), 1.0))  # Clip to [0, 1]
+
+                except ValueError as e:
+                    if "empty vocabulary" in str(e):
+                        results.append(1.0)  # Both became effectively empty after vectorization
+                    else:
+                        raise
 
         # Return results in the appropriate format
         if isinstance(generated_texts, np.ndarray) and isinstance(reference_texts, np.ndarray):
             return np.array(results)
         elif isinstance(generated_texts, pd.Series) and isinstance(reference_texts, pd.Series):
-            return pd.Series(results, index=generated_texts.index)
+            # Try to preserve original index if it's a pandas Series
+            index = generated_texts.index if hasattr(generated_texts, "index") else None
+            return pd.Series(results, index=index)
         else:
             return results
 
