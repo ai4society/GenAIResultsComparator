@@ -98,7 +98,7 @@ Alternatively, if you have a dataset consisting of multiple reference texts and 
 
 If you would like to use the `Experiment` abstraction for your dataset, you would need to iterate through your dataset and create an `Experiment` instance for each data point (i.e., for each reference text and its associated model responses). Examples of such scenarios are shown in the [`examples`](examples) subdirectory, please refer to the README.md file there.
 
-Lastly, for you implementing custom metrics, please look at the [FAQs](docs/faq.md).
+Lastly, for you implementing custom metrics, please look at the [FAQs](https://ai4society.github.io/projects/GenAIResultsComparator/faq/#q-how-do-i-add-a-new-custom-metric).
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/ai4society/GenAIResultsComparator/refs/heads/main/examples/data/examples/example_2.png" alt="Sample Radar Chart showing multiple metrics for a single LLM" width="450"/>
@@ -232,7 +232,7 @@ jupyter notebook
 # jupyter lab
 ```
 
-New notebooks created in this session should automatically use the `gaico-env` Python environment. For troubleshooting kernel issues, please see our [FAQ document](faq.md).
+New notebooks created in this session should automatically use the `gaico-env` Python environment. For troubleshooting kernel issues, please see our [FAQ document](https://ai4society.github.io/projects/GenAIResultsComparator/faq).
 
 <!-- INSTALLATION_JUPYTER_GUIDE_END -->
 

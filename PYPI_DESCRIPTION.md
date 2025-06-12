@@ -109,7 +109,7 @@ jupyter notebook
 # jupyter lab
 ```
 
-New notebooks created in this session should automatically use the `gaico-env` Python environment. For troubleshooting kernel issues, please see our [FAQ document](faq.md).
+New notebooks created in this session should automatically use the `gaico-env` Python environment. For troubleshooting kernel issues, please see our [FAQ document](https://ai4society.github.io/projects/GenAIResultsComparator/faq).
 
 ### Optional Installations for GAICo
 
