@@ -30,7 +30,11 @@ This directory contains example notebooks demonstrating various use cases of the
 
 - Evaluating models on various questions from the recipe domain by iterating on the dataset with the `Experiment` class. Further uses parallelization of the comparisons using `joblib`.
 
-### 6. `DeepSeek-example.ipynb`: Testing _DeepSeek R1_
+### 6. `example-election.ipynb`: Election Dataset Analysis
+
+- Evaluating models on various questions from the election domain by using the `calculate()` metric method.
+
+### 7. `DeepSeek-example.ipynb`: Testing _DeepSeek R1_
 
 - The aim for this notebook was to aid with evaluating DeepSeek R1 for [AI4Society's Point of View (POV)](https://drive.google.com/file/d/1ErR1xT7ftvmHiUyYrdUbjyd4qCK_FxKX/view?usp=sharing).
 - **Note**: All results remove the `<think>` tags for the DeepSeek models.
@@ -69,4 +73,10 @@ The `advanced-examples` directory contains advances notebooks showcasing more co
 
   ```
   Nagpal, Vansh, et al. "A Novel Approach to Balance Convenience and Nutrition in Meals With Long-Term Group Recommendations and Reasoning on Multimodal Recipes and its Implementation in BEACON." arXiv preprint arXiv:2412.17910 (2024).
+  ```
+
+- `example-election.ipynb`
+
+  ```
+  Muppasani, B., Pallagani, V., Lakkaraju, K., Lei, S., Srivastava, B., Robertson, B., Hickerson, A. and Narayanan, V., 2023. On safe and usable chatbots for promoting voter participation. AI Magazine, 44(3), pp.240-247.
   ```
