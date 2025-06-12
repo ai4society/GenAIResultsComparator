@@ -16,17 +16,21 @@ This directory contains example notebooks demonstrating various use cases of the
 
 ### 2. `example-1.ipynb`: Multiple Models, Single Metric
 
-- Evaluating multiple models (LLMs, Google, and Custom) using a single metric.
+- Evaluating multiple models (LLMs, Google, and Custom) using a single metric with `<metric>.calculate()` method.
 
 ### 3. `example-2.ipynb`: Single Model, Multiple Metric
 
-- Evaluating a single model on multiple metrics.
+- Evaluating a single model on multiple metrics with their `<metric>.calculate()` methods.
 
 ### 4. `example-finance.ipynb`: Finance Dataset Analysis
 
-- Evaluating models on various questions from the finance domain.
+- Evaluating models on various questions from the finance domain by iterating on the dataset with the `Experiment` class.
 
-### 5. `DeepSeek-example.ipynb`: Testing _DeepSeek R1_
+### 5. `example-recipe.ipynb`: Recipe Dataset Analysis
+
+- Evaluating models on various questions from the recipe domain by iterating on the dataset with the `Experiment` class. Further uses parallelization of the comparisons using `joblib`.
+
+### 6. `DeepSeek-example.ipynb`: Testing _DeepSeek R1_
 
 - The aim for this notebook was to aid with evaluating DeepSeek R1 for [AI4Society's Point of View (POV)](https://drive.google.com/file/d/1ErR1xT7ftvmHiUyYrdUbjyd4qCK_FxKX/view?usp=sharing).
 - **Note**: All results remove the `<think>` tags for the DeepSeek models.
@@ -59,4 +63,10 @@ The `advanced-examples` directory contains advances notebooks showcasing more co
 
   ```
   Lakkaraju, K., Jones, S. E., Vuruma, S. K. R., Pallagani, V., Muppasani, B. C., & Srivastava, B. (2023, November). Llms for financial advisement: A fairness and efficacy study in personal decision making. In Proceedings of the Fourth ACM International Conference on AI in Finance (pp. 100-107).
+  ```
+
+- `example-recipe.ipynb`
+
+  ```
+  Nagpal, Vansh, et al. "A Novel Approach to Balance Convenience and Nutrition in Meals With Long-Term Group Recommendations and Reasoning on Multimodal Recipes and its Implementation in BEACON." arXiv preprint arXiv:2412.17910 (2024).
   ```

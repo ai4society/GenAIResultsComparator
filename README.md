@@ -90,7 +90,15 @@ print(results_df)
 
 This abstraction streamlines common evaluation tasks, while still allowing access to the underlying metric classes and dataframes for more advanced or customized use cases. More details in [`examples/quickstart.ipynb`](examples/quickstart.ipynb).
 
-However, you might prefer to use the individual metric classes directly for more granular control or if you want to implement custom metrics. See the remaining notebooks in the [`examples`](examples) subdirectory.
+### Scope and Dataset Evaluation
+
+The `Experiment` class is designed for evaluating a set of model responses against a **single reference answer** at a time. This is ideal for analyzing outputs for a specific prompt or scenario.
+
+Alternatively, if you have a dataset consisting of multiple reference texts and corresponding sets of generated texts from various models (e.g., `list_of_references`, `list_of_model_A_generations`, etc.), you can use the individual metric classes (e.g., `JaccardSimilarity().calculate(list_of_gens, list_of_refs)`), which support list inputs. This approach offers more control but requires more manual orchestration of results.
+
+If you would like to use the `Experiment` abstraction for your dataset, you would need to iterate through your dataset and create an `Experiment` instance for each data point (i.e., for each reference text and its associated model responses). Examples of such scenarios are shown in the [`examples`](examples) subdirectory, please refer to the README.md file there.
+
+Lastly, for you implementing custom metrics, please look at the [FAQs](docs/faq.md).
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/ai4society/GenAIResultsComparator/refs/heads/main/examples/data/examples/example_2.png" alt="Sample Radar Chart showing multiple metrics for a single LLM" width="450"/>

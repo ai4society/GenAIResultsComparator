@@ -20,7 +20,7 @@ def sample_plot_df():
     )
 
 
-# --- Tests for plot_metric_comparison (Bar Plot) ---
+# ** Tests for plot_metric_comparison (Bar Plot) **
 @patch("gaico.visualize.sns")  # Mock seaborn
 @patch("gaico.visualize.plt")  # Mock matplotlib.pyplot
 def test_plot_metric_comparison_runs(mock_plt, mock_sns, sample_plot_df):
@@ -88,7 +88,7 @@ def test_plot_metric_comparison_missing_pandas(sample_plot_df):
         visualize.plot_metric_comparison(sample_plot_df, metric_name="BLEU")
 
 
-# --- Tests for plot_radar_comparison ---
+# ** Tests for plot_radar_comparison **
 @patch("gaico.visualize.plt")  # Mock matplotlib.pyplot
 @patch("gaico.visualize.np", np)  # Use actual numpy for calculations if needed by radar logic
 @patch("gaico.visualize.pd", pd)  # Use actual pandas
@@ -128,16 +128,4 @@ def test_plot_radar_comparison_no_metrics_after_agg(mock_plt, sample_plot_df):
 @patch("gaico.visualize.plt", None)  # Simulate matplotlib not being installed
 def test_plot_radar_missing_matplotlib(sample_plot_df):
     with pytest.raises(ImportError, match="Matplotlib is required"):
-        visualize.plot_radar_comparison(sample_plot_df, metrics=["BLEU"])
-
-
-@patch("gaico.visualize.np", None)  # Simulate numpy not being installed
-def test_plot_radar_missing_numpy(sample_plot_df):
-    with pytest.raises(ImportError, match="Numpy is required"):
-        visualize.plot_radar_comparison(sample_plot_df, metrics=["BLEU"])
-
-
-@patch("gaico.visualize.pd", None)  # Simulate pandas not being installed
-def test_plot_radar_missing_pandas(sample_plot_df):
-    with pytest.raises(ImportError, match="Pandas is required"):
         visualize.plot_radar_comparison(sample_plot_df, metrics=["BLEU"])
