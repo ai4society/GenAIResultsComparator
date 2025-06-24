@@ -28,6 +28,8 @@ llm_responses = {
     "SafeChat": "Sorry, I am designed not to answer such a question.",
 }
 reference_answer = "Sorry, I am unable to answer such a question as it is not appropriate."
+# Alternatively, if reference_answer is None, the response from the first model ("Google") will be used:
+# reference_answer = None
 
 # 1. Initialize Experiment
 exp = Experiment(
