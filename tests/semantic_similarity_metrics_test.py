@@ -77,16 +77,8 @@ class TestBERTScore:
 
     def test_calculate_empty(self, bert_scorer_default, text_pair_empty):
         gen, ref = text_pair_empty
-        # BERTScore might produce NaNs or errors with empty strings, or low scores
-        # Let's check it doesn't crash and returns low scores/zeros
-        try:
-            score = bert_scorer_default.calculate(gen, ref)
-            assert score["precision"] == pytest.approx(0.0, abs=1e-5)
-            assert score["recall"] == pytest.approx(0.0, abs=1e-5)
-            assert score["f1"] == pytest.approx(0.0, abs=1e-5)
-        except Exception as e:
-            # TODO: Allow specific expected exceptions if the library handles them gracefully
-            pytest.fail(f"BERTScore calculation failed on empty strings: {e}")
+        with pytest.raises(ValueError):
+            bert_scorer_default.calculate(gen, ref)
 
     def test_batch_calculate_list_default(
         self, bert_scorer_default, sample_generated_texts, sample_reference_texts

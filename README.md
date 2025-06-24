@@ -379,6 +379,9 @@ Navigate to the project root in your terminal and run:
 
 ```bash
 uv run pytest
+
+# Alternatively, if pytest gives import errors:
+uv run -m pytest
 ```
 
 Or, for more verbose output:
