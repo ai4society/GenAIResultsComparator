@@ -13,7 +13,14 @@ from gaico.metrics import (
     SequenceMatcherSimilarity,
 )
 
+from .metrics.audio import AudioSNRNormalized, SpectrogramDistance
 from .metrics.base import BaseMetric
+from .metrics.image import PSNRNormalized, SSIMNormalized
+from .metrics.structured import (
+    DKL,
+    ActionSequenceDiff,
+    TimeSeriesElementDiff,
+)
 from .thresholds import apply_thresholds, get_default_thresholds
 from .utils import generate_deltas_frame, prepare_results_dataframe
 
@@ -29,11 +36,27 @@ REGISTERED_METRICS: Dict[str, type[BaseMetric]] = {
     "SequenceMatcher": SequenceMatcherSimilarity,
     "BLEU": BLEU,
     "ROUGE": ROUGE,
-    "JSD": JSDivergence,
+    "JSD": JSDivergence,  # Note: This is JSDivergence for text
     "BERTScore": BERTScore,
+    "ActionSequenceDiff": ActionSequenceDiff,
+    "TimeSeriesElementDiff": TimeSeriesElementDiff,
+    "DKL_TimeSeries": DKL,
+    "SSIM": SSIMNormalized,
+    "PSNR": PSNRNormalized,
+    "AudioSNR": AudioSNRNormalized,
+    "SpectrogramDistance": SpectrogramDistance,
 }
 
-DEFAULT_METRICS_TO_RUN = list(REGISTERED_METRICS.keys())
+DEFAULT_METRICS_TO_RUN = [
+    "Jaccard",
+    "Cosine",
+    "Levenshtein",
+    "SequenceMatcher",
+    "BLEU",
+    "ROUGE",
+    "JSD",
+    "BERTScore",
+]
 
 
 class Experiment:

@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 from Levenshtein import distance, ratio
 
-from .base import BaseMetric
+from .textual import TextualMetric
 
 # Conditional imports for scikit-learn (CosineSimilarity)
 _sklearn_available = False
@@ -25,7 +25,7 @@ except ImportError:
 __sklearn_available__ = _sklearn_available
 
 
-class JaccardSimilarity(BaseMetric):
+class JaccardSimilarity(TextualMetric):
     """
     Jaccard Similarity implementation for text similarity using the formula:
     J(A, B) = |A ∩ B| / |A ∪ B|
@@ -104,7 +104,7 @@ class JaccardSimilarity(BaseMetric):
             ]
 
 
-class CosineSimilarity(BaseMetric):
+class CosineSimilarity(TextualMetric):
     """
     Cosine Similarity implementation for text similarity using `cosine_similarity` from scikit-learn.
     The class also uses the `CountVectorizer` from scikit-learn to convert text to vectors.
@@ -238,7 +238,7 @@ class CosineSimilarity(BaseMetric):
             return results
 
 
-class LevenshteinDistance(BaseMetric):
+class LevenshteinDistance(TextualMetric):
     """
     This class provides methods to calculate Levenshtein Distance for individual sentence pairs and for batches of sentences.
     It uses the `distance` and `ratio` functions from the `Levenshtein` package.
@@ -326,7 +326,7 @@ class LevenshteinDistance(BaseMetric):
             ]
 
 
-class SequenceMatcherSimilarity(BaseMetric):
+class SequenceMatcherSimilarity(TextualMetric):
     """
     This class calculates similarity ratio between texts using the ratio() method from difflib.SequenceMatcher,
     which returns a float in the range [0, 1] indicating how similar the sequences are.

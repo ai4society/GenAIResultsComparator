@@ -6,8 +6,10 @@ from .text_similarity_metrics import (
     LevenshteinDistance,
     SequenceMatcherSimilarity,
 )
+from .textual import TextualMetric
 
 __all__ = [
+    "TextualMetric",
     "BLEU",
     "ROUGE",
     "JSDivergence",
