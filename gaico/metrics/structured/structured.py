@@ -1,3 +1,4 @@
+import warnings
 from abc import ABC
 from typing import Any, FrozenSet, Iterable, List, Tuple
 
@@ -229,18 +230,18 @@ class TimeSeriesElementDiff(TimeSeriesDataMetric):
                 key = parts[0].strip()
                 value_str = parts[1].strip()
                 if not key:  # Skip if key is empty, e.g. ":10"
-                    print(f"Warning: Empty key in time series pair '{pair_str}'. Skipping.")
+                    warnings.warn(f"Warning: Empty key in time series pair '{pair_str}'. Skipping.")
                     continue
                 try:
                     value = float(value_str)
                     parsed_series.append((key, value))
                 except ValueError:
-                    print(
+                    warnings.warn(
                         f"Warning: Could not parse value '{value_str}' for key '{key}' in time series pair '{pair_str}'. Skipping."
                     )
                     continue
             else:
-                print(f"Warning: Could not parse time series pair '{pair_str}'. Skipping.")
+                warnings.warn(f"Warning: Could not parse time series pair '{pair_str}'. Skipping.")
                 continue
         return parsed_series
 
