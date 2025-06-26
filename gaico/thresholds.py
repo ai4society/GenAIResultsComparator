@@ -13,7 +13,6 @@ DEFAULT_THRESHOLD: Dict[str, float] = {
     "SequenceMatcher": 0.5,
     "ActionSequenceDiff": 0.5,
     "TimeSeriesElementDiff": 0.5,
-    "DKL_TimeSeries": 0.5,
     "SSIM": 0.5,
     "PSNR": 0.5,
     "AudioSNR": 0.5,

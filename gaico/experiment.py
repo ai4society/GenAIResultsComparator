@@ -17,7 +17,6 @@ from .metrics.audio import AudioSNRNormalized, SpectrogramDistance
 from .metrics.base import BaseMetric
 from .metrics.image import PSNRNormalized, SSIMNormalized
 from .metrics.structured import (
-    DKL,
     ActionSequenceDiff,
     TimeSeriesElementDiff,
 )
@@ -40,7 +39,6 @@ REGISTERED_METRICS: Dict[str, type[BaseMetric]] = {
     "BERTScore": BERTScore,
     "ActionSequenceDiff": ActionSequenceDiff,
     "TimeSeriesElementDiff": TimeSeriesElementDiff,
-    "DKL_TimeSeries": DKL,
     "SSIM": SSIMNormalized,
     "PSNR": PSNRNormalized,
     "AudioSNR": AudioSNRNormalized,

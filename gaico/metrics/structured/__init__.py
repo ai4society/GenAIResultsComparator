@@ -1,3 +1,3 @@
-from .structured import DKL, ActionSequenceDiff, TimeSeriesElementDiff
+from .structured import ActionSequenceDiff, TimeSeriesElementDiff
 
-__all__ = ["ActionSequenceDiff", "TimeSeriesElementDiff", "DKL"]
+__all__ = ["ActionSequenceDiff", "TimeSeriesElementDiff"]

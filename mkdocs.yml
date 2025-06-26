@@ -56,6 +56,10 @@ nav:
       - 'N-gram Metrics': api/metrics/ngram_metrics.md
       - 'Semantic Similarity Metrics': api/metrics/semantic_similarity_metrics.md
       - 'Text Similarity Metrics': api/metrics/text_similarity_metrics.md
+      - 'Planning Metrics': api/metrics/planning.md
+      - 'Time Series Metrics': api/metrics/timeseries.md
+      - 'Image Metrics': api/metrics/image.md
+      - 'Audio Metrics': api/metrics/audio.md
     - 'Experiment': api/experiment.md
     - 'Utilities': api/utils.md
     - 'Thresholds Module': api/thresholds_module.md

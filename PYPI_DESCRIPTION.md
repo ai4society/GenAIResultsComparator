@@ -61,6 +61,9 @@ For more detailed examples, please refer to our Jupyter Notebooks in the [`examp
   - N-gram-based metrics (_BLEU_, _ROUGE_, _JS divergence_)
   - Text similarity metrics (_Jaccard_, _Cosine_, _Levenshtein_, _Sequence Matcher_)
   - Semantic similarity metrics (_BERTScore_)
+- Implements specialized metrics for structured outputs:
+  - **Planning**: Action sequence difference (`ActionSequenceDiff`) based on Longest Common Subsequence.
+  - **Time-Series**: Time series element difference (`TimeSeriesElementDiff`) based on Jaccard similarity of time points.
 - Provides visualization capabilities using matplotlib and seaborn for plots like bar charts and radar plots.
 - Allows exportation of results to CSV files, including scores and threshold pass/fail status.
 - Provides streamlined `Experiment` class for easy comparison of multiple models, applying thresholds, plotting, and reporting.
