@@ -3,7 +3,7 @@ from typing import Any, Dict, Iterable, List, Optional, cast
 import numpy as np
 import pandas as pd
 
-from .base import BaseMetric
+from .textual import TextualMetric
 
 # Conditionally import bert_score and torch
 _BERTScorer_cls = None
@@ -28,7 +28,7 @@ except ImportError:
 __semantic_deps_available__ = _semantic_deps_available
 
 
-class BERTScore(BaseMetric):
+class BERTScore(TextualMetric):
     """
     This class provides methods to calculate BERTScore for individual sentence pairs and for batches of sentences.
     It uses the BERTScore library to calculate precision, recall, and F1 scores.

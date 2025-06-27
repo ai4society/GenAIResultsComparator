@@ -13,7 +13,14 @@ from gaico.metrics import (
     SequenceMatcherSimilarity,
 )
 
+from .metrics.audio import AudioSNRNormalized, SpectrogramDistance
 from .metrics.base import BaseMetric
+from .metrics.image import PSNRNormalized, SSIMNormalized
+from .metrics.structured import (
+    PlanningJaccard,
+    PlanningLCS,
+    TimeSeriesElementDiff,
+)
 from .thresholds import apply_thresholds, get_default_thresholds
 from .utils import generate_deltas_frame, prepare_results_dataframe
 
@@ -29,11 +36,26 @@ REGISTERED_METRICS: Dict[str, type[BaseMetric]] = {
     "SequenceMatcher": SequenceMatcherSimilarity,
     "BLEU": BLEU,
     "ROUGE": ROUGE,
-    "JSD": JSDivergence,
+    "JSD": JSDivergence,  # Note: This is JSDivergence for text
     "BERTScore": BERTScore,
+    "PlanningLCS": PlanningLCS,
+    "PlanningJaccard": PlanningJaccard,
+    "TimeSeriesElementDiff": TimeSeriesElementDiff,
+    "SSIM": SSIMNormalized,
+    "PSNR": PSNRNormalized,
+    "AudioSNR": AudioSNRNormalized,
+    "SpectrogramDistance": SpectrogramDistance,
 }
-
-DEFAULT_METRICS_TO_RUN = list(REGISTERED_METRICS.keys())
+DEFAULT_METRICS_TO_RUN = [
+    "Jaccard",
+    "Cosine",
+    "Levenshtein",
+    "SequenceMatcher",
+    "BLEU",
+    "ROUGE",
+    "JSD",
+    "BERTScore",
+]
 
 
 class Experiment:
@@ -45,28 +67,48 @@ class Experiment:
     def __init__(
         self,
         llm_responses: Dict[str, str],
-        reference_answer: str,
+        reference_answer: Optional[str],
     ):
         """
         Initializes the Experiment.
 
         :param llm_responses: A dictionary mapping model names (str) to their generated text responses (str).
         :type llm_responses: Dict[str, str]
-        :param reference_answer: A single reference text (str) to compare against.
-        :type reference_answer: str
-        :raises TypeError: If llm_responses is not a dictionary or reference_answer is not a string.
-        :raises ValueError: If llm_responses does not contain string keys and values.
+        :param reference_answer: A single reference text (str) to compare against. If None, the response from the first model in `llm_responses` will be used as the reference.
+        :type reference_answer: Optional[str]
+        :raises TypeError: If llm_responses is not a dictionary or reference_answer is not a string or None.
+        :raises ValueError: If llm_responses does not contain string keys and values, or if it's empty when reference_answer is None.
         """
         if not isinstance(llm_responses, dict):
             raise TypeError("llm_responses must be a dictionary.")
         if not all(isinstance(k, str) and isinstance(v, str) for k, v in llm_responses.items()):
             raise ValueError("llm_responses must be Dict[str, str] (model_name -> text).")
-        if not isinstance(reference_answer, str):
-            raise TypeError("reference_answer must be a string.")
+
+        # Allow reference_answer to be None
+        if not isinstance(reference_answer, (str, type(None))):
+            raise TypeError("reference_answer must be a string or None.")
 
         self.llm_responses = llm_responses
-        self.reference_answer = reference_answer
         self.models = list(llm_responses.keys())
+        if reference_answer is None:
+            if not self.llm_responses:
+                raise ValueError("llm_responses cannot be empty if reference_answer is None.")
+            # Use the first LLM's response as the reference
+            first_model_name = self.models[0]
+            self.reference_answer = list(self.llm_responses.values())[0]
+            print(
+                f"Warning: reference_answer was not provided for Experiment. "
+                f"Using the response from model '{first_model_name}' as the reference."
+            )
+        else:
+            self.reference_answer = reference_answer
+
+        # Ensure self.reference_answer is now a string for subsequent use
+        if not isinstance(self.reference_answer, str):
+            # This should not happen if the logic above is correct, but as a safeguard
+            raise TypeError(
+                "Internal error: self.reference_answer is not a string after initialization."
+            )
 
         # model_name -> base_metric_name -> score_value
         self._raw_scores: Dict[str, Dict[str, Any]] = {}
@@ -107,10 +149,9 @@ class Experiment:
                 self._raw_scores[model_name] = {}
 
             if metric_name not in self._raw_scores[model_name]:  # Calculate if not present
+                # self.reference_answer is guaranteed to be a string here by __init__
                 score = metric_instance.calculate(gen_text, self.reference_answer)
-                self._raw_scores[model_name][metric_name] = (
-                    score  # Score can be None if metric_instance failed init earlier
-                )
+                self._raw_scores[model_name][metric_name] = score
                 self._results_df_cache = None  # Invalidate DataFrame cache
                 self._thresholded_results_cache = None  # Invalidate threshold cache
 

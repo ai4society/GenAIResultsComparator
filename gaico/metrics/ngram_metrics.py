@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 from rouge_score import rouge_scorer
 
-from .base import BaseMetric
+from .textual import TextualMetric
 
 # Conditional imports for NLTK (BLEU, JSDivergence)
 _nltk_available = False
@@ -42,7 +42,7 @@ __nltk_available__ = _nltk_available
 __scipy_available__ = _scipy_available
 
 
-class BLEU(BaseMetric):
+class BLEU(TextualMetric):
     """
     BLEU (Bilingual Evaluation Understudy) score implementation.
     This class provides methods to calculate BLEU scores for individual sentence pairs and for batches of sentences.
@@ -173,7 +173,7 @@ class BLEU(BaseMetric):
                 ]
 
 
-class ROUGE(BaseMetric):
+class ROUGE(TextualMetric):
     """
     ROUGE (Recall-Oriented Understudy for Gisting Evaluation) score implementation using the `rouge_score` library.
     """
@@ -277,7 +277,7 @@ class ROUGE(BaseMetric):
             return scores
 
 
-class JSDivergence(BaseMetric):
+class JSDivergence(TextualMetric):
     """Jensen-Shannon Divergence metric implementation using the `scipy` library."""
 
     def __init__(
