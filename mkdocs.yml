@@ -43,12 +43,6 @@ plugins:
 nav:
   - Home: index.md
   - Quick Start: quickstart.md
-  - FAQ: faq.md
-  - User Guide:
-    - 'The Experiment Class': user_guide/experiment_class.md
-    - 'Using Metrics Directly': user_guide/direct_metrics.md
-    - 'Working with Thresholds': user_guide/thresholds.md
-    - 'Visualization': user_guide/visualization.md
   - API Reference:
     - 'Metrics':
       - 'Overview': api/metrics/index.md
@@ -64,7 +58,13 @@ nav:
     - 'Utilities': api/utils.md
     - 'Thresholds Module': api/thresholds_module.md
     - 'Visualize Module': api/visualize_module.md
+  - User Guide:
+    - 'The Experiment Class': user_guide/experiment_class.md
+    - 'Using Metrics Directly': user_guide/direct_metrics.md
+    - 'Working with Thresholds': user_guide/thresholds.md
+    - 'Visualization': user_guide/visualization.md
   - Examples: examples.md
+  - FAQ: faq.md
   - Contributing: contributing.md
   - License: license.md
 
