@@ -17,7 +17,8 @@ from .metrics.audio import AudioSNRNormalized, SpectrogramDistance
 from .metrics.base import BaseMetric
 from .metrics.image import PSNRNormalized, SSIMNormalized
 from .metrics.structured import (
-    ActionSequenceDiff,
+    PlanningJaccard,
+    PlanningLCS,
     TimeSeriesElementDiff,
 )
 from .thresholds import apply_thresholds, get_default_thresholds
@@ -37,14 +38,14 @@ REGISTERED_METRICS: Dict[str, type[BaseMetric]] = {
     "ROUGE": ROUGE,
     "JSD": JSDivergence,  # Note: This is JSDivergence for text
     "BERTScore": BERTScore,
-    "ActionSequenceDiff": ActionSequenceDiff,
+    "PlanningLCS": PlanningLCS,
+    "PlanningJaccard": PlanningJaccard,
     "TimeSeriesElementDiff": TimeSeriesElementDiff,
     "SSIM": SSIMNormalized,
     "PSNR": PSNRNormalized,
     "AudioSNR": AudioSNRNormalized,
     "SpectrogramDistance": SpectrogramDistance,
 }
-
 DEFAULT_METRICS_TO_RUN = [
     "Jaccard",
     "Cosine",

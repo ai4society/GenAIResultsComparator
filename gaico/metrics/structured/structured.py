@@ -1,6 +1,6 @@
 import warnings
 from abc import ABC
-from typing import Any, FrozenSet, Iterable, List, Tuple
+from typing import Any, Dict, FrozenSet, Iterable, List, Set
 
 import numpy as np
 import pandas as pd
@@ -28,32 +28,8 @@ class PlanningSequenceMetric(StructuredOutputMetric, ABC):
     def __init__(self, **kwargs: Any):
         super().__init__(**kwargs)
 
-
-class TimeSeriesDataMetric(StructuredOutputMetric, ABC):
-    """
-    Abstract base class for metrics evaluating time-series data,
-    which can be textual or structured.
-    """
-
-    def __init__(self, **kwargs: Any):
-        super().__init__(**kwargs)
-
-
-class ActionSequenceDiff(PlanningSequenceMetric):
-    """
-    Calculates the difference between two planning action sequences based on the
-    Longest Common Subsequence (LCS). The score is normalized to [0, 1],
-    where 1 indicates a perfect match.
-
-    Input strings are expected to be comma-separated actions.
-    Concurrent actions can be represented in curly braces, e.g., "a1, {a2, a3}, a4".
-    """
-
-    def __init__(self, **kwargs: Any):
-        """Initialize the ActionSequenceDiff metric."""
-        super().__init__(**kwargs)
-
-    def _parse_planning_sequence(self, text_sequence: str) -> List[str | frozenset]:
+    @staticmethod
+    def _parse_planning_sequence(text_sequence: str) -> List[str | frozenset]:
         """
         Parses a string representation of a planning sequence.
         Example: "a1, {a2, a3}, a4" -> ['a1', frozenset({'a2', 'a3'}), 'a4']
@@ -103,6 +79,31 @@ class ActionSequenceDiff(PlanningSequenceMetric):
                 parsed_items.append(item_str)
         return parsed_items
 
+
+class TimeSeriesDataMetric(StructuredOutputMetric, ABC):
+    """
+    Abstract base class for metrics evaluating time-series data,
+    which can be textual or structured.
+    """
+
+    def __init__(self, **kwargs: Any):
+        super().__init__(**kwargs)
+
+
+class PlanningLCS(PlanningSequenceMetric):
+    """
+    Calculates the difference between two planning action sequences based on the
+    Longest Common Subsequence (LCS). The score is normalized to [0, 1],
+    where 1 indicates a perfect match. This metric respects the order of actions.
+
+    Input strings are expected to be comma-separated actions.
+    Concurrent actions can be represented in curly braces, e.g., "a1, {a2, a3}, a4".
+    """
+
+    def __init__(self, **kwargs: Any):
+        """Initialize the PlanningLCS metric."""
+        super().__init__(**kwargs)
+
     def _lcs_length(self, seq1: List[Any], seq2: List[Any]) -> int:
         """
         Computes the length of the Longest Common Subsequence.
@@ -148,8 +149,8 @@ class ActionSequenceDiff(PlanningSequenceMetric):
         gen_seq_str = str(generated_text)
         ref_seq_str = str(reference_text)
 
-        parsed_gen = self._parse_planning_sequence(gen_seq_str)
-        parsed_ref = self._parse_planning_sequence(ref_seq_str)
+        parsed_gen = PlanningSequenceMetric._parse_planning_sequence(gen_seq_str)
+        parsed_ref = PlanningSequenceMetric._parse_planning_sequence(ref_seq_str)
 
         if not parsed_gen and not parsed_ref:
             return 1.0  # Both empty, perfect match
@@ -157,7 +158,7 @@ class ActionSequenceDiff(PlanningSequenceMetric):
         lcs_len = self._lcs_length(parsed_gen, parsed_ref)
         max_len = max(len(parsed_gen), len(parsed_ref))
 
-        if max_len == 0:  # Should be covered by the above, but as a safeguard
+        if max_len == 0:
             return 1.0
 
         return lcs_len / max_len
@@ -194,31 +195,109 @@ class ActionSequenceDiff(PlanningSequenceMetric):
         return results
 
 
+class PlanningJaccard(PlanningSequenceMetric):
+    """
+    Calculates the Jaccard similarity between the sets of actions from two
+    planning sequences. The score is normalized to [0, 1], where 1 indicates
+    that both sequences contain the exact same set of actions, ignoring order
+    and frequency.
+
+    Concurrent actions are flattened into the set.
+    """
+
+    def __init__(self, **kwargs: Any):
+        """Initialize the PlanningJaccard metric."""
+        super().__init__(**kwargs)
+
+    def _flatten_sequence_to_set(self, parsed_sequence: List[Any]) -> set:
+        """Converts a parsed sequence into a flat set of unique actions."""
+        flat_set: Set = set()
+        for item in parsed_sequence:
+            if isinstance(item, frozenset):
+                flat_set.update(item)
+            else:
+                flat_set.add(item)
+        return flat_set
+
+    def _single_calculate(self, generated_text: str, reference_text: str, **kwargs: Any) -> float:
+        """Calculate Jaccard similarity for a single pair of action sequences."""
+        gen_seq_str = str(generated_text)
+        ref_seq_str = str(reference_text)
+
+        parsed_gen = PlanningSequenceMetric._parse_planning_sequence(gen_seq_str)
+        parsed_ref = PlanningSequenceMetric._parse_planning_sequence(ref_seq_str)
+
+        set_gen = self._flatten_sequence_to_set(parsed_gen)
+        set_ref = self._flatten_sequence_to_set(parsed_ref)
+
+        if not set_gen and not set_ref:
+            return 1.0
+
+        intersection = set_gen.intersection(set_ref)
+        union = set_gen.union(set_ref)
+
+        if not union:
+            return 1.0
+
+        return len(intersection) / len(union)
+
+    def _batch_calculate(
+        self,
+        generated_texts: Iterable | np.ndarray | pd.Series,
+        reference_texts: Iterable | np.ndarray | pd.Series,
+        **kwargs: Any,
+    ) -> List[float] | np.ndarray | pd.Series:
+        """Calculate Jaccard similarities for a batch of action sequences."""
+        results = [
+            self._single_calculate(str(gen), str(ref), **kwargs)
+            for gen, ref in zip(generated_texts, reference_texts)
+        ]
+
+        if isinstance(generated_texts, np.ndarray):
+            return np.array(results, dtype=float)
+        if isinstance(generated_texts, pd.Series):
+            return pd.Series(results, index=generated_texts.index, dtype=float)
+        return results
+
+
 class TimeSeriesElementDiff(TimeSeriesDataMetric):
     """
-    Calculates the difference between two time series based on the Jaccard similarity
-    of their time points (keys). The values associated with time points are not
-    considered in this version, focusing on structural presence/absence of time points.
-    The score is normalized to [0, 1], where 1 indicates identical sets of time points.
+    Calculates a weighted difference between two time series.
+    This metric considers both the presence of time points (keys) and the
+    similarity of their corresponding values. It assigns a higher weight to
+    matching keys than to matching values.
+
+    The final score is normalized to [0, 1], where 1 indicates a perfect match.
 
     Input strings are expected to be comma-separated "key:value" pairs,
     e.g., "t1:70, t2:72, t3:75".
     """
 
-    def __init__(self, **kwargs: Any):
-        """Initialize the TimeSeriesElementDiff metric."""
-        super().__init__(**kwargs)
-
-    def _parse_time_series(self, text_series: str) -> List[Tuple[str, float]]:
+    def __init__(self, key_to_value_weight_ratio: float = 2.0, **kwargs: Any):
         """
-        Parses a string representation of a time series.
-        Example: "t1:10, t2:15.5" -> [('t1', 10.0), ('t2', 15.5)]
+        Initialize the TimeSeriesElementDiff metric.
+
+        :param key_to_value_weight_ratio: The weight of a key match relative to a perfect value match.
+                                          For example, a ratio of 2 means a key match is worth twice as much
+                                          as a value match. Defaults to 2.0.
+        :type key_to_value_weight_ratio: float
+        """
+        super().__init__(**kwargs)
+        if key_to_value_weight_ratio <= 0:
+            raise ValueError("key_to_value_weight_ratio must be positive.")
+        self.key_weight = key_to_value_weight_ratio
+        self.value_weight = 1.0
+
+    def _parse_time_series(self, text_series: str) -> Dict[str, float]:
+        """
+        Parses a string representation of a time series into a dictionary.
+        Example: "t1:10, t2:15.5" -> {'t1': 10.0, 't2': 15.5}
         Malformed pairs or values are skipped with a warning.
         """
         if not text_series or text_series.isspace():
-            return []
+            return {}
 
-        parsed_series = []
+        parsed_dict = {}
         pairs = text_series.split(",")
         for pair_str in pairs:
             pair_str = pair_str.strip()
@@ -229,27 +308,27 @@ class TimeSeriesElementDiff(TimeSeriesDataMetric):
             if len(parts) == 2:
                 key = parts[0].strip()
                 value_str = parts[1].strip()
-                if not key:  # Skip if key is empty, e.g. ":10"
+                if not key:
                     warnings.warn(f"Warning: Empty key in time series pair '{pair_str}'. Skipping.")
                     continue
                 try:
                     value = float(value_str)
-                    parsed_series.append((key, value))
+                    if key in parsed_dict:
+                        warnings.warn(
+                            f"Warning: Duplicate key '{key}' in time series. The last value will be used."
+                        )
+                    parsed_dict[key] = value
                 except ValueError:
                     warnings.warn(
                         f"Warning: Could not parse value '{value_str}' for key '{key}' in time series pair '{pair_str}'. Skipping."
                     )
-                    continue
             else:
                 warnings.warn(f"Warning: Could not parse time series pair '{pair_str}'. Skipping.")
-                continue
-        return parsed_series
+        return parsed_dict
 
     def _single_calculate(self, generated_text: str, reference_text: str, **kwargs: Any) -> float:
         """
-        Calculate difference for a single pair of time series.
-        Input texts are parsed into lists of (key, value) tuples.
-        The score is the Jaccard index of the sets of keys.
+        Calculate a weighted difference for a single pair of time series.
 
         :param generated_text: The generated time series as a string.
         :type generated_text: str
@@ -263,23 +342,48 @@ class TimeSeriesElementDiff(TimeSeriesDataMetric):
         gen_ts_str = str(generated_text)
         ref_ts_str = str(reference_text)
 
-        parsed_gen_ts = self._parse_time_series(gen_ts_str)
-        parsed_ref_ts = self._parse_time_series(ref_ts_str)
+        gen_dict = self._parse_time_series(gen_ts_str)
+        ref_dict = self._parse_time_series(ref_ts_str)
 
-        if not parsed_gen_ts and not parsed_ref_ts:
-            return 1.0  # Both empty, perfect match
-
-        gen_keys = set(item[0] for item in parsed_gen_ts)
-        ref_keys = set(item[0] for item in parsed_ref_ts)
-
-        intersection_len = len(gen_keys.intersection(ref_keys))
-        union_len = len(gen_keys.union(ref_keys))
-
-        # Should be covered if both empty, but handles if one parses to empty keys and other is also empty keys
-        if union_len == 0:
+        if not gen_dict and not ref_dict:
             return 1.0
 
-        return intersection_len / union_len
+        all_keys = set(gen_dict.keys()).union(set(ref_dict.keys()))
+
+        if not all_keys:
+            return 1.0
+
+        total_score = 0.0
+        max_possible_score = len(all_keys) * (self.key_weight + self.value_weight)
+
+        for key in all_keys:
+            gen_has_key = key in gen_dict
+            ref_has_key = key in ref_dict
+
+            if gen_has_key and ref_has_key:
+                # Score for matching key
+                total_score += self.key_weight
+
+                # Score for value similarity
+                v_gen = gen_dict[key]
+                v_ref = ref_dict[key]
+
+                # Normalized value difference. Score is 1 for perfect match, 0 for large diff.
+                denominator = abs(v_ref)
+                if denominator == 0:
+                    # If ref is 0, score is 1 only if gen is also 0.
+                    value_sim = 1.0 if v_gen == 0 else 0.0
+                else:
+                    # 1 - normalized absolute error, clamped at 0
+                    error = abs(v_gen - v_ref) / denominator
+                    value_sim = max(0.0, 1.0 - error)
+
+                total_score += self.value_weight * value_sim
+
+        if max_possible_score == 0:
+            return 1.0  # Should only happen if all_keys is empty, handled above
+
+        return total_score / max_possible_score
 
     def _batch_calculate(
         self,
@@ -288,7 +392,7 @@ class TimeSeriesElementDiff(TimeSeriesDataMetric):
         **kwargs: Any,
     ) -> List[float] | np.ndarray | pd.Series:
         """
-        Calculate differences for a batch of time series.
+        Calculate weighted differences for a batch of time series.
 
         :param generated_texts: Iterable of generated time series.
         :type generated_texts: Iterable | np.ndarray | pd.Series

@@ -62,8 +62,8 @@ For more detailed examples, please refer to our Jupyter Notebooks in the [`examp
   - Text similarity metrics (_Jaccard_, _Cosine_, _Levenshtein_, _Sequence Matcher_)
   - Semantic similarity metrics (_BERTScore_)
 - Implements specialized metrics for structured outputs:
-  - **Planning**: Action sequence difference (`ActionSequenceDiff`) based on Longest Common Subsequence.
-  - **Time-Series**: Time series element difference (`TimeSeriesElementDiff`) based on Jaccard similarity of time points.
+  - **Planning**: Sequence comparison using Longest Common Subsequence (`PlanningLCS`) and Jaccard similarity (`PlanningJaccard`).
+  - **Time-Series**: Weighted time series difference (`TimeSeriesElementDiff`) that compares both time points and their values.
 - Provides visualization capabilities using matplotlib and seaborn for plots like bar charts and radar plots.
 - Allows exportation of results to CSV files, including scores and threshold pass/fail status.
 - Provides streamlined `Experiment` class for easy comparison of multiple models, applying thresholds, plotting, and reporting.
