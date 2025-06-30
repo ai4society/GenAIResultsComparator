@@ -288,47 +288,54 @@ class TimeSeriesElementDiff(TimeSeriesDataMetric):
         self.key_weight = key_to_value_weight_ratio
         self.value_weight = 1.0
 
-    def _parse_time_series(self, text_series: str) -> Dict[str, float]:
+    def _parse_time_series(self, text_series: str) -> Dict[str, List[float]]:
         """
         Parses a string representation of a time series into a dictionary.
-        Example: "t1:10, t2:15.5" -> {'t1': 10.0, 't2': 15.5}
-        Malformed pairs or values are skipped with a warning.
+        Handles both keyed ("k:v") and unkeyed ("v") values. Unkeyed values
+        are collected under a special '_UNKEYED_' key.
+        Example: "t1:10, 15.5, t2:20" -> {'t1': [10.0], 't2': [20.0], '_UNKEYED_': [15.5]}
         """
         if not text_series or text_series.isspace():
             return {}
 
-        parsed_dict = {}
+        parsed_dict: Dict[str, List[float]] = {"_UNKEYED_": []}
         pairs = text_series.split(",")
         for pair_str in pairs:
             pair_str = pair_str.strip()
             if not pair_str:
                 continue
 
-            parts = pair_str.split(":", 1)
-            if len(parts) == 2:
-                key = parts[0].strip()
-                value_str = parts[1].strip()
-                if not key:
-                    warnings.warn(f"Warning: Empty key in time series pair '{pair_str}'. Skipping.")
-                    continue
-                try:
-                    value = float(value_str)
-                    if key in parsed_dict:
+            try:
+                parts = pair_str.split(":", 1)
+                if len(parts) == 2:
+                    key = parts[0].strip()
+                    value_str = parts[1].strip()
+                    value = float(value_str)  # Parse value BEFORE modifying dict
+
+                    if not key:
                         warnings.warn(
-                            f"Warning: Duplicate key '{key}' in time series. The last value will be used."
+                            f"Warning: Empty key in time series pair '{pair_str}'. Treating as unkeyed."
                         )
-                    parsed_dict[key] = value
-                except ValueError:
-                    warnings.warn(
-                        f"Warning: Could not parse value '{value_str}' for key '{key}' in time series pair '{pair_str}'. Skipping."
-                    )
-            else:
-                warnings.warn(f"Warning: Could not parse time series pair '{pair_str}'. Skipping.")
+                        parsed_dict["_UNKEYED_"].append(value)
+                    else:
+                        if key not in parsed_dict:
+                            parsed_dict[key] = []
+                        parsed_dict[key].append(value)
+                else:
+                    # This is an unkeyed value
+                    value_str = parts[0].strip()
+                    value = float(value_str)  # Parse value BEFORE modifying dict
+                    parsed_dict["_UNKEYED_"].append(value)
+            except ValueError:
+                warnings.warn(
+                    f"Warning: Could not parse value in time series pair '{pair_str}'. Skipping."
+                )
         return parsed_dict
 
     def _single_calculate(self, generated_text: str, reference_text: str, **kwargs: Any) -> float:
         """
-        Calculate a weighted difference for a single pair of time series.
+        Calculate a weighted difference for a single pair of time series,
+        handling both keyed and unkeyed values robustly.
 
         :param generated_text: The generated time series as a string.
         :type generated_text: str
@@ -339,51 +346,65 @@ class TimeSeriesElementDiff(TimeSeriesDataMetric):
         :return: Normalized score between 0 and 1, where 1 indicates a perfect match of time points (keys).
         :rtype: float
         """
-        gen_ts_str = str(generated_text)
-        ref_ts_str = str(reference_text)
+        gen_dict = self._parse_time_series(str(generated_text))
+        ref_dict = self._parse_time_series(str(reference_text))
 
-        gen_dict = self._parse_time_series(gen_ts_str)
-        ref_dict = self._parse_time_series(ref_ts_str)
-
-        if not gen_dict and not ref_dict:
+        if not any(gen_dict.values()) and not any(ref_dict.values()):
             return 1.0
 
-        all_keys = set(gen_dict.keys()).union(set(ref_dict.keys()))
+        # ** 1. Keyed Value Comparison **
+        keyed_gen_keys = set(gen_dict.keys()) - {"_UNKEYED_"}
+        keyed_ref_keys = set(ref_dict.keys()) - {"_UNKEYED_"}
+        all_keyed_keys = keyed_gen_keys.union(keyed_ref_keys)
 
-        if not all_keys:
-            return 1.0
+        keyed_score = 0.0
+        if all_keyed_keys:
+            total_keyed_score = 0.0
+            max_possible_keyed_score = 0.0
+            for key in all_keyed_keys:
+                # For simplicity, compare the first value if a key has multiple.
+                v_gen = gen_dict.get(key, [0.0])[0]
+                v_ref = ref_dict.get(key, [0.0])[0]
 
-        total_score = 0.0
-        max_possible_score = len(all_keys) * (self.key_weight + self.value_weight)
+                max_possible_keyed_score += self.key_weight + self.value_weight
 
-        for key in all_keys:
-            gen_has_key = key in gen_dict
-            ref_has_key = key in ref_dict
+                if key in keyed_gen_keys and key in keyed_ref_keys:
+                    total_keyed_score += self.key_weight
+                    denominator = abs(v_ref)
+                    value_sim = (
+                        (1.0 - abs(v_gen - v_ref) / denominator)
+                        if denominator != 0
+                        else (1.0 if v_gen == 0 else 0.0)
+                    )
+                    total_keyed_score += self.value_weight * max(0.0, value_sim)
 
-            if gen_has_key and ref_has_key:
-                # Score for matching key
-                total_score += self.key_weight
+            keyed_score = (
+                total_keyed_score / max_possible_keyed_score
+                if max_possible_keyed_score > 0
+                else 1.0
+            )
 
-                # Score for value similarity
-                v_gen = gen_dict[key]
-                v_ref = ref_dict[key]
+        # ** 2. Unkeyed Value Comparison (using Jaccard) **
+        unkeyed_gen = set(gen_dict.get("_UNKEYED_", []))
+        unkeyed_ref = set(ref_dict.get("_UNKEYED_", []))
 
-                # Normalized value difference. Score is 1 for perfect match, 0 for large diff.
-                denominator = abs(v_ref)
-                if denominator == 0:
-                    # If ref is 0, score is 1 only if gen is also 0.
-                    value_sim = 1.0 if v_gen == 0 else 0.0
-                else:
-                    # 1 - normalized absolute error, clamped at 0
-                    error = abs(v_gen - v_ref) / denominator
-                    value_sim = max(0.0, 1.0 - error)
+        unkeyed_score = 0.0
+        if unkeyed_ref or unkeyed_gen:
+            intersection = len(unkeyed_gen.intersection(unkeyed_ref))
+            union = len(unkeyed_gen.union(unkeyed_ref))
+            unkeyed_score = intersection / union if union > 0 else 1.0
 
-                total_score += self.value_weight * value_sim
+        # ** 3. Combine Scores via Weighted Average **
+        # Weight by the number of items in the reference
+        num_keyed_items = len(keyed_ref_keys)
+        num_unkeyed_items = len(unkeyed_ref)
+        total_items = num_keyed_items + num_unkeyed_items
 
-        if max_possible_score == 0:
-            return 1.0  # Should only happen if all_keys is empty, handled above
+        if total_items == 0:
+            # If reference is empty, score is 1 only if generated is also empty.
+            return 1.0 if not (keyed_gen_keys or unkeyed_gen) else 0.0
 
-        return total_score / max_possible_score
+        return (keyed_score * num_keyed_items + unkeyed_score * num_unkeyed_items) / total_items
 
     def _batch_calculate(
         self,

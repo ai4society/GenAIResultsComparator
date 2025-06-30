@@ -1,3 +1,4 @@
+import warnings
 from typing import cast
 
 import numpy as np
@@ -276,19 +277,48 @@ class TestTimeSeriesElementDiff:
         score = cast(float, score)
         assert score == pytest.approx(0.9)
 
-    def test_parsing_warnings(self):
+    def test_parsing_robustness_and_warnings(self):
         metric = TimeSeriesElementDiff()
-        # Test bad value and malformed pair
+        # Test that malformed pairs and bad values are skipped with warnings,
+        # but the calculation still proceeds with the valid parts.
         with pytest.warns(UserWarning) as record:
-            metric.calculate("t1:10, t2:bad, :30", "t1:10")
+            # "t2:bad" will be skipped, ":30" will be treated as unkeyed.
+            # gen_dict becomes {'t1': [10.0], '_UNKEYED_': [30.0]}
+            # ref_dict becomes {'t1': [10.0], '_UNKEYED_': []}
+            score = metric.calculate("t1:10, t2:bad, :30", "t1:10")
+
         messages = [str(w.message) for w in record]
         assert len(messages) == 2
-        assert any("Could not parse value 'bad'" in m for m in messages)
+        assert any("Could not parse value" in m for m in messages)
         assert any("Empty key in time series pair" in m for m in messages)
 
-        # Test duplicate key
-        with pytest.warns(UserWarning, match="Duplicate key 't1'"):
-            metric.calculate("t1:10, t1:20", "t1:10")
+        # Calculation should still work.
+        # Keyed: t1 vs t1 -> perfect match. Score = 1.0. Num items = 1.
+        # Unkeyed: [30.0] vs [] -> Jaccard = 0. Score = 0.0. Num items = 0.
+        # Final score = (1.0 * 1 + 0.0 * 0) / 1 = 1.0
+        assert isinstance(score, float)
+        assert score == pytest.approx(1.0)
+
+    def test_parsing_duplicate_keys(self):
+        metric = TimeSeriesElementDiff()
+        # The new parser should handle duplicate keys by creating a list of values.
+        # No warning should be issued as this is now supported behavior.
+        with warnings.catch_warnings(record=True) as w:
+            gen_ts = "t1:10, t1:20"
+            ref_ts = "t1:10"
+
+            # The parser should produce {'t1': [10.0, 20.0]}
+            # The metric logic compares only the first element, so it compares 10 vs 10.
+            score = metric.calculate(gen_ts, ref_ts)
+            assert isinstance(score, float)
+
+            # Assert that no "Duplicate key" warning was raised
+            assert len(w) == 0
+
+            # Keyed: t1 vs t1. Compares 10 vs 10. Score = 1.0. Num items = 1.
+            # Unkeyed: [] vs []. Score = 1.0 (or 0 if weighted by 0 items). Num items = 0.
+            # Final score = (1.0 * 1 + 1.0 * 0) / 1 = 1.0
+            assert score == pytest.approx(1.0)
 
     def test_batch_calculation_numpy(self):
         metric = TimeSeriesElementDiff()
