@@ -28,15 +28,15 @@ class AudioSNRNormalized(AudioMetric):
         super().__init__(**kwargs)
 
     def _single_calculate(
-        self, generated_text: Any, reference_text: Any, **kwargs: Any
+        self, generated_item: Any, reference_item: Any, **kwargs: Any
     ) -> float | dict:
         """
         (Placeholder) Calculate normalized SNR for a single pair of audio signals.
 
-        :param generated_text: The generated audio (e.g., np.array waveform, path).
-        :type generated_text: Any
-        :param reference_text: The reference audio (often considered the 'signal' part).
-        :type reference_text: Any
+        :param generated_item: The generated audio (e.g., np.array waveform, path).
+        :type generated_item: Any
+        :param reference_item: The reference audio (often considered the 'signal' part).
+        :type reference_item: Any
         :param kwargs: Additional keyword arguments.
         :return: Placeholder normalized SNR score.
         :rtype: float | dict
@@ -46,17 +46,17 @@ class AudioSNRNormalized(AudioMetric):
 
     def _batch_calculate(
         self,
-        generated_texts: Iterable | np.ndarray | pd.Series,
-        reference_texts: Iterable | np.ndarray | pd.Series,
+        generated_items: Iterable | np.ndarray | pd.Series,
+        reference_items: Iterable | np.ndarray | pd.Series,
         **kwargs: Any,
     ) -> List[float] | List[dict] | np.ndarray | pd.Series:
         """
         (Placeholder) Calculate normalized SNR for a batch of audio signals.
 
-        :param generated_texts: Iterable of generated audio.
-        :type generated_texts: Iterable | np.ndarray | pd.Series
-        :param reference_texts: Iterable of reference audio.
-        :type reference_texts: Iterable | np.ndarray | pd.Series
+        :param generated_items: Iterable of generated audio.
+        :type generated_items: Iterable | np.ndarray | pd.Series
+        :param reference_items: Iterable of reference audio.
+        :type reference_items: Iterable | np.ndarray | pd.Series
         :param kwargs: Additional keyword arguments.
         :return: Placeholder list of normalized SNR scores.
         :rtype: List[float] | List[dict] | np.ndarray | pd.Series
@@ -77,15 +77,15 @@ class SpectrogramDistance(AudioMetric):
         super().__init__(**kwargs)
 
     def _single_calculate(
-        self, generated_text: Any, reference_text: Any, **kwargs: Any
+        self, generated_item: Any, reference_item: Any, **kwargs: Any
     ) -> float | dict:
         """
         (Placeholder) Calculate distance between spectrograms of two audio signals.
 
-        :param generated_text: The generated audio.
-        :type generated_text: Any
-        :param reference_text: The reference audio.
-        :type reference_text: Any
+        :param generated_item: The generated audio.
+        :type generated_item: Any
+        :param reference_item: The reference audio.
+        :type reference_item: Any
         :param kwargs: Additional keyword arguments for spectrogram generation or distance calculation.
         :return: Placeholder spectrogram distance score (lower is better, or normalized 0-1 for similarity).
         :rtype: float | dict
@@ -95,17 +95,17 @@ class SpectrogramDistance(AudioMetric):
 
     def _batch_calculate(
         self,
-        generated_texts: Iterable | np.ndarray | pd.Series,
-        reference_texts: Iterable | np.ndarray | pd.Series,
+        generated_items: Iterable | np.ndarray | pd.Series,
+        reference_items: Iterable | np.ndarray | pd.Series,
         **kwargs: Any,
     ) -> List[float] | List[dict] | np.ndarray | pd.Series:
         """
         (Placeholder) Calculate spectrogram distances for a batch of audio signals.
 
-        :param generated_texts: Iterable of generated audio.
-        :type generated_texts: Iterable | np.ndarray | pd.Series
-        :param reference_texts: Iterable of reference audio.
-        :type reference_texts: Iterable | np.ndarray | pd.Series
+        :param generated_items: Iterable of generated audio.
+        :type generated_items: Iterable | np.ndarray | pd.Series
+        :param reference_items: Iterable of reference audio.
+        :type reference_items: Iterable | np.ndarray | pd.Series
         :param kwargs: Additional keyword arguments.
         :return: Placeholder list of spectrogram distance scores.
         :rtype: List[float] | List[dict] | np.ndarray | pd.Series

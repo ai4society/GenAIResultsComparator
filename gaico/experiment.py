@@ -66,27 +66,23 @@ class Experiment:
 
     def __init__(
         self,
-        llm_responses: Dict[str, str],
-        reference_answer: Optional[str],
+        llm_responses: Dict[str, Any],
+        reference_answer: Optional[Any],
     ):
         """
         Initializes the Experiment.
 
-        :param llm_responses: A dictionary mapping model names (str) to their generated text responses (str).
-        :type llm_responses: Dict[str, str]
-        :param reference_answer: A single reference text (str) to compare against. If None, the response from the first model in `llm_responses` will be used as the reference.
-        :type reference_answer: Optional[str]
-        :raises TypeError: If llm_responses is not a dictionary or reference_answer is not a string or None.
-        :raises ValueError: If llm_responses does not contain string keys and values, or if it's empty when reference_answer is None.
+        :param llm_responses: A dictionary mapping model names (str) to their generated outputs (Any).
+        :type llm_responses: Dict[str, Any]
+        :param reference_answer: A single reference output (Any) to compare against. If None, the output from the first model in `llm_responses` will be used as the reference.
+        :type reference_answer: Optional[Any]
+        :raises TypeError: If llm_responses is not a dictionary.
+        :raises ValueError: If llm_responses does not contain string keys, or if it's empty when reference_answer is None.
         """
         if not isinstance(llm_responses, dict):
             raise TypeError("llm_responses must be a dictionary.")
-        if not all(isinstance(k, str) and isinstance(v, str) for k, v in llm_responses.items()):
-            raise ValueError("llm_responses must be Dict[str, str] (model_name -> text).")
-
-        # Allow reference_answer to be None
-        if not isinstance(reference_answer, (str, type(None))):
-            raise TypeError("reference_answer must be a string or None.")
+        if not all(isinstance(k, str) for k in llm_responses.keys()):
+            raise ValueError("llm_responses keys must be strings (model names).")
 
         self.llm_responses = llm_responses
         self.models = list(llm_responses.keys())
@@ -103,12 +99,9 @@ class Experiment:
         else:
             self.reference_answer = reference_answer
 
-        # Ensure self.reference_answer is now a string for subsequent use
-        if not isinstance(self.reference_answer, str):
+        if self.reference_answer is None:
             # This should not happen if the logic above is correct, but as a safeguard
-            raise TypeError(
-                "Internal error: self.reference_answer is not a string after initialization."
-            )
+            raise TypeError("Internal error: self.reference_answer is None after initialization.")
 
         # model_name -> base_metric_name -> score_value
         self._raw_scores: Dict[str, Dict[str, Any]] = {}

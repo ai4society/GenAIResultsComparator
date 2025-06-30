@@ -95,3 +95,15 @@ score_2 = metric.calculate(generated_plan_2, reference_plan_2)
 print(f"PlanningJaccard Score (different actions): {score_2}")
 # Expected output: PlanningJaccard Score (different actions): 0.5
 ```
+
+### Theoretical Background and Further Reading
+
+The metrics used for comparing planning sequences in this library are inspired by foundational work on measuring diversity and similarity between plans. The core idea is that plans can be compared based on their constituent actions, the states they traverse, or their underlying causal structures.
+
+The `PlanningJaccard` and `ActionSequenceDiff` metrics are direct implementations of **action-based, set-difference** measures discussed in the following papers. These measures are computationally efficient and provide a domain-independent way to quantify how different two plans are based on the actions they contain.
+
+- Srivastava, Biplav, et al. "Finding inter-related plans." ICAPS 2006 (2006): 18.
+
+- Srivastava, Biplav, et al. "Domain Independent Approaches for Finding Diverse Plans." IJCAI. 2007.
+
+These papers formalize various distance functions (e.g., `δ1`, `δa`) that serve as the basis for our order-agnostic planning metrics.

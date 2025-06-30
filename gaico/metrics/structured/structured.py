@@ -129,25 +129,25 @@ class PlanningLCS(PlanningSequenceMetric):
                     dp[i][j] = max(dp[i - 1][j], dp[i][j - 1])
         return dp[m][n]
 
-    def _single_calculate(self, generated_text: str, reference_text: str, **kwargs: Any) -> float:
+    def _single_calculate(self, generated_item: str, reference_item: str, **kwargs: Any) -> float:
         """
         Calculate difference for a single pair of action sequences.
         Input texts are parsed into sequences of actions/action-sets.
         The score is based on the Longest Common Subsequence (LCS) length,
         normalized by the maximum possible length.
 
-        :param generated_text: The generated action sequence as a string.
-        :type generated_text: str
-        :param reference_text: The reference action sequence as a string.
-        :type reference_text: str
+        :param generated_item: The generated action sequence as a string.
+        :type generated_item: str
+        :param reference_item: The reference action sequence as a string.
+        :type reference_item: str
         :param kwargs: Additional keyword arguments (not used here).
         :type kwargs: Any
         :return: Normalized score between 0 and 1, where 1 indicates a perfect match.
         :rtype: float
         """
         # Type casting, as BaseMetric passes Any, but we expect strings for parsing
-        gen_seq_str = str(generated_text)
-        ref_seq_str = str(reference_text)
+        gen_seq_str = str(generated_item)
+        ref_seq_str = str(reference_item)
 
         parsed_gen = PlanningSequenceMetric._parse_planning_sequence(gen_seq_str)
         parsed_ref = PlanningSequenceMetric._parse_planning_sequence(ref_seq_str)
@@ -165,8 +165,8 @@ class PlanningLCS(PlanningSequenceMetric):
 
     def _batch_calculate(
         self,
-        generated_texts: Iterable | np.ndarray | pd.Series,
-        reference_texts: Iterable | np.ndarray | pd.Series,
+        generated_items: Iterable | np.ndarray | pd.Series,
+        reference_items: Iterable | np.ndarray | pd.Series,
         **kwargs: Any,
     ) -> List[float] | np.ndarray | pd.Series:
         """
@@ -174,10 +174,10 @@ class PlanningLCS(PlanningSequenceMetric):
 
         This method processes pairs of generated and reference sequences, applying the _single_calculate method to each pair.
 
-        :param generated_texts: Iterable of generated action sequences.
-        :type generated_texts: Iterable | np.ndarray | pd.Series
-        :param reference_texts: Iterable of reference action sequences.
-        :type reference_texts: Iterable | np.ndarray | pd.Series
+        :param generated_items: Iterable of generated action sequences.
+        :type generated_items: Iterable | np.ndarray | pd.Series
+        :param reference_items: Iterable of reference action sequences.
+        :type reference_items: Iterable | np.ndarray | pd.Series
         :param kwargs: Additional keyword arguments (not used here).
         :type kwargs: Any
         :return: List of normalized scores for each pair, or a numpy array or pandas Series if the input is of those types.
@@ -185,13 +185,13 @@ class PlanningLCS(PlanningSequenceMetric):
         """
         results = [
             self._single_calculate(str(gen), str(ref), **kwargs)
-            for gen, ref in zip(generated_texts, reference_texts)
+            for gen, ref in zip(generated_items, reference_items)
         ]
 
-        if isinstance(generated_texts, np.ndarray):
+        if isinstance(generated_items, np.ndarray):
             return np.array(results, dtype=float)
-        if isinstance(generated_texts, pd.Series):
-            return pd.Series(results, index=generated_texts.index, dtype=float)
+        if isinstance(generated_items, pd.Series):
+            return pd.Series(results, index=generated_items.index, dtype=float)
         return results
 
 
@@ -219,10 +219,10 @@ class PlanningJaccard(PlanningSequenceMetric):
                 flat_set.add(item)
         return flat_set
 
-    def _single_calculate(self, generated_text: str, reference_text: str, **kwargs: Any) -> float:
+    def _single_calculate(self, generated_item: str, reference_item: str, **kwargs: Any) -> float:
         """Calculate Jaccard similarity for a single pair of action sequences."""
-        gen_seq_str = str(generated_text)
-        ref_seq_str = str(reference_text)
+        gen_seq_str = str(generated_item)
+        ref_seq_str = str(reference_item)
 
         parsed_gen = PlanningSequenceMetric._parse_planning_sequence(gen_seq_str)
         parsed_ref = PlanningSequenceMetric._parse_planning_sequence(ref_seq_str)
@@ -243,20 +243,20 @@ class PlanningJaccard(PlanningSequenceMetric):
 
     def _batch_calculate(
         self,
-        generated_texts: Iterable | np.ndarray | pd.Series,
-        reference_texts: Iterable | np.ndarray | pd.Series,
+        generated_items: Iterable | np.ndarray | pd.Series,
+        reference_items: Iterable | np.ndarray | pd.Series,
         **kwargs: Any,
     ) -> List[float] | np.ndarray | pd.Series:
         """Calculate Jaccard similarities for a batch of action sequences."""
         results = [
             self._single_calculate(str(gen), str(ref), **kwargs)
-            for gen, ref in zip(generated_texts, reference_texts)
+            for gen, ref in zip(generated_items, reference_items)
         ]
 
-        if isinstance(generated_texts, np.ndarray):
+        if isinstance(generated_items, np.ndarray):
             return np.array(results, dtype=float)
-        if isinstance(generated_texts, pd.Series):
-            return pd.Series(results, index=generated_texts.index, dtype=float)
+        if isinstance(generated_items, pd.Series):
+            return pd.Series(results, index=generated_items.index, dtype=float)
         return results
 
 
@@ -332,22 +332,22 @@ class TimeSeriesElementDiff(TimeSeriesDataMetric):
                 )
         return parsed_dict
 
-    def _single_calculate(self, generated_text: str, reference_text: str, **kwargs: Any) -> float:
+    def _single_calculate(self, generated_item: str, reference_item: str, **kwargs: Any) -> float:
         """
         Calculate a weighted difference for a single pair of time series,
         handling both keyed and unkeyed values robustly.
 
-        :param generated_text: The generated time series as a string.
-        :type generated_text: str
-        :param reference_text: The reference time series as a string.
-        :type reference_text: str
+        :param generated_item: The generated time series as a string.
+        :type generated_item: str
+        :param reference_item: The reference time series as a string.
+        :type reference_item: str
         :param kwargs: Additional keyword arguments (not used here).
         :type kwargs: Any
         :return: Normalized score between 0 and 1, where 1 indicates a perfect match of time points (keys).
         :rtype: float
         """
-        gen_dict = self._parse_time_series(str(generated_text))
-        ref_dict = self._parse_time_series(str(reference_text))
+        gen_dict = self._parse_time_series(str(generated_item))
+        ref_dict = self._parse_time_series(str(reference_item))
 
         if not any(gen_dict.values()) and not any(ref_dict.values()):
             return 1.0
@@ -408,17 +408,17 @@ class TimeSeriesElementDiff(TimeSeriesDataMetric):
 
     def _batch_calculate(
         self,
-        generated_texts: Iterable | np.ndarray | pd.Series,
-        reference_texts: Iterable | np.ndarray | pd.Series,
+        generated_items: Iterable | np.ndarray | pd.Series,
+        reference_items: Iterable | np.ndarray | pd.Series,
         **kwargs: Any,
     ) -> List[float] | np.ndarray | pd.Series:
         """
         Calculate weighted differences for a batch of time series.
 
-        :param generated_texts: Iterable of generated time series.
-        :type generated_texts: Iterable | np.ndarray | pd.Series
-        :param reference_texts: Iterable of reference time series.
-        :type reference_texts: Iterable | np.ndarray | pd.Series
+        :param generated_items: Iterable of generated time series.
+        :type generated_items: Iterable | np.ndarray | pd.Series
+        :param reference_items: Iterable of reference time series.
+        :type reference_items: Iterable | np.ndarray | pd.Series
         :param kwargs: Additional keyword arguments (not used here).
         :type kwargs: Any
         :return: List of normalized scores for each pair, or a numpy array or pandas Series if the input is of those types.
@@ -426,11 +426,11 @@ class TimeSeriesElementDiff(TimeSeriesDataMetric):
         """
         results = [
             self._single_calculate(str(gen), str(ref), **kwargs)
-            for gen, ref in zip(generated_texts, reference_texts)
+            for gen, ref in zip(generated_items, reference_items)
         ]
 
-        if isinstance(generated_texts, np.ndarray):
+        if isinstance(generated_items, np.ndarray):
             return np.array(results, dtype=float)
-        if isinstance(generated_texts, pd.Series):
-            return pd.Series(results, index=generated_texts.index, dtype=float)
+        if isinstance(generated_items, pd.Series):
+            return pd.Series(results, index=generated_items.index, dtype=float)
         return results

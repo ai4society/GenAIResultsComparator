@@ -1,5 +1,5 @@
 generated_text,reference_text,TimeSeriesElementDiff_score,TimeSeriesElementDiff_passed
 "t1: 70, t2: 72, t3: 75","t1: 70, t2: 72, t3: 75",1.0,True
-"t1: 71, t2: 73, t3: 74","t1: 70, t2: 72, t3: 75",0.9953880070546737,True
+"t1: 71, t2: 73, t3: 74","t1: 70, t2: 72, t3: 75",0.9953880070546738,True
 "t1: 70, t3: 75","t1: 70, t2: 72, t3: 75",0.6666666666666666,True
 "t1: 70, t2: 72, t4: 80","t1: 70, t2: 72, t3: 75",0.5,True

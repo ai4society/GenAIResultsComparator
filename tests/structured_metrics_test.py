@@ -141,17 +141,17 @@ class TestPlanningLCS:
     def test_calculate_missing_reference_gen_empty_raises_error(self, metric):
         with pytest.raises(
             ValueError,
-            match="generated_texts cannot consist solely of empty or whitespace strings if reference is to be derived",
+            match="`reference` is missing and cannot be derived from `generated`",
         ):
             metric.calculate("", None)
         with pytest.raises(
             ValueError,
-            match="generated_texts cannot consist solely of empty or whitespace strings if reference is to be derived",
+            match="`reference` is missing and cannot be derived from `generated`",
         ):
             metric.calculate("   ", None)
         with pytest.raises(
             ValueError,
-            match="generated_texts cannot consist solely of empty or whitespace strings if reference is to be derived",
+            match="`reference` is missing and cannot be derived from `generated`",
         ):
             metric.calculate(["", "  "], None)
 
@@ -169,10 +169,6 @@ class TestPlanningLCS:
         scores_empty_ref_list = metric.calculate(gens, [])
         assert isinstance(scores_empty_ref_list, list)
         assert scores_empty_ref_list == pytest.approx(expected_scores)
-
-        scores_empty_ref_list_str = metric.calculate(gens, ["", "   "])
-        assert isinstance(scores_empty_ref_list_str, list)
-        assert scores_empty_ref_list_str == pytest.approx(expected_scores)
 
 
 class TestPlanningJaccard:

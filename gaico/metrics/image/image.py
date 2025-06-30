@@ -28,15 +28,15 @@ class SSIMNormalized(ImageMetric):
         super().__init__(**kwargs)
 
     def _single_calculate(
-        self, generated_text: Any, reference_text: Any, **kwargs: Any
+        self, generated_item: Any, reference_item: Any, **kwargs: Any
     ) -> float | dict:
         """
         (Placeholder) Calculate normalized SSIM for a single pair of images.
 
-        :param generated_text: The generated image (e.g., np.array, path).
-        :type generated_text: Any
-        :param reference_text: The reference image.
-        :type reference_text: Any
+        :param generated_item: The generated image (e.g., np.array, path).
+        :type generated_item: Any
+        :param reference_item: The reference image.
+        :type reference_item: Any
         :param kwargs: Additional keyword arguments (e.g., data_range).
         :return: Placeholder normalized SSIM score.
         :rtype: float | dict
@@ -46,17 +46,17 @@ class SSIMNormalized(ImageMetric):
 
     def _batch_calculate(
         self,
-        generated_texts: Iterable | np.ndarray | pd.Series,
-        reference_texts: Iterable | np.ndarray | pd.Series,
+        generated_items: Iterable | np.ndarray | pd.Series,
+        reference_items: Iterable | np.ndarray | pd.Series,
         **kwargs: Any,
     ) -> List[float] | List[dict] | np.ndarray | pd.Series:
         """
         (Placeholder) Calculate normalized SSIM for a batch of images.
 
-        :param generated_texts: Iterable of generated images.
-        :type generated_texts: Iterable | np.ndarray | pd.Series
-        :param reference_texts: Iterable of reference images.
-        :type reference_texts: Iterable | np.ndarray | pd.Series
+        :param generated_items: Iterable of generated images.
+        :type generated_items: Iterable | np.ndarray | pd.Series
+        :param reference_items: Iterable of reference images.
+        :type reference_items: Iterable | np.ndarray | pd.Series
         :param kwargs: Additional keyword arguments.
         :return: Placeholder list of normalized SSIM scores.
         :rtype: List[float] | List[dict] | np.ndarray | pd.Series
@@ -77,15 +77,15 @@ class PSNRNormalized(ImageMetric):
         super().__init__(**kwargs)
 
     def _single_calculate(
-        self, generated_text: Any, reference_text: Any, **kwargs: Any
+        self, generated_item: Any, reference_item: Any, **kwargs: Any
     ) -> float | dict:
         """
         (Placeholder) Calculate normalized PSNR for a single pair of images.
 
-        :param generated_text: The generated image (e.g., np.array, path).
-        :type generated_text: Any
-        :param reference_text: The reference image.
-        :type reference_text: Any
+        :param generated_item: The generated image (e.g., np.array, path).
+        :type generated_item: Any
+        :param reference_item: The reference image.
+        :type reference_item: Any
         :param kwargs: Additional keyword arguments (e.g., data_range).
         :return: Placeholder normalized PSNR score.
         :rtype: float | dict
@@ -95,17 +95,17 @@ class PSNRNormalized(ImageMetric):
 
     def _batch_calculate(
         self,
-        generated_texts: Iterable | np.ndarray | pd.Series,
-        reference_texts: Iterable | np.ndarray | pd.Series,
+        generated_items: Iterable | np.ndarray | pd.Series,
+        reference_items: Iterable | np.ndarray | pd.Series,
         **kwargs: Any,
     ) -> List[float] | List[dict] | np.ndarray | pd.Series:
         """
         (Placeholder) Calculate normalized PSNR for a batch of images.
 
-        :param generated_texts: Iterable of generated images.
-        :type generated_texts: Iterable | np.ndarray | pd.Series
-        :param reference_texts: Iterable of reference images.
-        :type reference_texts: Iterable | np.ndarray | pd.Series
+        :param generated_items: Iterable of generated images.
+        :type generated_items: Iterable | np.ndarray | pd.Series
+        :param reference_items: Iterable of reference images.
+        :type reference_items: Iterable | np.ndarray | pd.Series
         :param kwargs: Additional keyword arguments.
         :return: Placeholder list of normalized PSNR scores.
         :rtype: List[float] | List[dict] | np.ndarray | pd.Series

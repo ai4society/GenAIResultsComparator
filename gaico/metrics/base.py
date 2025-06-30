@@ -16,16 +16,16 @@ class BaseMetric(ABC):
 
     @abstractmethod
     def _single_calculate(
-        self, generated_text: str, reference_text: str, **kwargs: Any
+        self, generated_item: Any, reference_item: Any, **kwargs: Any
     ) -> float | dict:
         """
-        (Internal) Calculate the metric for single pair of generated and reference texts.
+        (Internal) Calculate the metric for a single pair of generated and reference items.
 
-        :param generated_text: The generated text to evaluate
-        :type generated_text: str
-        :param reference_text: The reference text to compare against
-        :type reference_text: str
-        :param kwargs: Additional keyword arguments for specific metrics (additional_params, metric-specific flags etc).
+        :param generated_item: The generated item to evaluate
+        :type generated_item: Any
+        :param reference_item: The reference item to compare against
+        :type reference_item: Any
+        :param kwargs: Additional keyword arguments for specific metrics.
         :return: The calculated metric score
         :rtype: float | dict
         """
@@ -34,18 +34,18 @@ class BaseMetric(ABC):
     @abstractmethod
     def _batch_calculate(
         self,
-        generated_texts: Iterable | np.ndarray | pd.Series,
-        reference_texts: Iterable | np.ndarray | pd.Series,
+        generated_items: Iterable | np.ndarray | pd.Series,
+        reference_items: Iterable | np.ndarray | pd.Series,
         **kwargs: Any,
     ) -> List[float] | List[dict] | np.ndarray | pd.Series | float | dict:
         """
-        (Internal) Calculate the metric for a batch of generated and reference texts.
+        (Internal) Calculate the metric for a batch of generated and reference items.
 
-        :param generated_texts: Generated texts
-        :type generated_texts: Iterable | np.ndarray | pd.Series
-        :param reference_texts: reference texts
-        :type reference_texts: Iterable | np.ndarray | pd.Series
-        :param kwargs: Additional keyword arguments for specific metrics (additional_params, metric-specific flags etc).
+        :param generated_items: An iterable of generated items
+        :type generated_items: Iterable | np.ndarray | pd.Series
+        :param reference_items: An iterable of reference items
+        :type reference_items: Iterable | np.ndarray | pd.Series
+        :param kwargs: Additional keyword arguments for specific metrics.
         :return: A list of metric scores or a single aggregated score
         :rtype: List[float] | List[dict] | np.ndarray | pd.Series | float | dict
         """
@@ -53,123 +53,88 @@ class BaseMetric(ABC):
 
     def calculate(
         self,
-        generated_texts: str | Iterable | np.ndarray | pd.Series,
-        reference_texts: Optional[str | Iterable | np.ndarray | pd.Series],
+        generated: Any,
+        reference: Optional[Any],
         **kwargs: Any,
-    ) -> float | List[float] | dict | List[dict] | np.ndarray | pd.Series | None:
+    ) -> Any:
         """
-        Calculates the metric for a single or batch of generated and reference texts.
-        This method handles both single and batch inputs for generated and reference texts.
+        Calculates the metric for a single or batch of generated and reference items.
+        This method handles both single and batch inputs.
 
-        If the reference text is None and generated_texts is iterable, the function will assume the first element of the iterable as the reference text. A warning will be printed.
+        If the reference is None and `generated` is an iterable, the function will assume the first element of the iterable as the reference. A warning will be printed.
 
-        Additionally, the function supports the following input combinations:
-            1. If both inputs are single strings, a single score is returned.
-            2. If one is a string and the other an iterable, the function broadcasts the string so that it matches the length of the iterable.
-            3. If both inputs are iterables, they must have the same length.
-            4. If inputs are None, the function raises a ValueError.
-
-        :param generated_texts: A single generated text or an iterable of generated texts. Must not be None or effectively empty.
-        :type generated_texts: str | Iterable | np.ndarray | pd.Series
-        :param reference_texts: A single reference text, an iterable of reference texts, or None. If None, empty, or effectively empty, the first generated text is used as the reference.
-        :type reference_texts: Optional[str | Iterable | np.ndarray | pd.Series]
-        :param kwargs: Additional keyword arguments for specific metrics (additional_params, metric-specific flags etc).
+        :param generated: A single generated item or an iterable of generated items. Must not be None.
+        :type generated: Any
+        :param reference: A single reference item, an iterable of reference items, or None.
+        :type reference: Optional[Any]
+        :param kwargs: Additional keyword arguments for specific metrics.
         :return: The calculated metric score(s).
-        :rtype: float | List[float] | dict | List[dict] | np.ndarray | pd.Series | None
-        :raises ValueError: If `generated_texts` is None or effectively empty, or if batch inputs have mismatched lengths (when reference is not derived).
+        :rtype: Any
+        :raises ValueError: If `generated` is None, or if batch inputs have mismatched lengths.
         :raises TypeError: If inputs cannot be converted to suitable iterables.
         """
-        if generated_texts is None:
-            raise ValueError("generated_texts must be provided and cannot be None.")
+        if generated is None:
+            raise ValueError("`generated` must be provided and cannot be None.")
 
-        try:
-            generated_iterable = to_iterable(generated_texts)
-        except (TypeError, ValueError) as e:
-            raise TypeError(f"generated_texts could not be converted to suitable iterables: {e}")
+        # Helper to check for effective emptiness of iterables
+        def is_effectively_empty(item: Any) -> bool:
+            if item is None:
+                return True
+            if isinstance(item, str) and not item.strip():
+                return True
+            if hasattr(item, "__len__") and len(item) == 0:
+                return True
+            return False
 
-        if len(generated_iterable) == 0:
-            raise ValueError("generated_texts cannot be an empty iterable.")
-        # Check if all elements in generated_iterable are empty/whitespace (if it's a list of strings)
-        # This check ensures that generated_iterable[0] is meaningful if used as a reference.
-        if all(
-            isinstance(g, str) and not str(g).strip() for g in generated_iterable if g is not None
-        ):
-            raise ValueError(
-                "generated_texts cannot consist solely of empty or whitespace strings if reference is to be derived."
-            )
-
-        actual_reference_texts = reference_texts
-        ref_is_missing_or_empty = False
-
-        if actual_reference_texts is None:
-            ref_is_missing_or_empty = True
-        elif isinstance(actual_reference_texts, str) and not actual_reference_texts.strip():
-            ref_is_missing_or_empty = True
-        elif not isinstance(actual_reference_texts, str):  # It's an iterable type
+        actual_reference = reference
+        if is_effectively_empty(actual_reference):
             try:
-                # Convert to list to make it easy to check emptiness and content
-                temp_ref_list_check = list(to_iterable(actual_reference_texts))
-                if not temp_ref_list_check or all(
-                    isinstance(r, str) and not r.strip()
-                    for r in temp_ref_list_check
-                    if r is not None
+                # Try to treat `generated` as an iterable to derive reference
+                gen_iterable_for_ref = to_iterable(generated)
+                if len(gen_iterable_for_ref) > 0 and not is_effectively_empty(
+                    gen_iterable_for_ref[0]
                 ):
-                    ref_is_missing_or_empty = True
-            except (TypeError, ValueError):  # If to_iterable fails
-                ref_is_missing_or_empty = True
+                    print(
+                        "Warning: Reference is missing or effectively empty. "
+                        "Using the first element of `generated` as reference."
+                    )
+                    actual_reference = gen_iterable_for_ref[0]
+                else:
+                    raise ValueError(
+                        "Cannot derive reference from empty or effectively empty `generated`."
+                    )
+            except (TypeError, ValueError):
+                raise ValueError("`reference` is missing and cannot be derived from `generated`.")
 
-        if ref_is_missing_or_empty:
-            print(
-                "Warning: Reference text is missing or effectively empty. "
-                "Using the first element of generated_texts as reference."
-            )
-            actual_reference_texts = str(generated_iterable[0])
-
-        is_gen_str = isinstance(generated_texts, str)
-        is_ref_str = isinstance(actual_reference_texts, str)
-
+        # At this point, actual_reference is guaranteed to be non-empty.
         try:
-            reference_iterable = to_iterable(actual_reference_texts)
+            generated_iterable = to_iterable(generated)
+            reference_iterable = to_iterable(actual_reference)
         except (TypeError, ValueError) as e:
-            raise TypeError(
-                f"actual_reference_texts ('{actual_reference_texts}') could not be converted to suitable iterables: {e}"
-            )
+            raise TypeError(f"Inputs could not be converted to suitable iterables: {e}")
+
+        is_gen_single_item = len(generated_iterable) == 1 and not isinstance(
+            generated, (list, tuple, pd.Series)
+        )
+        is_ref_single_item = len(reference_iterable) == 1 and not isinstance(
+            actual_reference, (list, tuple, pd.Series)
+        )
 
         len_gen = len(generated_iterable)
         len_ref = len(reference_iterable)
 
-        if is_gen_str and is_ref_str:
-            # If both are strings, call single_calculate
+        if is_gen_single_item and is_ref_single_item:
             return self._single_calculate(generated_iterable[0], reference_iterable[0], **kwargs)
 
-        elif is_gen_str and not is_ref_str:
-            if len_ref == 0:
-                raise ValueError(
-                    "Reference iterable cannot be empty if generated text is a single string."
-                )
-            # If generated is a single string and reference is a list, expand
-            # the single_generated text to match the number of references
-            # and call batch_calculate.
-            expanded_generated = [generated_iterable[0]] * len_ref
-            return self._batch_calculate(expanded_generated, reference_iterable, **kwargs)
+        # Broadcasting logic
+        if len_gen == 1 and len_ref > 1:
+            generated_iterable = [generated_iterable[0]] * len_ref
+        elif len_ref == 1 and len_gen > 1:
+            reference_iterable = [reference_iterable[0]] * len_gen
 
-        elif not is_gen_str and is_ref_str:
-            if len_gen == 0:
-                raise ValueError("Generated iterable cannot be empty.")
-            # If reference is a single string and generated is a list, expand
-            # the single_reference text to match the number of generated texts
-            # and call batch_calculate.
-            expanded_reference = [reference_iterable[0]] * len_gen
-            return self._batch_calculate(generated_iterable, expanded_reference, **kwargs)
-
-        elif not is_gen_str and not is_ref_str:
-            if len_gen != len_ref:
-                raise ValueError(
-                    f"Batch inputs: generated_texts (len {len_gen}) and reference_texts (len {len_ref}) must have the same length."
-                )
-            return self._batch_calculate(generated_iterable, reference_iterable, **kwargs)
-
-        else:
-            raise RuntimeError(
-                "Internal error: Unhandled case in BaseMetric.calculate input dispatching."
+        if len(generated_iterable) != len(reference_iterable):
+            raise ValueError(
+                f"Batch inputs: generated (len {len(generated_iterable)}) and reference (len {len(reference_iterable)}) must have the same length."
             )
+
+        return self._batch_calculate(generated_iterable, reference_iterable, **kwargs)

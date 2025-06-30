@@ -101,18 +101,8 @@ def test_experiment_init_invalid_llm_responses_type():
 
 
 def test_experiment_init_invalid_llm_responses_content():
-    with pytest.raises(ValueError, match="llm_responses must be Dict"):
+    with pytest.raises(ValueError, match="llm_responses keys must be strings"):
         Experiment({1: "val"}, "ref")  # type: ignore
-    with pytest.raises(ValueError, match="llm_responses must be Dict"):
-        Experiment({"key": 123}, "ref")  # type: ignore
-
-
-def test_experiment_init_invalid_reference_answer_type(sample_llm_responses):
-    # Now allows None, so only test other invalid types
-    with pytest.raises(TypeError, match="reference_answer must be a string or None"):
-        Experiment(sample_llm_responses, ["not", "a", "string", "or_None"])  # type: ignore
-    with pytest.raises(TypeError, match="reference_answer must be a string or None"):
-        Experiment(sample_llm_responses, 123)  # type: ignore
 
 
 #  to_dataframe() Tests
