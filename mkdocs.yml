@@ -44,17 +44,19 @@ nav:
   - Home: index.md
   - Quick Start: quickstart.md
   - API Reference:
-    - 'Metrics':
-      - 'Overview': api/metrics/index.md
-      - 'BaseMetric': api/metrics/base.md
-      - 'N-gram Metrics': api/metrics/ngram_metrics.md
-      - 'Semantic Similarity Metrics': api/metrics/semantic_similarity_metrics.md
-      - 'Text Similarity Metrics': api/metrics/text_similarity_metrics.md
-      - 'Planning Metrics': api/metrics/planning.md
-      - 'Time Series Metrics': api/metrics/timeseries.md
-      - 'Image Metrics': api/metrics/image.md
-      - 'Audio Metrics': api/metrics/audio.md
-    - 'Experiment': api/experiment.md
+    - 'Overview': api/metrics/index.md
+    - 'The Experiment Class': api/experiment.md
+    - 'Structured Metrics':
+      - 'Planning': api/metrics/planning.md
+      - 'Time Series': api/metrics/timeseries.md
+    - 'Textual Metrics':
+      - 'N-gram': api/metrics/ngram_metrics.md
+      - 'Semantic Similarity': api/metrics/semantic_similarity_metrics.md
+      - 'Text Similarity': api/metrics/text_similarity_metrics.md
+    - 'Multimedia Metrics':
+      - 'Image': api/metrics/image.md
+      - 'Audio': api/metrics/audio.md
+    - 'BaseMetric': api/metrics/base.md
     - 'Utilities': api/utils.md
     - 'Thresholds Module': api/thresholds_module.md
     - 'Visualize Module': api/visualize_module.md
