@@ -48,10 +48,8 @@ class TestBLEU:
 
     def test_calculate_empty(self, bleu_scorer, text_pair_empty):
         gen, ref = text_pair_empty
-        # NLTK's sentence_bleu might raise ZeroDivisionError or return 0 depending on smoothing
-        # With default smoothing (method1), it should return 0.0 for empty strings.
-        score = bleu_scorer.calculate(gen, ref)
-        assert score == pytest.approx(0.0)
+        with pytest.raises(ValueError):
+            bleu_scorer.calculate(gen, ref)
 
     def test_batch_calculate_list_corpus(
         self, bleu_scorer, sample_generated_texts, sample_reference_texts
@@ -196,11 +194,8 @@ class TestROUGE:
 
     def test_calculate_empty(self, rouge_scorer_default, text_pair_empty):
         gen, ref = text_pair_empty
-        score = rouge_scorer_default.calculate(gen, ref)
-        # rouge-score typically returns 0 for empty strings
-        assert score["rouge1"] == pytest.approx(0.0)
-        assert score["rouge2"] == pytest.approx(0.0)
-        assert score["rougeL"] == pytest.approx(0.0)
+        with pytest.raises(ValueError):
+            rouge_scorer_default.calculate(gen, ref)
 
     def test_batch_calculate_list_default(
         self, rouge_scorer_default, sample_generated_texts, sample_reference_texts
@@ -315,15 +310,13 @@ class TestJSDivergence:
 
     def test_calculate_empty(self, js_divergence_scorer, text_pair_empty):
         gen, ref = text_pair_empty
-        score = js_divergence_scorer.calculate(gen, ref)
-        # Implementation returns 0.0 if either distribution is all zeros
-        assert score == pytest.approx(0.0)
+        with pytest.raises(ValueError):
+            js_divergence_scorer.calculate(gen, ref)
 
     def test_calculate_one_empty(self, js_divergence_scorer, text_pair_one_empty):
         gen, ref = text_pair_one_empty
         score = js_divergence_scorer.calculate(gen, ref)
-        # Implementation returns 0.0 if either distribution is all zeros
-        assert score == pytest.approx(0.0)
+        assert score == pytest.approx(1.0)
 
     def test_batch_calculate_list(
         self, js_divergence_scorer, sample_generated_texts, sample_reference_texts

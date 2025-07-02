@@ -45,13 +45,13 @@ class TestJaccardSimilarity:
 
     def test_calculate_empty(self, jaccard_scorer, text_pair_empty):
         gen, ref = text_pair_empty
-        score = jaccard_scorer.calculate(gen, ref)
-        assert score == pytest.approx(0.0)  # Union is 0, handled
+        with pytest.raises(ValueError):
+            jaccard_scorer.calculate(gen, ref)
 
     def test_calculate_one_empty(self, jaccard_scorer, text_pair_one_empty):
         gen, ref = text_pair_one_empty
         score = jaccard_scorer.calculate(gen, ref)
-        assert score == pytest.approx(0.0)  # Intersection is 0
+        assert score == pytest.approx(1.0)
 
     def test_batch_calculate_list(
         self, jaccard_scorer, sample_generated_texts, sample_reference_texts
@@ -117,15 +117,14 @@ class TestCosineSimilarity:
 
     def test_calculate_empty(self, cosine_scorer, text_pair_empty):
         gen, ref = text_pair_empty
-        # Implementation handles this: if both empty, returns 1.0
-        score = cosine_scorer.calculate(gen, ref)
-        assert score == pytest.approx(1.0)
+        with pytest.raises(ValueError):
+            cosine_scorer.calculate(gen, ref)
 
     def test_calculate_one_empty(self, cosine_scorer, text_pair_one_empty):
         gen, ref = text_pair_one_empty
         # Implementation handles this: if one empty, returns 0.0
         score = cosine_scorer.calculate(gen, ref)
-        assert score == pytest.approx(0.0)
+        assert score == pytest.approx(1.0)
 
     def test_batch_calculate_list(
         self, cosine_scorer, sample_generated_texts, sample_reference_texts
@@ -180,13 +179,13 @@ class TestLevenshteinDistance:
 
     def test_calculate_ratio_empty(self, levenshtein_scorer, text_pair_empty):
         gen, ref = text_pair_empty
-        score = levenshtein_scorer.calculate(gen, ref, calculate_ratio=True)
-        assert score == pytest.approx(1.0)  # Ratio of "" and "" is 1
+        with pytest.raises(ValueError):
+            levenshtein_scorer.calculate(gen, ref, calculate_ratio=True)
 
     def test_calculate_ratio_one_empty(self, levenshtein_scorer, text_pair_one_empty):
         gen, ref = text_pair_one_empty
         score = levenshtein_scorer.calculate(gen, ref, calculate_ratio=True)
-        assert score == pytest.approx(0.0)  # Ratio of "abc" and "" is 0
+        assert score == pytest.approx(1.0)
 
     # Test Distance
     def test_calculate_distance_simple(self, levenshtein_scorer, text_pair_simple):
@@ -202,13 +201,13 @@ class TestLevenshteinDistance:
 
     def test_calculate_distance_empty(self, levenshtein_scorer, text_pair_empty):
         gen, ref = text_pair_empty
-        score = levenshtein_scorer.calculate(gen, ref, calculate_ratio=False)
-        assert score == pytest.approx(1.0)
+        with pytest.raises(ValueError):
+            levenshtein_scorer.calculate(gen, ref, calculate_ratio=False)
 
     def test_calculate_distance_one_empty(self, levenshtein_scorer, text_pair_one_empty):
         gen, ref = text_pair_one_empty
         score = levenshtein_scorer.calculate(gen, ref, calculate_ratio=False)
-        assert score == pytest.approx(0)
+        assert score == pytest.approx(1.0)
 
     # Test Batch (Ratio)
     def test_batch_calculate_ratio_list(
@@ -283,13 +282,13 @@ class TestSequenceMatcherSimilarity:
 
     def test_calculate_empty(self, seqmatch_scorer, text_pair_empty):
         gen, ref = text_pair_empty
-        score = seqmatch_scorer.calculate(gen, ref)
-        assert score == pytest.approx(1.0)  # Ratio of "" and "" is 1
+        with pytest.raises(ValueError):
+            seqmatch_scorer.calculate(gen, ref)
 
     def test_calculate_one_empty(self, seqmatch_scorer, text_pair_one_empty):
         gen, ref = text_pair_one_empty
         score = seqmatch_scorer.calculate(gen, ref)
-        assert score == pytest.approx(0.0)  # Ratio of "abc" and "" is 0
+        assert score == pytest.approx(1.0)
 
     def test_batch_calculate_list(
         self, seqmatch_scorer, sample_generated_texts, sample_reference_texts

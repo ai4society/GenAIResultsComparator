@@ -3,7 +3,7 @@ from typing import Any, Dict, Iterable, List, Optional, cast
 import numpy as np
 import pandas as pd
 
-from .base import BaseMetric
+from .textual import TextualMetric
 
 # Conditionally import bert_score and torch
 _BERTScorer_cls = None
@@ -28,7 +28,7 @@ except ImportError:
 __semantic_deps_available__ = _semantic_deps_available
 
 
-class BERTScore(BaseMetric):
+class BERTScore(TextualMetric):
     """
     This class provides methods to calculate BERTScore for individual sentence pairs and for batches of sentences.
     It uses the BERTScore library to calculate precision, recall, and F1 scores.
@@ -90,17 +90,17 @@ class BERTScore(BaseMetric):
 
     def _single_calculate(
         self,
-        generated_text: str,
-        reference_text: str,
+        generated_item: str,
+        reference_item: str,
         **kwargs: Any,
     ) -> dict[str, float] | float:
         """
         Calculate the BERTScore for a pair of generated and reference texts.
 
-        :param generated_text: The generated text to evaluate
-        :type generated_text: str
-        :param reference_text: The reference text to compare against
-        :type reference_text: str
+        :param generated_item: The generated text to evaluate
+        :type generated_item: str
+        :param reference_item: The reference text to compare against
+        :type reference_item: str
         :param kwargs: Additional parameters to pass to the score method of the BERTScorer class, defaults to None
         :type kwargs: Any
         :return: Either a single score or a dictionary of scores containing precision, recall, and F1
@@ -112,7 +112,7 @@ class BERTScore(BaseMetric):
         F1: _Tensor_cls  # type: ignore
         P, R, F1 = cast(
             tuple[_Tensor_cls, _Tensor_cls, _Tensor_cls],  # type: ignore
-            self.scorer.score([generated_text], [reference_text], **kwargs),  # type: ignore
+            self.scorer.score([generated_item], [reference_item], **kwargs),  # type: ignore
         )
         assert P is not None and R is not None and F1 is not None, (
             "BERTScore tensors should not be None"
@@ -130,18 +130,18 @@ class BERTScore(BaseMetric):
 
     def _batch_calculate(
         self,
-        generated_texts: Iterable | np.ndarray | pd.Series,
-        reference_texts: Iterable | np.ndarray | pd.Series,
+        generated_items: Iterable | np.ndarray | pd.Series,
+        reference_items: Iterable | np.ndarray | pd.Series,
         **kwargs: Any,
     ) -> list[float] | list[dict] | np.ndarray | pd.Series:
         """
         Calculate BERTScores for a batch of generated and reference texts.
         Supports iterables, numpy arrays, and pandas Series as input and output.
 
-        :param generated_texts: Generated texts
-        :type generated_texts: Iterable | np.ndarray | pd.Series
-        :param reference_texts: Reference texts
-        :type reference_texts: Iterable | np.ndarray | pd.Series
+        :param generated_items: Generated texts
+        :type generated_items: Iterable | np.ndarray | pd.Series
+        :param reference_items: Reference texts
+        :type reference_items: Iterable | np.ndarray | pd.Series
         :param kwargs: Additional parameters to pass to the score method of the BERTScorer class
         :type kwargs: Any
         :return: A list, numpy array, or pandas Series of dictionaries containing precision, recall, and F1 scores.
@@ -153,7 +153,7 @@ class BERTScore(BaseMetric):
         F1: _Tensor_cls  # type: ignore
         P, R, F1 = cast(
             tuple[_Tensor_cls, _Tensor_cls, _Tensor_cls],  # type: ignore
-            self.scorer.score(list(generated_texts), list(reference_texts), **kwargs),  # type: ignore
+            self.scorer.score(list(generated_items), list(reference_items), **kwargs),  # type: ignore
         )
 
         # Convert tensors to lists
@@ -171,11 +171,11 @@ class BERTScore(BaseMetric):
         # Define final scores based on output_val
         scores = [{key: score[key] for key in self.output_val} for score in scores]
 
-        if isinstance(generated_texts, np.ndarray) and isinstance(reference_texts, np.ndarray):
+        if isinstance(generated_items, np.ndarray) and isinstance(reference_items, np.ndarray):
             return np.array(scores)
 
-        elif isinstance(generated_texts, pd.Series) and isinstance(reference_texts, pd.Series):
-            return pd.Series(scores, index=generated_texts.index)
+        elif isinstance(generated_items, pd.Series) and isinstance(reference_items, pd.Series):
+            return pd.Series(scores, index=generated_items.index)
 
         else:
             return scores

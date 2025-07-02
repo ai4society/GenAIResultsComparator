@@ -28,6 +28,8 @@ llm_responses = {
     "SafeChat": "Sorry, I am designed not to answer such a question.",
 }
 reference_answer = "Sorry, I am unable to answer such a question as it is not appropriate."
+# Alternatively, if reference_answer is None, the response from the first model ("Google") will be used:
+# reference_answer = None
 
 # 1. Initialize Experiment
 exp = Experiment(
@@ -59,6 +61,9 @@ For more detailed examples, please refer to our Jupyter Notebooks in the [`examp
   - N-gram-based metrics (_BLEU_, _ROUGE_, _JS divergence_)
   - Text similarity metrics (_Jaccard_, _Cosine_, _Levenshtein_, _Sequence Matcher_)
   - Semantic similarity metrics (_BERTScore_)
+- Implements specialized metrics for structured outputs:
+  - **Planning**: Sequence comparison using Longest Common Subsequence (`PlanningLCS`) and Jaccard similarity (`PlanningJaccard`).
+  - **Time-Series**: Weighted time series difference (`TimeSeriesElementDiff`) that compares both time points and their values.
 - Provides visualization capabilities using matplotlib and seaborn for plots like bar charts and radar plots.
 - Allows exportation of results to CSV files, including scores and threshold pass/fail status.
 - Provides streamlined `Experiment` class for easy comparison of multiple models, applying thresholds, plotting, and reporting.
