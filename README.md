@@ -173,7 +173,7 @@ article on evaluating LLM-generated content](https://learn.microsoft.com/en-us/a
   - Semantic similarity metrics (_BERTScore_)
 - Implements specialized metrics for structured outputs:
   - **Planning**: Sequence comparison using Longest Common Subsequence (`PlanningLCS`) and Jaccard similarity (`PlanningJaccard`).
-  - **Time-Series**: Weighted time series difference (`TimeSeriesElementDiff`) that compares both time points and their values.
+  - **Time-Series**: Weighted element-wise difference (`TimeSeriesElementDiff`) and shape-based similarity using Dynamic Time Warping (`TimeSeriesDTW`).
 - Provides visualization capabilities using matplotlib and seaborn for plots like bar charts and radar plots.
 - Allows exportation of results to CSV files, including scores and threshold pass/fail status.
 - Provides streamlined `Experiment` class for easy comparison of multiple models, applying thresholds, plotting, and reporting.
@@ -255,21 +255,21 @@ The default installation includes core metrics and is lightweight. For optional 
 
 <!-- INSTALLATION_OPTIONAL_FEATURES_START -->
 
-- To include the **BERTScore** metric (which has larger dependencies like PyTorch):
+- To include the **JSDivergence** metric (requires SciPy and NLTK):
   ```shell
-  pip install 'gaico[bertscore]'
+  pip install 'gaico[jsd]'
   ```
 - To include the **CosineSimilarity** metric (requires scikit-learn):
   ```shell
   pip install 'gaico[cosine]'
   ```
-- To include the **JSDivergence** metric (requires SciPy and NLTK):
+- To include the **BERTScore** metric (which has larger dependencies like PyTorch):
   ```shell
-  pip install 'gaico[jsd]'
+  pip install 'gaico[bertscore]'
   ```
 - To install with **all optional features**:
   ```shell
-  pip install 'gaico[bertscore,cosine,jsd]'
+  pip install 'gaico[jsd,cosine,bertscore]'
   ```
   _(Note: All optional features are also installed if you use the `dev` extra for development installs.)_
   <!-- INSTALLATION_OPTIONAL_FEATURES_END -->
@@ -288,11 +288,11 @@ _Note:_ Core dependencies include: `levenshtein`, `matplotlib`, `numpy`, `pandas
 
 | Installation Command                        | Dependencies                                                 | Estimated Total Size Impact |
 | ------------------------------------------- | ------------------------------------------------------------ | --------------------------- |
-| `pip install gaico`                         | Core                                                         | 210 MB                      |
+| `pip install gaico`                         | Core                                                         | 215 MB                      |
 | `pip install 'gaico[jsd]'`                  | Core + `scipy`, `nltk`                                       | 310 MB                      |
 | `pip install 'gaico[cosine]'`               | Core + `scikit-learn`                                        | 360 MB                      |
 | `pip install 'gaico[bertscore]'`            | Core + `bert-score` (includes `torch`, `transformers`, etc.) | 800 MB                      |
-| `pip install 'gaico[bertscore,cosine,jsd]'` | Core + all dependencies from above                           | 950 MB                      |
+| `pip install 'gaico[jsd,cosine,bertscore]'` | Core + all dependencies from above                           | 960 MB                      |
 
 <!-- INSTALLATION_SIZE_TABLE_CONTENT_END -->
 

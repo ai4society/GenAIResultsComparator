@@ -314,6 +314,18 @@ docutils==0.21.2 \
     # via
     #   readme-renderer
     #   sphinx
+dtaidistance==2.3.13 \
+    --hash=sha256:02f2de97f147cd17c7de1b19140d3a5f48d876c19ae28105c12cca45f9af2520 \
+    --hash=sha256:0f700efc7bf4c4ff6a13392816c0d50e3ca768f9da4868e3af4d09d38360a1c1 \
+    --hash=sha256:465f45d380a1cd4416201a9aeffa9fdf34848db10fe66918456d616989d61316 \
+    --hash=sha256:81527c52c8ba44b7756e3815646584c44c4f7277ef17ae98542d5a256bee462b \
+    --hash=sha256:a09b9916f8ecbf11ef3f8824bfb306c1c3bfc63a32dcb4703551a1d5bbe6fa6c \
+    --hash=sha256:ac8536147977419a2ab5b4a89d97d91bbaf8ea339d91bbb63e26bea0a842ec5e \
+    --hash=sha256:b0344a9b6f642863fcedacf5de86c4a0a0d4b4adec9b9be561a6f513ecf5e695 \
+    --hash=sha256:b6a805736778afeb62966ff5dfd78e4f9c6d29667699ba91e3f69d2f2ecadf0e \
+    --hash=sha256:c61ef66588cac8b1f2ec7c8a7ca15bc6ae058804f8e5514919a0b682818fa60a \
+    --hash=sha256:d071392388dab99462922df8e4fb99f905e59888bd7246dee318ba7fe0d6332d
+    # via gaico
 exceptiongroup==1.3.0 ; python_full_version < '3.11' \
     --hash=sha256:4d111e6e0c13d0644cad6ddaa7ed0261a0b36971f6d23e7ec9b4b9097da78a10 \
     --hash=sha256:b241f5885f560bc56a59ee63ca4c6a8bfa46ae4ad651af316d4e81817bb9fd88
@@ -1011,6 +1023,7 @@ numpy==2.2.6 ; python_full_version < '3.11' \
     # via
     #   bert-score
     #   contourpy
+    #   dtaidistance
     #   gaico
     #   matplotlib
     #   pandas
@@ -1052,6 +1065,7 @@ numpy==2.3.1 ; python_full_version >= '3.11' \
     # via
     #   bert-score
     #   contourpy
+    #   dtaidistance
     #   gaico
     #   matplotlib
     #   pandas

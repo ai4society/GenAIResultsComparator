@@ -7,6 +7,17 @@ import pandas as pd
 
 from ..base import BaseMetric
 
+_dtw_distance_func = None
+__dtw_deps_available__ = False
+
+try:
+    from dtaidistance import dtw as _dtw
+
+    _dtw_distance_func = _dtw.distance
+    __dtw_deps_available__ = True
+except ImportError:
+    pass
+
 
 class StructuredOutputMetric(BaseMetric, ABC):
     """
@@ -422,6 +433,130 @@ class TimeSeriesElementDiff(TimeSeriesDataMetric):
         :param kwargs: Additional keyword arguments (not used here).
         :type kwargs: Any
         :return: List of normalized scores for each pair, or a numpy array or pandas Series if the input is of those types.
+        :rtype: List[float] | np.ndarray | pd.Series
+        """
+        results = [
+            self._single_calculate(str(gen), str(ref), **kwargs)
+            for gen, ref in zip(generated_items, reference_items)
+        ]
+
+        if isinstance(generated_items, np.ndarray):
+            return np.array(results, dtype=float)
+        if isinstance(generated_items, pd.Series):
+            return pd.Series(results, index=generated_items.index, dtype=float)
+        return results
+
+
+class TimeSeriesDTW(TimeSeriesDataMetric):
+    """
+    Calculates the similarity between two time series using Dynamic Time Warping (DTW).
+    The DTW distance measures the optimal alignment between two sequences of values,
+    which is useful when the series are out of phase. The distance is then normalized
+    to a similarity score between 0 and 1.
+
+    This metric only considers the sequence of *values*, ignoring the keys. The order
+    of values is preserved from the input string.
+
+    A score of 1 indicates identical value sequences.
+
+    Input strings are expected to be comma-separated "key:value" pairs or just values,
+    e.g., "t1:70, 72, t3:75". Non-numeric parts will be ignored with a warning.
+    """
+
+    def __init__(self, **kwargs: Any):
+        """
+        Initialize the TimeSeriesDTW metric.
+
+        :param kwargs: Additional keyword arguments to be passed to the `dtaidistance.dtw.distance` function.
+        :raises ImportError: If the `dtaidistance` package is not installed.
+        """
+        super().__init__()
+        if not __dtw_deps_available__:
+            raise ImportError("dtaidistance is not installed. Please ensure it is installed.")
+        # Store any dtaidistance-specific kwargs
+        self.dtw_kwargs = kwargs
+
+    def _parse_dtw_value_sequence(self, text_series: str) -> np.ndarray:
+        """
+        Parses a comma-separated string of values into a numpy array of floats.
+        It handles both "key:value" pairs and simple values, extracting only the
+        values in their original order.
+        Example: "t1:70, 72, t3:75" -> [70.0, 72.0, 75.0]
+        """
+        if not text_series or text_series.isspace():
+            return np.array([], dtype=float)
+
+        values = []
+        for item_str in text_series.split(","):
+            item_str = item_str.strip()
+            if not item_str:
+                continue
+
+            # Check for key:value format and extract only the value part
+            parts = item_str.split(":", 1)
+            value_str = parts[-1].strip()  # Take the last part, which is the value
+
+            try:
+                values.append(float(value_str))
+            except ValueError:
+                warnings.warn(
+                    f"Warning: Could not parse value '{value_str}' from item '{item_str}' in time series. Skipping."
+                )
+        return np.array(values, dtype=float)
+
+    def _single_calculate(self, generated_item: str, reference_item: str, **kwargs: Any) -> float:
+        """
+        Calculate DTW similarity for a single pair of time series.
+
+        The score is normalized using the formula: 1 / (1 + dtw_distance).
+
+        :param generated_item: The generated time series as a string.
+        :type generated_item: str
+        :param reference_item: The reference time series as a string.
+        :type reference_item: str
+        :param kwargs: Overrides any kwargs passed during initialization to the dtaidistance function.
+        :type kwargs: Any
+        :return: Normalized similarity score between 0 and 1.
+        :rtype: float
+        """
+        gen_seq = self._parse_dtw_value_sequence(str(generated_item))
+        ref_seq = self._parse_dtw_value_sequence(str(reference_item))
+
+        if gen_seq.size == 0 and ref_seq.size == 0:
+            return 1.0
+        if gen_seq.size == 0 or ref_seq.size == 0:
+            return 0.0  # One is empty, the other is not.
+
+        # Combine init kwargs with call-time kwargs
+        final_kwargs = self.dtw_kwargs.copy()
+        final_kwargs.update(kwargs)
+
+        # dtaidistance requires numpy arrays
+        dtw_distance: float = 0
+        if _dtw_distance_func is not None:
+            dtw_distance = _dtw_distance_func(gen_seq, ref_seq, **final_kwargs)
+
+        # Normalize the distance to a similarity score [0, 1]
+        # 1 / (1 + distance) is a common way to do this.
+        # If distance is 0, score is 1. As distance -> inf, score -> 0.
+        return 1.0 / (1.0 + dtw_distance)
+
+    def _batch_calculate(
+        self,
+        generated_items: Iterable | np.ndarray | pd.Series,
+        reference_items: Iterable | np.ndarray | pd.Series,
+        **kwargs: Any,
+    ) -> List[float] | np.ndarray | pd.Series:
+        """
+        Calculate DTW similarities for a batch of time series.
+
+        :param generated_items: Iterable of generated time series strings.
+        :type generated_items: Iterable | np.ndarray | pd.Series
+        :param reference_items: Iterable of reference time series strings.
+        :type reference_items: Iterable | np.ndarray | pd.Series
+        :param kwargs: Additional keyword arguments passed to the calculation.
+        :type kwargs: Any
+        :return: List of normalized scores, or a numpy array/pandas Series.
         :rtype: List[float] | np.ndarray | pd.Series
         """
         results = [

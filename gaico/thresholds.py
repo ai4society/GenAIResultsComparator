@@ -14,6 +14,7 @@ DEFAULT_THRESHOLD: Dict[str, float] = {
     # Structured
     "ActionSequenceDiff": 0.5,
     "TimeSeriesElementDiff": 0.5,
+    "TimeSeriesDTW": 0.5,
     # Image
     "SSIM": 0.5,  # TODO
     "PSNR": 0.5,  # TODO

@@ -1,3 +1,3 @@
-from .structured import PlanningJaccard, PlanningLCS, TimeSeriesElementDiff
+from .structured import PlanningJaccard, PlanningLCS, TimeSeriesDTW, TimeSeriesElementDiff
 
-__all__ = ["PlanningLCS", "PlanningJaccard", "TimeSeriesElementDiff"]
+__all__ = ["PlanningLCS", "PlanningJaccard", "TimeSeriesElementDiff", "TimeSeriesDTW"]
