@@ -8,8 +8,10 @@ import pytest
 from gaico.metrics.structured import (
     PlanningJaccard,
     PlanningLCS,
+    TimeSeriesDTW,
     TimeSeriesElementDiff,
 )
+from gaico.metrics.structured.structured import __dtw_deps_available__
 
 
 class TestPlanningLCS:
@@ -336,6 +338,124 @@ class TestTimeSeriesElementDiff:
         gens = ["t1:10, t2:20", "t1:10"]  # First gen becomes ref
         # 1. "t1:10, t2:20" vs "t1:10, t2:20" -> 1.0
         # 2. "t1:10" vs "t1:10, t2:20" -> I={t1}, U={t1,t2}. max=6. score=3. -> 0.5
+        expected_scores = [1.0, 0.5]
+        scores = metric.calculate(gens, None)
+        assert isinstance(scores, list)
+        assert scores == pytest.approx(expected_scores)
+
+
+@pytest.mark.skipif(
+    not __dtw_deps_available__,
+    reason="dtaidistance not installed, skipping TimeSeriesDTW tests.",
+)
+class TestTimeSeriesDTW:
+    """Test suite for the TimeSeriesDTW metric."""
+
+    @pytest.fixture(scope="class")
+    def metric(self):
+        return TimeSeriesDTW()
+
+    @pytest.mark.parametrize(
+        "gen_ts, ref_ts, expected_similarity",
+        [
+            # Identical sequences -> distance 0 -> similarity 1.0
+            ("1,2,3", "1,2,3", 1.0),
+            ("t1:10, t2:20.5, t3:30", "10, 20.5, 30", 1.0),  # Keys are ignored
+            # One empty sequence
+            ("1,2,3", "", 1.0),
+            ("", "1,2,3", 0.0),
+            # Simple difference -> distance > 0 -> similarity < 1.0
+            ("1,2,3", "1,2,4", 1.0 / (1.0 + 1.0)),  # dist = sqrt((3-4)^2) = 1
+            ("10", "20", 1.0 / (1.0 + 10.0)),  # dist = 10
+            # Different lengths
+            ("1,2,3", "1,2,3,4", 1.0 / (1.0 + 1.0)),  # dist = 1
+            # Shifted sequence (DTW should handle this well, low distance)
+            ("1,2,3", "0,1,2,3", 1.0 / (1.0 + 1.0)),
+            ("1,2,3,4", "1,2,2,3,4", 1.0 / (1.0 + 0.0)),  # dist should be 0
+            # More complex case
+            (
+                "1,8,3,4",
+                "2,3,9,1",
+                1.0 / (1.0 + 4.358898943540674),
+            ),  # dtw.distance is ~4.358898943540674
+        ],
+    )
+    def test_single_calculation(self, metric, gen_ts, ref_ts, expected_similarity):
+        score = metric.calculate(gen_ts, ref_ts)
+        assert isinstance(score, float)
+        assert score == pytest.approx(expected_similarity)
+        assert 0.0 <= score <= 1.0
+
+    def test_parsing_and_warnings(self, metric):
+        # Test that malformed values are skipped with warnings
+        with pytest.warns(UserWarning, match="Could not parse value 'abc'"):
+            # gen -> [10, 30], ref -> [10, 30]
+            score = metric.calculate("t1:10, t2:abc, t3:30", "10, 30")
+            assert score == pytest.approx(1.0)
+
+        # Test extra commas
+        score_commas = metric.calculate("10,,20", "10,20")
+        assert score_commas == pytest.approx(1.0)
+
+        # Test spaces
+        score_spaces = metric.calculate(" 10, 20 ", "10,20")
+        assert score_spaces == pytest.approx(1.0)
+
+    def test_dtw_kwargs_affect_result(self):
+        # With no window constraint, DTW finds the optimal path.
+        # dtw.distance([0,0,1,2,1,0,1,0,0], [0,1,2,0,0,0,0,0,0]) is 1.4142135623730951
+        gen_ts = "0,0,1,2,1,0,1,0,0"
+        ref_ts = "0,1,2,0,0,0,0,0,0"
+
+        metric_unconstrained = TimeSeriesDTW()
+        score_unconstrained = metric_unconstrained.calculate(gen_ts, ref_ts)
+        assert score_unconstrained == pytest.approx(1.0 / (1.0 + 1.4142135623730951))
+
+        # With a restrictive window, the path is constrained, distance increases.
+        # dtw.distance(..., window=1) is 2.8284271247461903
+        metric_constrained = TimeSeriesDTW(window=1)
+        score_constrained = metric_constrained.calculate(gen_ts, ref_ts)
+        assert score_constrained == pytest.approx(1.0 / (1.0 + 2.8284271247461903))
+
+        # Check that call-time kwargs override init-time kwargs
+        score_override = metric_constrained.calculate(
+            gen_ts, ref_ts, window=None
+        )  # window=None is default
+        assert score_override == pytest.approx(score_unconstrained)
+
+    def test_batch_calculation_numpy(self, metric):
+        gens_np = np.array(["1,2,3", "10,20"])
+        refs_np = np.array(["1,2,4", "10,20,30"])
+        expected_scores_np = np.array(
+            [
+                metric.calculate("1,2,3", "1,2,4"),
+                metric.calculate("10,20", "10,20,30"),
+            ],
+            dtype=float,
+        )
+        scores = metric.calculate(gens_np, refs_np)
+        assert isinstance(scores, np.ndarray)
+        np.testing.assert_array_almost_equal(scores, expected_scores_np)
+
+    def test_batch_calculation_pandas(self, metric):
+        gens_pd = pd.Series(["1,2,3", "10,20"], index=["a", "b"])
+        refs_pd = pd.Series(["1,2,4", "10,20,30"], index=["a", "b"])
+        expected_scores_pd = pd.Series(
+            [
+                metric.calculate("1,2,3", "1,2,4"),
+                metric.calculate("10,20", "10,20,30"),
+            ],
+            index=gens_pd.index,
+            dtype=float,
+        )
+        scores = metric.calculate(gens_pd, refs_pd)
+        assert isinstance(scores, pd.Series)
+        pd.testing.assert_series_equal(scores, expected_scores_pd, check_dtype=False, atol=1e-6)
+
+    def test_missing_reference_uses_first_gen_batch(self, metric):
+        gens = ["1,2,3", "1,2,4"]  # First gen "1,2,3" becomes ref
+        # 1. "1,2,3" vs "1,2,3" -> 1.0
+        # 2. "1,2,4" vs "1,2,3" -> 1.0 / (1.0 + 1.0) = 0.5
         expected_scores = [1.0, 0.5]
         scores = metric.calculate(gens, None)
         assert isinstance(scores, list)
