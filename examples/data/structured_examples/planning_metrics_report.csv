@@ -1,0 +1,5 @@
+generated_text,reference_text,Jaccard_score,Jaccard_passed,Levenshtein_score,Levenshtein_passed
+"action_1, {action_2a, action_2b}, action_3","action_1, {action_2a, action_2b}, action_3",1.0,True,1.0,True
+"action_3, action_1, {action_2b, action_2a}","action_1, {action_2a, action_2b}, action_3",0.14285714285714285,False,0.8571428571428572,True
+"action_1, action_3","action_1, {action_2a, action_2b}, action_3",0.5,True,0.6,True
+"action_1, {action_2a, action_2b}, action_4, action_3","action_1, {action_2a, action_2b}, action_3",0.8,True,0.8936170212765957,True

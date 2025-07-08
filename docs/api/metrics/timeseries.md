@@ -74,7 +74,7 @@ Any non-numeric parts in the value will be ignored, and a warning will be issued
 
 ### Calculation
 
-1.  **Dependency Check**: This metric requires the `dtaidistance` library. If it's not installed, an `ImportError` will be raised.
+1.  **Dependency Check**: This metric requires the `dtaidistance` library which is pre-installed with `gaico`. If it's not installed, an `ImportError` will be raised.
 2.  **Parsing**: Both the generated and reference strings are parsed into NumPy arrays of floating-point numbers, extracting only the values in their original order.
 3.  **DTW Distance**: The `dtaidistance.dtw.distance` function is used to compute the raw DTW distance between the two value sequences.
 4.  **Normalization**: The raw distance is not bounded and depends on the scale of the values and length of the sequences. To convert it into a normalized similarity score between 0 and 1, the following formula is used:

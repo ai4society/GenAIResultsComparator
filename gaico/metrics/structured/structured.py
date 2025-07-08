@@ -8,12 +8,15 @@ import pandas as pd
 from ..base import BaseMetric
 
 _dtw_distance_func = None
+_dtw_similarity_conversion_func = None
 __dtw_deps_available__ = False
 
 try:
     from dtaidistance import dtw as _dtw
+    from dtaidistance import similarity as _dtw_similarity
 
     _dtw_distance_func = _dtw.distance
+    _dtw_similarity_conversion_func = _dtw_similarity.distance_to_similarity
     __dtw_deps_available__ = True
 except ImportError:
     pass
@@ -451,7 +454,7 @@ class TimeSeriesDTW(TimeSeriesDataMetric):
     """
     Calculates the similarity between two time series using Dynamic Time Warping (DTW).
     The DTW distance measures the optimal alignment between two sequences of values,
-    which is useful when the series are out of phase. The distance is then normalized
+    which is useful when the series are out of phase. The distance is then converted
     to a similarity score between 0 and 1.
 
     This metric only considers the sequence of *values*, ignoring the keys. The order
@@ -463,16 +466,29 @@ class TimeSeriesDTW(TimeSeriesDataMetric):
     e.g., "t1:70, 72, t3:75". Non-numeric parts will be ignored with a warning.
     """
 
-    def __init__(self, **kwargs: Any):
+    def __init__(self, similarity_method: str = "reciprocal", **kwargs: Any):
         """
         Initialize the TimeSeriesDTW metric.
 
+        :param similarity_method: The method to convert DTW distance to similarity.
+        Options: 'reciprocal' (default, 1/(1+d)), 'exponential', 'gaussian'.
+        The 'exponential' and 'gaussian' methods use `dtaidistance` and are most effective in batch mode.
+        In single calculation mode, they will fall back to 'reciprocal' with a warning.
         :param kwargs: Additional keyword arguments to be passed to the `dtaidistance.dtw.distance` function.
         :raises ImportError: If the `dtaidistance` package is not installed.
+        :raises ValueError: If an unsupported similarity_method is provided.
         """
         super().__init__()
         if not __dtw_deps_available__:
             raise ImportError("dtaidistance is not installed. Please ensure it is installed.")
+
+        supported_methods = ["reciprocal", "exponential", "gaussian"]
+        if similarity_method not in supported_methods:
+            raise ValueError(
+                f"similarity_method must be one of {supported_methods}. Got '{similarity_method}'."
+            )
+
+        self.similarity_method = similarity_method
         # Store any dtaidistance-specific kwargs
         self.dtw_kwargs = kwargs
 
@@ -508,7 +524,7 @@ class TimeSeriesDTW(TimeSeriesDataMetric):
         """
         Calculate DTW similarity for a single pair of time series.
 
-        The score is normalized using the formula: 1 / (1 + dtw_distance).
+        The score is normalized using the specified `similarity_method`.
 
         :param generated_item: The generated time series as a string.
         :type generated_item: str
@@ -519,6 +535,13 @@ class TimeSeriesDTW(TimeSeriesDataMetric):
         :return: Normalized similarity score between 0 and 1.
         :rtype: float
         """
+        if self.similarity_method != "reciprocal":
+            warnings.warn(
+                f"'{self.similarity_method}' similarity is not recommended for single-pair DTW calculation "
+                "as it lacks distance context for proper scaling. It is best used in batch mode. "
+                "Falling back to 'reciprocal' similarity for this calculation."
+            )
+
         gen_seq = self._parse_dtw_value_sequence(str(generated_item))
         ref_seq = self._parse_dtw_value_sequence(str(reference_item))
 
@@ -531,14 +554,11 @@ class TimeSeriesDTW(TimeSeriesDataMetric):
         final_kwargs = self.dtw_kwargs.copy()
         final_kwargs.update(kwargs)
 
-        # dtaidistance requires numpy arrays
         dtw_distance: float = 0
         if _dtw_distance_func is not None:
             dtw_distance = _dtw_distance_func(gen_seq, ref_seq, **final_kwargs)
 
-        # Normalize the distance to a similarity score [0, 1]
-        # 1 / (1 + distance) is a common way to do this.
-        # If distance is 0, score is 1. As distance -> inf, score -> 0.
+        # The 'reciprocal' method is the only one reliably used for single calculations.
         return 1.0 / (1.0 + dtw_distance)
 
     def _batch_calculate(
@@ -559,13 +579,63 @@ class TimeSeriesDTW(TimeSeriesDataMetric):
         :return: List of normalized scores, or a numpy array/pandas Series.
         :rtype: List[float] | np.ndarray | pd.Series
         """
-        results = [
-            self._single_calculate(str(gen), str(ref), **kwargs)
-            for gen, ref in zip(generated_items, reference_items)
-        ]
+        # For reciprocal, we can calculate one by one efficiently.
+        if self.similarity_method == "reciprocal":
+            results = [
+                self._single_calculate(str(gen), str(ref), **kwargs)
+                for gen, ref in zip(generated_items, reference_items)
+            ]
+            if isinstance(generated_items, np.ndarray):
+                return np.array(results, dtype=float)
+            if isinstance(generated_items, pd.Series):
+                return pd.Series(results, index=generated_items.index, dtype=float)
+            return results
+
+        # For other methods, we need the full set of distances for scaling.
+        final_kwargs = self.dtw_kwargs.copy()
+        final_kwargs.update(kwargs)
+
+        # This list will store the final similarity scores, ordered correctly.
+        final_scores = [0.0] * len(list(generated_items))
+
+        # We need to parse everything first to handle empty cases
+        parsed_items = []
+        for gen, ref in zip(generated_items, reference_items):
+            gen_seq = self._parse_dtw_value_sequence(str(gen))
+            ref_seq = self._parse_dtw_value_sequence(str(ref))
+            parsed_items.append((gen_seq, ref_seq))
+
+        # Separate items that need DTW calculation from special cases
+        items_for_dtw = []
+        indices_for_dtw = []
+
+        for i, (gen_seq, ref_seq) in enumerate(parsed_items):
+            if gen_seq.size == 0 and ref_seq.size == 0:
+                final_scores[i] = 1.0  # Perfect match
+            elif gen_seq.size == 0 or ref_seq.size == 0:
+                final_scores[i] = 0.0  # Mismatch
+            else:
+                items_for_dtw.append((gen_seq, ref_seq))
+                indices_for_dtw.append(i)
+
+        # Calculate DTW for the valid pairs
+        if items_for_dtw and _dtw_distance_func and _dtw_similarity_conversion_func:
+            distances = [
+                _dtw_distance_func(gen_seq, ref_seq, **final_kwargs)
+                for gen_seq, ref_seq in items_for_dtw
+            ]
+
+            # Convert distances to similarities using the batch-aware function
+            similarities = _dtw_similarity_conversion_func(
+                np.array(distances), method=self.similarity_method
+            )
+
+            for i, sim in enumerate(similarities):
+                original_index = indices_for_dtw[i]
+                final_scores[original_index] = sim
 
         if isinstance(generated_items, np.ndarray):
-            return np.array(results, dtype=float)
+            return np.array(final_scores, dtype=float)
         if isinstance(generated_items, pd.Series):
-            return pd.Series(results, index=generated_items.index, dtype=float)
-        return results
+            return pd.Series(final_scores, index=generated_items.index, dtype=float)
+        return final_scores
