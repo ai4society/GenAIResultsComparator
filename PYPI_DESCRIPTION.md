@@ -8,9 +8,9 @@
 
 ## Overview
 
-_GenAI Results Comparator, GAICo, is a Python library_ to help compare, analyze and visualize outputs from Large Language Models (LLMs), often against a reference text. In doing so, one can use a range of extensible metrics from the literature.
+_GenAI Results Comparator (GAICo)_ is a Python library for comparing, analyzing, and visualizing outputs from Large Language Models (LLMs). It offers an extensible range of metrics, including standard text similarity scores and specialized metrics for structured data like planning sequences and time-series.
 
-At the core, the library provides a set of metrics for evaluating text strings given as inputs and produce outputs on a scale of 0 to 1 (normalized), where 1 indicates a perfect match between the texts. These scores are use to analyze LLM outputs as well as visualize.
+At its core, the library provides a set of metrics for evaluating various types of outputs—from plain text strings to structured data like planning sequences and time-series. These metrics produce normalized scores (typically 0 to 1), where 1 indicates a perfect match, enabling robust analysis and visualization of LLM performance.
 
 ## Quickstart
 
@@ -57,24 +57,28 @@ For more detailed examples, please refer to our Jupyter Notebooks in the [`examp
 
 ## Features
 
-- Implements various metrics for text comparison:
-  - N-gram-based metrics (_BLEU_, _ROUGE_, _JS divergence_)
-  - Text similarity metrics (_Jaccard_, _Cosine_, _Levenshtein_, _Sequence Matcher_)
-  - Semantic similarity metrics (_BERTScore_)
-- Implements specialized metrics for structured outputs:
-  - **Planning**: Sequence comparison using Longest Common Subsequence (`PlanningLCS`) and Jaccard similarity (`PlanningJaccard`).
-  - **Time-Series**: Weighted element-wise difference (`TimeSeriesElementDiff`) and shape-based similarity using Dynamic Time Warping (`TimeSeriesDTW`).
-- Provides visualization capabilities using matplotlib and seaborn for plots like bar charts and radar plots.
-- Allows exportation of results to CSV files, including scores and threshold pass/fail status.
-- Provides streamlined `Experiment` class for easy comparison of multiple models, applying thresholds, plotting, and reporting.
-- Supports batch processing for efficient computation.
-- Optimized for different input types (lists, numpy arrays, pandas Series).
-- Has extendable architecture for easy addition of new metrics.
-- Supports automated testing of metrics using [Pytest](https://docs.pytest.org/en/stable/).
+- **Comprehensive Metric Library:**
+  - **Textual Similarity:** Jaccard, Cosine, Levenshtein, Sequence Matcher.
+  - **N-gram Based:** BLEU, ROUGE, JS Divergence.
+  - **Semantic Similarity:** BERTScore.
+  - **Structured Data:** Specialized metrics for planning sequences (`PlanningLCS`, `PlanningJaccard`) and time-series data (`TimeSeriesElementDiff`, `TimeSeriesDTW`).
+- **Streamlined Evaluation Workflow:**
+  - A high-level `Experiment` class to easily compare multiple models, apply thresholds, generate plots, and create CSV reports.
+- **Powerful Visualization:**
+  - Generate bar charts and radar plots to compare model performance using Matplotlib and Seaborn.
+- **Efficient & Flexible:**
+  - Supports batch processing for efficient computation on datasets.
+  - Optimized for various input types (lists, NumPy arrays, Pandas Series).
+  - Easily extensible architecture for adding new custom metrics.
+- **Robust and Reliable:**
+  - Includes a comprehensive test suite using [Pytest](https://docs.pytest.org/en/stable/).
 
 ## Installation
 
-GAICo can be installed using pip. We strongly recommend using a [Python virtual environment](https://docs.python.org/3/tutorial/venv.html) to manage dependencies and avoid conflicts with other packages.
+GAICo can be installed using pip.
+
+> [!IMPORTANT]
+> We strongly recommend using a [Python virtual environment](https://docs.python.org/3/tutorial/venv.html) to manage dependencies and avoid conflicts with other packages.
 
 - **Create and activate a virtual environment** (e.g., named `gaico-env`):
 
@@ -116,9 +120,10 @@ jupyter notebook
 
 New notebooks created in this session should automatically use the `gaico-env` Python environment. For troubleshooting kernel issues, please see our [FAQ document](https://ai4society.github.io/projects/GenAIResultsComparator/faq).
 
-### Optional Installations for GAICo
+### Optional Installations
 
-The default installation includes core metrics and is lightweight. For optional features and metrics that have larger dependencies:
+> [!NOTE]
+> The default `pip install gaico` is lightweight. Some metrics require extra dependencies, which you can install as needed.
 
 - To include the **JSDivergence** metric (requires SciPy and NLTK):
   ```shell
@@ -136,7 +141,9 @@ The default installation includes core metrics and is lightweight. For optional 
   ```shell
   pip install 'gaico[jsd,cosine,bertscore]'
   ```
-  _(Note: All optional features are also installed if you use the `dev` extra for development installs.)_
+
+> [!TIP]
+> The `dev` extra, used for development installs, also includes all optional features.
 
 ### Installation Size Comparison
 The following table provides an _estimated_ overview of the relative disk space impact of different installation options. Actual sizes may vary depending on your operating system, Python version, and existing packages. These are primarily to illustrate the relative impact of optional dependencies.
@@ -163,22 +170,22 @@ If you want to contribute to GAICo or install it from source for development:
     ```
 
 2.  Set up a virtual environment and install dependencies:
-    We recommend using [UV](https://docs.astral.sh/uv/#installation) for managing environments and dependencies.
+
+    _We recommend using [UV](https://docs.astral.sh/uv/#installation) for fast environment and dependency management._
 
     ```shell
-    # Create a virtual environment (e.g., Python 3.10-3.12 recommended)
+    # Create a virtual environment (Python 3.10-3.12 recommended)
     uv venv
     # Activate the environment
     source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-    # Install the package in editable mode with all development dependencies
-    # (includes all optional features like bertscore, cosine, jsd)
+    # Install in editable mode with all development dependencies
     uv pip install -e ".[dev]"
     ```
 
-    _If you prefer not to use `uv`,_ you can use `pip`:
+    If you prefer not to use `uv`, you can use `pip`:
 
     ```shell
-    # Create a virtual environment (e.g., Python 3.10-3.12 recommended)
+    # Create a virtual environment (Python 3.10-3.12 recommended)
     python3 -m venv .venv
     # Activate the environment
     source .venv/bin/activate  # On Windows: .venv\Scripts\activate
@@ -186,9 +193,11 @@ If you want to contribute to GAICo or install it from source for development:
     pip install -e ".[dev]"
     ```
 
-    _(The `dev` extra installs GAICo with all its optional features, plus dependencies for testing, linting, building, and documentation.)_
+    The `dev` extra installs GAICo with all optional features, plus dependencies for testing, linting, and documentation.
 
-3.  Set up pre-commit hooks (optional but recommended for contributors):
+3.  Set up pre-commit hooks (recommended for contributors):
+
+    _Pre-commit hooks help maintain code quality by running checks automatically before you commit._
 
     ```shell
     pre-commit install
