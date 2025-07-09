@@ -142,8 +142,7 @@ New notebooks created in this session should automatically use the `gaico-env` P
   pip install 'gaico[jsd,cosine,bertscore]'
   ```
 
-> [!TIP]
-> The `dev` extra, used for development installs, also includes all optional features.
+_The `dev` extra, used for development installs, also includes all optional features._
 
 ### Installation Size Comparison
 The following table provides an _estimated_ overview of the relative disk space impact of different installation options. Actual sizes may vary depending on your operating system, Python version, and existing packages. These are primarily to illustrate the relative impact of optional dependencies.

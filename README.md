@@ -282,8 +282,7 @@ New notebooks created in this session should automatically use the `gaico-env` P
   pip install 'gaico[jsd,cosine,bertscore]'
   ```
 
-> [!TIP]
-> The `dev` extra, used for development installs, also includes all optional features.
+_The `dev` extra, used for development installs, also includes all optional features._
 
   <!-- INSTALLATION_OPTIONAL_FEATURES_END -->
 
@@ -406,8 +405,7 @@ uv run pytest -v
 uv run -m pytest
 ```
 
-> [!TIP]
-> **Targeting Specific Tests:** You can run or skip tests based on markers. For example, the `BERTScore` tests are marked as `bertscore` because they can be slow.
+> [!TIP] > **Targeting Specific Tests:** You can run or skip tests based on markers. For example, the `BERTScore` tests are marked as `bertscore` because they can be slow.
 >
 > ```bash
 > # Skip the slow BERTScore tests
