@@ -137,11 +137,17 @@ The `calculate()` method takes two main parameters:
 - `generated_texts`: A single generated output or an iterable (list, numpy array, etc.) of outputs.
 - `reference_texts`: A single reference output or an iterable of outputs.
 
-> [!IMPORTANT] > **Handling Missing References:** If `reference_texts` is `None` or empty, GAICo will automatically use the first item from `generated_texts` as the reference for comparison. A warning will be printed to the console.
+> [!IMPORTANT]
+>
+> **Handling Missing References:** If `reference_texts` is `None` or empty, GAICo will automatically use the first item from `generated_texts` as the reference for comparison. A warning will be printed to the console.
 
-> [!NOTE] > **Batch Processing:** When you provide iterables as input, `calculate()` assumes a one-to-one mapping between generated and reference items. If a single reference is provided for multiple generated items, it will be broadcasted for comparison against each one.
+> [!NOTE]
+>
+> **Batch Processing:** When you provide iterables as input, `calculate()` assumes a one-to-one mapping between generated and reference items. If a single reference is provided for multiple generated items, it will be broadcasted for comparison against each one.
 
-> [!NOTE] > **Optional Dependencies:** The standard `pip install gaico` is lightweight. Some metrics with heavy dependencies (like `BERTScore` or `JSDivergence`) require [optional installation](#optional-installations-for-gaico).
+> [!NOTE]
+>
+> **Optional Dependencies:** The standard `pip install gaico` is lightweight. Some metrics with heavy dependencies (like `BERTScore` or `JSDivergence`) require [optional installation](#optional-installations-for-gaico).
 
 **Inspiration:** The design and evaluation metrics are inspired by [Microsoft's article on evaluating LLM-generated content](https://learn.microsoft.com/en-us/ai/playbook/technology-guidance/generative-ai/working-with-llms/evaluation/list-of-eval-metrics). GAICo currently focuses on **reference-based metrics.**
 
@@ -159,7 +165,7 @@ The `calculate()` method takes two main parameters:
 - [Features](#features)
 - [Installation](#installation)
 - [Project Structure](#project-structure)
-- [Development](#development)
+- [Running Tests](#running-tests)
 - [Contributing](#contributing)
 - [Citation](#citation)
 - [Acknowledgments](#acknowledgments)
@@ -282,7 +288,8 @@ New notebooks created in this session should automatically use the `gaico-env` P
   pip install 'gaico[jsd,cosine,bertscore]'
   ```
 
-_The `dev` extra, used for development installs, also includes all optional features._
+> [!TIP]
+> The `dev` extra, used for development installs, also includes all optional features.
 
   <!-- INSTALLATION_OPTIONAL_FEATURES_END -->
 
@@ -405,7 +412,9 @@ uv run pytest -v
 uv run -m pytest
 ```
 
-> [!TIP] > **Targeting Specific Tests:** You can run or skip tests based on markers. For example, the `BERTScore` tests are marked as `bertscore` because they can be slow.
+> [!TIP]
+>
+> **Targeting Specific Tests:** You can run or skip tests based on markers. For example, the `BERTScore` tests are marked as `bertscore` because they can be slow.
 >
 > ```bash
 > # Skip the slow BERTScore tests
