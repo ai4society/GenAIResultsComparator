@@ -22,19 +22,23 @@ This directory contains example notebooks demonstrating various use cases of the
 
 - Evaluating a single model on multiple metrics with their `<metric>.calculate()` methods.
 
-### 4. `example-finance.ipynb`: Finance Dataset Analysis
+### 4. `example-structured_data.ipynb`: Time-Series and Automated Planning
+
+- A comparison of 'usual' text-based metrics with special metrics for time series and automated planning.
+
+### 5. `example-finance.ipynb`: Finance Dataset Analysis
 
 - Evaluating models on various questions from the finance domain by iterating on the dataset with the `Experiment` class.
 
-### 5. `example-recipe.ipynb`: Recipe Dataset Analysis
+### 6. `example-recipe.ipynb`: Recipe Dataset Analysis
 
 - Evaluating models on various questions from the recipe domain by iterating on the dataset with the `Experiment` class. Further uses parallelization of the comparisons using `joblib`.
 
-### 6. `example-election.ipynb`: Election Dataset Analysis
+### 7. `example-election.ipynb`: Election Dataset Analysis
 
 - Evaluating models on various questions from the election domain by using the `calculate()` metric method.
 
-### 7. `DeepSeek-example.ipynb`: Testing _DeepSeek R1_
+### 8. `DeepSeek-example.ipynb`: Testing _DeepSeek R1_
 
 - The aim for this notebook was to aid with evaluating DeepSeek R1 for [AI4Society's Point of View (POV)](https://drive.google.com/file/d/1ErR1xT7ftvmHiUyYrdUbjyd4qCK_FxKX/view?usp=sharing).
 - **Note**: All results remove the `<think>` tags for the DeepSeek models.

@@ -18,7 +18,7 @@
 
 <!-- TAGLINE_START -->
 
-_GenAI Results Comparator, GAICo, is a Python library_ to help compare, analyze and visualize outputs from Large Language Models (LLMs), often against a reference text. In doing so, one can use a range of extensible metrics from the literature.
+_GenAI Results Comparator (GAICo)_ is a Python library for comparing, analyzing, and visualizing outputs from Large Language Models (LLMs). It offers an extensible range of metrics, including standard text similarity scores and specialized metrics for structured data like planning sequences and time-series.
 
 <!-- TAGLINE_END -->
 
@@ -32,16 +32,19 @@ Important Links:
 
 ## Quick Start
 
-GAICo makes it easy to evaluate and compare LLM outputs. For detailed, runnable examples, please refer to our Jupyter Notebooks in the [`examples/`](examples/) folder:
+GAICo makes it easy to evaluate and compare LLM outputs. The following python (Jupyter) notebooks showcase different usecases:
 
-- [`quickstart.ipynb`](https://github.com/ai4society/GenAIResultsComparator/blob/main/examples/quickstart.ipynb): Rapid hands-on with the _Experiment_ sub-module.
+- [`quickstart.ipynb`](https://github.com/ai4society/GenAIResultsComparator/blob/main/examples/quickstart.ipynb): A rapid hands-on introduction to the `Experiment` class.
   [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ai4society/GenAIResultsComparator/blob/main/examples/quickstart.ipynb)
 
-- [`example-1.ipynb`](https://github.com/ai4society/GenAIResultsComparator/blob/main/examples/example-1.ipynb): For fine-grained usage, this notebook focuses on comparing **multiple model outputs** using a **single metric**.
+- [`example-1.ipynb`](https://github.com/ai4society/GenAIResultsComparator/blob/main/examples/example-1.ipynb): A fine-grained example comparing **multiple model outputs** with a **single metric**.
   [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ai4society/GenAIResultsComparator/blob/main/examples/example-1.ipynb)
 
-- [`example-2.ipynb`](https://github.com/ai4society/GenAIResultsComparator/blob/main/examples/example-2.ipynb): For fine-grained usage, this notebook demonstrates evaluating a **single model output** across **all available metrics**.
+- [`example-2.ipynb`](https://github.com/ai4society/GenAIResultsComparator/blob/main/examples/example-2.ipynb): A fine-grained example evaluating a **single model output** across **all available metrics**.
   [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ai4society/GenAIResultsComparator/blob/main/examples/example-2.ipynb)
+
+> [!TIP]
+> For more, detailed and runnable, examples, check out all our Jupyter Notebooks in the [`examples/`](examples/) folder. You can run them directly in Google Colab!
 
 ## Streamlined Workflow with _`Experiment`_
 
@@ -63,6 +66,8 @@ llm_responses = {
     "SafeChat": "Sorry, I am designed not to answer such a question.",
 }
 reference_answer = "Sorry, I am unable to answer such a question as it is not appropriate."
+# Alternatively, if reference_answer is None, the response from the first model ("Google") will be used:
+# reference_answer = None
 
 # 1. Initialize Experiment
 exp = Experiment(
@@ -92,18 +97,28 @@ This abstraction streamlines common evaluation tasks, while still allowing acces
 
 ### Scope and Dataset Evaluation
 
-The `Experiment` class is designed for evaluating a set of model responses against a **single reference answer** at a time. This is ideal for analyzing outputs for a specific prompt or scenario.
+The `Experiment` class is designed for evaluating a set of model responses against a **single reference answer** at a time, which is ideal for analyzing outputs for a specific prompt or scenario.
 
-Alternatively, if you have a dataset consisting of multiple reference texts and corresponding sets of generated texts from various models (e.g., `list_of_references`, `list_of_model_A_generations`, etc.), you can use the individual metric classes (e.g., `JaccardSimilarity().calculate(list_of_gens, list_of_refs)`), which support list inputs. This approach offers more control but requires more manual orchestration of results.
+> [!WARNING]
+> If `reference_answer` is not provided (i.e., set to `None`), GAICo will automatically use the response from the first model in the `llm_responses` dictionary as the reference. A warning message will be printed in your console to indicate this behavior.
 
-If you would like to use the `Experiment` abstraction for your dataset, you would need to iterate through your dataset and create an `Experiment` instance for each data point (i.e., for each reference text and its associated model responses). Examples of such scenarios are shown in the [`examples`](examples) subdirectory, please refer to the README.md file there.
-
-Lastly, for you implementing custom metrics, please look at the [FAQs](https://ai4society.github.io/projects/GenAIResultsComparator/faq/#q-how-do-i-add-a-new-custom-metric).
+> [!NOTE]
+>
+> To evaluate a full dataset (e.g., `list_of_references`, `list_of_model_A_generations`), you have two main options:
+>
+> 1.  **Iterate with `Experiment`**: Loop through your dataset and create a new `Experiment` instance for each reference text and its corresponding model responses.
+> 2.  **Use Metric Classes Directly**: For more control, use individual metric classes (e.g., `JaccardSimilarity().calculate(list_of_gens, list_of_refs)`), which support list inputs for batch processing.
+>
+> See the [`examples/`](examples/) directory for notebooks demonstrating both approaches.
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/ai4society/GenAIResultsComparator/refs/heads/main/examples/data/examples/example_2.png" alt="Sample Radar Chart showing multiple metrics for a single LLM" width="450"/>
   <br/><em>Example Radar Chart generated by the <code>examples/example-2.ipynb</code> notebook.</em>
 </p>
+
+> [!TIP]
+>
+> Want to add your own metric? Check out our guide in the [FAQ](https://ai4society.github.io/projects/GenAIResultsComparator/faq/#q-how-do-i-add-a-new-custom-metric).
 
 <!-- DESCRIPTION_FULL_START -->
 
@@ -111,28 +126,30 @@ Lastly, for you implementing custom metrics, please look at the [FAQs](https://a
 
 <!-- DESCRIPTION_CORE_CONCEPT_START -->
 
-At the core, the library provides a set of metrics for evaluating text strings given as inputs and produce outputs on a scale of 0 to 1 (normalized), where 1 indicates a perfect match between the texts. These scores are use to analyze LLM outputs as well as visualize.
+At its core, the library provides a set of metrics for evaluating various types of outputs—from plain text strings to structured data like planning sequences and time-series. These metrics produce normalized scores (typically 0 to 1), where 1 indicates a perfect match, enabling robust analysis and visualization of LLM performance.
 
 <!-- DESCRIPTION_CORE_CONCEPT_END -->
 
-**_Class Structure:_** All metrics are implemented as classes, and they can be easily extended to add new metrics. The metrics start with the `BaseMetric` class under the `gaico/base.py` file.
+**Class Structure:** All metrics are implemented as extensible classes inheriting from `BaseMetric`. Each metric requires just one method: `calculate()`.
 
-Each metric class inherits from this base class and is implemented with **just one required method**: `calculate()`.
+The `calculate()` method takes two main parameters:
 
-This `calculate()` method takes two parameters:
+- `generated_texts`: A single generated output or an iterable (list, numpy array, etc.) of outputs.
+- `reference_texts`: A single reference output or an iterable of outputs.
 
-- `generated_texts`: Either a string or a Iterables of strings representing the texts generated by an LLM.
-- `reference_texts`: Either a string or a Iterables of strings representing the expected or reference texts.
+> [!IMPORTANT]
+>
+> **Handling Missing References:** If `reference_texts` is `None` or empty, GAICo will automatically use the first item from `generated_texts` as the reference for comparison. A warning will be printed to the console.
 
-If the inputs are Iterables (lists, Numpy arrays, etc.), then the method assumes that there exists a one-to-one mapping between the generated texts and reference texts, meaning that the first generated text corresponds to the first reference text, and so on.
+> [!NOTE]
+>
+> **Batch Processing:** When you provide iterables as input, `calculate()` assumes a one-to-one mapping between generated and reference items. If a single reference is provided for multiple generated items, it will be broadcasted for comparison against each one.
 
-**_Notes:_**
+> [!NOTE]
+>
+> **Optional Dependencies:** The standard `pip install gaico` is lightweight. Some metrics with heavy dependencies (like `BERTScore` or `JSDivergence`) require [optional installation](#optional-installations).
 
-- While the library can be used to compare strings, it's main purpose is to aid with comparing results from various LLMs.
-- Due to size constraints, `pip install gaico` will install 5/8 [metrics](#features) supported by the library. For the remaining, the library supports [optional installs](#optional-installations-for-gaico), which would only add the needed metric.
-
-**_Inspiration_** for the library and evaluation metrics was taken from [Microsoft's
-article on evaluating LLM-generated content](https://learn.microsoft.com/en-us/ai/playbook/technology-guidance/generative-ai/working-with-llms/evaluation/list-of-eval-metrics). In the article, Microsoft describes 3 categories of evaluation metrics: **(1)** Reference-based metrics, **(2)** Reference-free metrics, and **(3)** LLM-based metrics. _The library currently supports reference-based metrics._
+**Inspiration:** The design and evaluation metrics are inspired by [Microsoft's article on evaluating LLM-generated content](https://learn.microsoft.com/en-us/ai/playbook/technology-guidance/generative-ai/working-with-llms/evaluation/list-of-eval-metrics). GAICo currently focuses on **reference-based metrics.**
 
 <!-- DESCRIPTION_FULL_END -->
 
@@ -148,7 +165,7 @@ article on evaluating LLM-generated content](https://learn.microsoft.com/en-us/a
 - [Features](#features)
 - [Installation](#installation)
 - [Project Structure](#project-structure)
-- [Development](#development)
+- [Running Tests](#running-tests)
 - [Contributing](#contributing)
 - [Citation](#citation)
 - [Acknowledgments](#acknowledgments)
@@ -161,19 +178,23 @@ article on evaluating LLM-generated content](https://learn.microsoft.com/en-us/a
 
 <!-- FEATURES_LIST_START -->
 
-- Implements various metrics for text comparison:
-  - N-gram-based metrics (_BLEU_, _ROUGE_, _JS divergence_)
-  - Text similarity metrics (_Jaccard_, _Cosine_, _Levenshtein_, _Sequence Matcher_)
-  - Semantic similarity metrics (_BERTScore_)
-- Provides visualization capabilities using matplotlib and seaborn for plots like bar charts and radar plots.
-- Allows exportation of results to CSV files, including scores and threshold pass/fail status.
-- Provides streamlined `Experiment` class for easy comparison of multiple models, applying thresholds, plotting, and reporting.
-- Supports batch processing for efficient computation.
-- Optimized for different input types (lists, numpy arrays, pandas Series).
-- Has extendable architecture for easy addition of new metrics.
-- Supports automated testing of metrics using [Pytest](https://docs.pytest.org/en/stable/).
-  <!-- FEATURES_LIST_END -->
-  <!-- FEATURES_SECTION_END -->
+- **Comprehensive Metric Library:**
+  - **Textual Similarity:** Jaccard, Cosine, Levenshtein, Sequence Matcher.
+  - **N-gram Based:** BLEU, ROUGE, JS Divergence.
+  - **Semantic Similarity:** BERTScore.
+  - **Structured Data:** Specialized metrics for planning sequences (`PlanningLCS`, `PlanningJaccard`) and time-series data (`TimeSeriesElementDiff`, `TimeSeriesDTW`).
+- **Streamlined Evaluation Workflow:**
+  - A high-level `Experiment` class to easily compare multiple models, apply thresholds, generate plots, and create CSV reports.
+- **Powerful Visualization:**
+  - Generate bar charts and radar plots to compare model performance using Matplotlib and Seaborn.
+- **Efficient & Flexible:**
+  - Supports batch processing for efficient computation on datasets.
+  - Optimized for various input types (lists, NumPy arrays, Pandas Series).
+  - Easily extensible architecture for adding new custom metrics.
+- **Robust and Reliable:**
+  - Includes a comprehensive test suite using [Pytest](https://docs.pytest.org/en/stable/).
+    <!-- FEATURES_LIST_END -->
+    <!-- FEATURES_SECTION_END -->
 
 <!-- INSTALLATION_SECTION_START -->
 
@@ -181,7 +202,10 @@ article on evaluating LLM-generated content](https://learn.microsoft.com/en-us/a
 
 <!-- INSTALLATION_STANDARD_INTRO_START -->
 
-GAICo can be installed using pip. We strongly recommend using a [Python virtual environment](https://docs.python.org/3/tutorial/venv.html) to manage dependencies and avoid conflicts with other packages.
+GAICo can be installed using pip.
+
+> [!IMPORTANT]
+> We strongly recommend using a [Python virtual environment](https://docs.python.org/3/tutorial/venv.html) to manage dependencies and avoid conflicts with other packages.
 
 <!-- INSTALLATION_STANDARD_INTRO_END -->
 
@@ -238,31 +262,35 @@ New notebooks created in this session should automatically use the `gaico-env` P
 
 <!-- INSTALLATION_OPTIONAL_INTRO_START -->
 
-### Optional Installations for GAICo
+### Optional Installations
 
-The default installation includes core metrics and is lightweight. For optional features and metrics that have larger dependencies:
+> [!NOTE]
+> The default `pip install gaico` is lightweight. Some metrics require extra dependencies, which you can install as needed.
 
 <!-- INSTALLATION_OPTIONAL_INTRO_END -->
 
 <!-- INSTALLATION_OPTIONAL_FEATURES_START -->
 
-- To include the **BERTScore** metric (which has larger dependencies like PyTorch):
+- To include the **JSDivergence** metric (requires SciPy and NLTK):
   ```shell
-  pip install 'gaico[bertscore]'
+  pip install 'gaico[jsd]'
   ```
 - To include the **CosineSimilarity** metric (requires scikit-learn):
   ```shell
   pip install 'gaico[cosine]'
   ```
-- To include the **JSDivergence** metric (requires SciPy and NLTK):
+- To include the **BERTScore** metric (which has larger dependencies like PyTorch):
   ```shell
-  pip install 'gaico[jsd]'
+  pip install 'gaico[bertscore]'
   ```
 - To install with **all optional features**:
   ```shell
-  pip install 'gaico[bertscore,cosine,jsd]'
+  pip install 'gaico[jsd,cosine,bertscore]'
   ```
-  _(Note: All optional features are also installed if you use the `dev` extra for development installs.)_
+
+> [!TIP]
+> The `dev` extra, used for development installs, also includes all optional features.
+
   <!-- INSTALLATION_OPTIONAL_FEATURES_END -->
 
 <!-- INSTALLATION_SIZE_TABLE_INTRO_START -->
@@ -279,11 +307,11 @@ _Note:_ Core dependencies include: `levenshtein`, `matplotlib`, `numpy`, `pandas
 
 | Installation Command                        | Dependencies                                                 | Estimated Total Size Impact |
 | ------------------------------------------- | ------------------------------------------------------------ | --------------------------- |
-| `pip install gaico`                         | Core                                                         | 210 MB                      |
+| `pip install gaico`                         | Core                                                         | 215 MB                      |
 | `pip install 'gaico[jsd]'`                  | Core + `scipy`, `nltk`                                       | 310 MB                      |
 | `pip install 'gaico[cosine]'`               | Core + `scikit-learn`                                        | 360 MB                      |
 | `pip install 'gaico[bertscore]'`            | Core + `bert-score` (includes `torch`, `transformers`, etc.) | 800 MB                      |
-| `pip install 'gaico[bertscore,cosine,jsd]'` | Core + all dependencies from above                           | 950 MB                      |
+| `pip install 'gaico[jsd,cosine,bertscore]'` | Core + all dependencies from above                           | 960 MB                      |
 
 <!-- INSTALLATION_SIZE_TABLE_CONTENT_END -->
 
@@ -301,22 +329,22 @@ If you want to contribute to GAICo or install it from source for development:
     ```
 
 2.  Set up a virtual environment and install dependencies:
-    We recommend using [UV](https://docs.astral.sh/uv/#installation) for managing environments and dependencies.
+
+    _We recommend using [UV](https://docs.astral.sh/uv/#installation) for fast environment and dependency management._
 
     ```shell
-    # Create a virtual environment (e.g., Python 3.10-3.12 recommended)
+    # Create a virtual environment (Python 3.10-3.12 recommended)
     uv venv
     # Activate the environment
     source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-    # Install the package in editable mode with all development dependencies
-    # (includes all optional features like bertscore, cosine, jsd)
+    # Install in editable mode with all development dependencies
     uv pip install -e ".[dev]"
     ```
 
-    _If you prefer not to use `uv`,_ you can use `pip`:
+    If you prefer not to use `uv`, you can use `pip`:
 
     ```shell
-    # Create a virtual environment (e.g., Python 3.10-3.12 recommended)
+    # Create a virtual environment (Python 3.10-3.12 recommended)
     python3 -m venv .venv
     # Activate the environment
     source .venv/bin/activate  # On Windows: .venv\Scripts\activate
@@ -324,9 +352,11 @@ If you want to contribute to GAICo or install it from source for development:
     pip install -e ".[dev]"
     ```
 
-    _(The `dev` extra installs GAICo with all its optional features, plus dependencies for testing, linting, building, and documentation.)_
+    The `dev` extra installs GAICo with all optional features, plus dependencies for testing, linting, and documentation.
 
-3.  Set up pre-commit hooks (optional but recommended for contributors):
+3.  Set up pre-commit hooks (recommended for contributors):
+
+    _Pre-commit hooks help maintain code quality by running checks automatically before you commit._
 
     ```shell
     pre-commit install
@@ -369,29 +399,30 @@ pre-commit run --all-files
 
 ## Running Tests
 
-Navigate to the project root in your terminal and run:
+Navigate to the project root and use `uv` to run the test suite:
 
 ```bash
+# Run all tests
 uv run pytest
-```
 
-Or, for more verbose output:
-
-```bash
+# For more verbose output
 uv run pytest -v
+
+# If pytest gives import errors:
+uv run -m pytest
 ```
 
-To skip the slow BERTScore tests:
-
-```bash
-uv run pytest -m "not bertscore"
-```
-
-To run only the slow BERTScore tests:
-
-```bash
-uv run pytest -m bertscore
-```
+> [!TIP]
+>
+> **Targeting Specific Tests:** You can run or skip tests based on markers. For example, the `BERTScore` tests are marked as `bertscore` because they can be slow.
+>
+> ```bash
+> # Skip the slow BERTScore tests
+> uv run pytest -m "not bertscore"
+>
+> # Run ONLY the BERTScore tests
+> uv run pytest -m bertscore
+> ```
 
 ## Contributing
 

@@ -1,0 +1,5 @@
+generated_text,reference_text,TimeSeriesElementDiff_score,TimeSeriesElementDiff_passed,TimeSeriesDTW_score,TimeSeriesDTW_passed,Jaccard_score,Jaccard_passed,Levenshtein_score,Levenshtein_passed
+"t1: 70, t2: 72, t3: 75","t1: 70, t2: 72, t3: 75",1.0,True,1.0,True,1.0,True,1.0,True
+"t1: 71, t2: 73, t3: 76","t1: 70, t2: 72, t3: 75",0.9953880070546738,True,0.36602540378443865,False,0.3333333333333333,False,0.8636363636363636,True
+"t1: 70, t3: 75","t1: 70, t2: 72, t3: 75",0.6666666666666666,True,0.3333333333333333,False,0.6666666666666666,True,0.7777777777777778,True
+"t1: 70, t2: 72, t4: 80","t1: 70, t2: 72, t3: 75",0.5,True,0.16666666666666666,False,0.5,True,0.8636363636363636,True

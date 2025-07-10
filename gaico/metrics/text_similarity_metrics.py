@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 from Levenshtein import distance, ratio
 
-from .base import BaseMetric
+from .textual import TextualMetric
 
 # Conditional imports for scikit-learn (CosineSimilarity)
 _sklearn_available = False
@@ -25,7 +25,7 @@ except ImportError:
 __sklearn_available__ = _sklearn_available
 
 
-class JaccardSimilarity(BaseMetric):
+class JaccardSimilarity(TextualMetric):
     """
     Jaccard Similarity implementation for text similarity using the formula:
     J(A, B) = |A ∩ B| / |A ∪ B|
@@ -39,25 +39,25 @@ class JaccardSimilarity(BaseMetric):
 
     def _single_calculate(
         self,
-        generated_text: str,
-        reference_text: str,
+        generated_item: str,
+        reference_item: str,
         **kwargs: Any,
     ) -> float:
         """
         Calculate the Jaccard Similarity for a pair of generated and reference texts.
 
-        :param generated_text: The generated text to evaluate
-        :type generated_text: str
-        :param reference_text: The reference text to compare against
-        :type reference_text: str
+        :param generated_item: The generated text to evaluate
+        :type generated_item: str
+        :param reference_item: The reference text to compare against
+        :type reference_item: str
         :param kwargs: Additional parameters for calculation, defaults to None.
             Note that this metric does not use any additional parameters. This parameter is included for consistency with other metrics.
         :type kwargs: Any
         :return: The Jaccard Similarity score
         :rtype: float
         """
-        gen_words = set(generated_text.lower().split())
-        ref_words = set(reference_text.lower().split())
+        gen_words = set(generated_item.lower().split())
+        ref_words = set(reference_item.lower().split())
 
         intersection = len(gen_words.intersection(ref_words))
         union = len(gen_words.union(ref_words))
@@ -66,17 +66,17 @@ class JaccardSimilarity(BaseMetric):
 
     def _batch_calculate(
         self,
-        generated_texts: Iterable | np.ndarray | pd.Series,
-        reference_texts: Iterable | np.ndarray | pd.Series,
+        generated_items: Iterable | np.ndarray | pd.Series,
+        reference_items: Iterable | np.ndarray | pd.Series,
         **kwargs: Any,
     ) -> np.ndarray | pd.Series | list[float]:
         """
         Calculate Jaccard Similarity for a batch of generated and reference texts.
 
-        :param generated_texts: Generated texts
-        :type generated_texts: Iterable | np.ndarray | pd.Series
-        :param reference_texts: Reference texts
-        :type reference_texts: Iterable | np.ndarray | pd.Series
+        :param generated_items: Generated texts
+        :type generated_items: Iterable | np.ndarray | pd.Series
+        :param reference_items: Reference texts
+        :type reference_items: Iterable | np.ndarray | pd.Series
         :param kwargs: Additional parameters for calculation, defaults to None.
             Note that this metric does not use any additional parameters. This parameter is included for consistency with other metrics.
         :type kwargs: Any
@@ -84,27 +84,27 @@ class JaccardSimilarity(BaseMetric):
         :rtype: np.ndarray | pd.Series | list[float]
         """
 
-        if isinstance(generated_texts, np.ndarray) and isinstance(reference_texts, np.ndarray):
+        if isinstance(generated_items, np.ndarray) and isinstance(reference_items, np.ndarray):
             return np.array(
                 [
                     self._single_calculate(gen, ref)
-                    for gen, ref in zip(generated_texts, reference_texts)
+                    for gen, ref in zip(generated_items, reference_items)
                 ]
             )
 
-        elif isinstance(generated_texts, pd.Series) and isinstance(reference_texts, pd.Series):
-            return generated_texts.combine(
-                reference_texts, lambda g, r: self._single_calculate(g, r)
+        elif isinstance(generated_items, pd.Series) and isinstance(reference_items, pd.Series):
+            return generated_items.combine(
+                reference_items, lambda g, r: self._single_calculate(g, r)
             )
 
         else:
             return [
                 self._single_calculate(gen, ref)
-                for gen, ref in zip(generated_texts, reference_texts)
+                for gen, ref in zip(generated_items, reference_items)
             ]
 
 
-class CosineSimilarity(BaseMetric):
+class CosineSimilarity(TextualMetric):
     """
     Cosine Similarity implementation for text similarity using `cosine_similarity` from scikit-learn.
     The class also uses the `CountVectorizer` from scikit-learn to convert text to vectors.
@@ -128,25 +128,25 @@ class CosineSimilarity(BaseMetric):
 
     def _single_calculate(
         self,
-        generated_text: str,
-        reference_text: str,
+        generated_item: str,
+        reference_item: str,
         **kwargs: Any,
     ) -> float:
         """
         Calculate the Cosine Similarity for a pair of generated and reference texts.
 
-        :param generated_text: The generated text to evaluate
-        :type generated_text: str
-        :param reference_text: The reference text to compare against
-        :type reference_text: str
+        :param generated_item: The generated text to evaluate
+        :type generated_item: str
+        :param reference_item: The reference text to compare against
+        :type reference_item: str
         :param kwargs: Additional parameters to pass to the `cosine_similarity` function, defaults to None
         :type kwargs: Any
         :return: The Cosine Similarity score
         :rtype: float
         """
         # Ensure inputs are strings
-        gen_str = str(generated_text)
-        ref_str = str(reference_text)
+        gen_str = str(generated_item)
+        ref_str = str(reference_item)
 
         # Handle empty strings:
         if not gen_str.strip() and not ref_str.strip():
@@ -176,17 +176,17 @@ class CosineSimilarity(BaseMetric):
 
     def _batch_calculate(
         self,
-        generated_texts: Iterable | np.ndarray | pd.Series,
-        reference_texts: Iterable | np.ndarray | pd.Series,
+        generated_items: Iterable | np.ndarray | pd.Series,
+        reference_items: Iterable | np.ndarray | pd.Series,
         **kwargs: Any,
     ) -> np.ndarray | pd.Series | list[float]:
         """
         Calculate Cosine Similarity for a batch of generated and reference texts.
 
-        :param generated_texts: Generated texts
-        :type generated_texts: Iterable | np.ndarray | pd.Series
-        :param reference_texts: Reference texts
-        :type reference_texts: Iterable | np.ndarray | pd.Series
+        :param generated_items: Generated texts
+        :type generated_items: Iterable | np.ndarray | pd.Series
+        :param reference_items: Reference texts
+        :type reference_items: Iterable | np.ndarray | pd.Series
         :param kwargs: Additional parameters for the `cosine_similarity` function, defaults to None
         :type kwargs: Any
         :return: A list, numpy array, or pandas Series of Cosine Similarity scores
@@ -194,8 +194,8 @@ class CosineSimilarity(BaseMetric):
         """
 
         # Convert to lists for easier manipulation and to ensure type consistency
-        gen_list = list(map(str, generated_texts))
-        ref_list = list(map(str, reference_texts))
+        gen_list = list(map(str, generated_items))
+        ref_list = list(map(str, reference_items))
 
         if len(gen_list) != len(ref_list):
             raise ValueError("Generated texts and reference texts must have the same length.")
@@ -228,17 +228,17 @@ class CosineSimilarity(BaseMetric):
                         raise
 
         # Return results in the appropriate format
-        if isinstance(generated_texts, np.ndarray) and isinstance(reference_texts, np.ndarray):
+        if isinstance(generated_items, np.ndarray) and isinstance(reference_items, np.ndarray):
             return np.array(results)
-        elif isinstance(generated_texts, pd.Series) and isinstance(reference_texts, pd.Series):
+        elif isinstance(generated_items, pd.Series) and isinstance(reference_items, pd.Series):
             # Try to preserve original index if it's a pandas Series
-            index = generated_texts.index if hasattr(generated_texts, "index") else None
+            index = generated_items.index if hasattr(generated_items, "index") else None
             return pd.Series(results, index=index)
         else:
             return results
 
 
-class LevenshteinDistance(BaseMetric):
+class LevenshteinDistance(TextualMetric):
     """
     This class provides methods to calculate Levenshtein Distance for individual sentence pairs and for batches of sentences.
     It uses the `distance` and `ratio` functions from the `Levenshtein` package.
@@ -254,18 +254,18 @@ class LevenshteinDistance(BaseMetric):
 
     def _single_calculate(
         self,
-        generated_text: str,
-        reference_text: str,
+        generated_item: str,
+        reference_item: str,
         calculate_ratio: bool = True,
         **kwargs: Any,
     ) -> float:
         """
         Calculate the Levenshtein Distance for a pair of generated and reference texts.
 
-        :param generated_text: The generated text to evaluate
-        :type generated_text: str
-        :param reference_text: The reference text to compare against
-        :type reference_text: str
+        :param generated_item: The generated text to evaluate
+        :type generated_item: str
+        :param reference_item: The reference text to compare against
+        :type reference_item: str
         :param calculate_ratio: Whether to calculate the ratio of the distance to the length of the longer string, defaults to True.
             If True, returns the ratio, else returns the distance.
         :type calculate_ratio: bool
@@ -276,23 +276,23 @@ class LevenshteinDistance(BaseMetric):
         """
 
         if calculate_ratio or self.calculate_ratio:
-            return ratio(generated_text, reference_text, **kwargs)
-        return distance(generated_text, reference_text, **kwargs)
+            return ratio(generated_item, reference_item, **kwargs)
+        return distance(generated_item, reference_item, **kwargs)
 
     def _batch_calculate(
         self,
-        generated_texts: Iterable | np.ndarray | pd.Series,
-        reference_texts: Iterable | np.ndarray | pd.Series,
+        generated_items: Iterable | np.ndarray | pd.Series,
+        reference_items: Iterable | np.ndarray | pd.Series,
         calculate_ratio: bool = True,
         **kwargs: Any,
     ) -> np.ndarray | pd.Series | list[float]:
         """
         Calculate Levenshtein Distance for a batch of generated and reference texts.
 
-        :param generated_texts: Generated texts
-        :type generated_texts: Iterable | np.ndarray | pd.Series
-        :param reference_texts: Reference texts
-        :type reference_texts: Iterable | np.ndarray | pd.Series
+        :param generated_items: Generated texts
+        :type generated_items: Iterable | np.ndarray | pd.Series
+        :param reference_items: Reference texts
+        :type reference_items: Iterable | np.ndarray | pd.Series
         :param calculate_ratio: Whether to calculate the ratio of the distance to the length of the longer string, defaults to True.
             If True, returns the ratio, else returns the distance.
         :type calculate_ratio: bool
@@ -303,17 +303,17 @@ class LevenshteinDistance(BaseMetric):
         """
         self.calculate_ratio = calculate_ratio
 
-        if isinstance(generated_texts, np.ndarray) and isinstance(reference_texts, np.ndarray):
+        if isinstance(generated_items, np.ndarray) and isinstance(reference_items, np.ndarray):
             return np.array(
                 [
                     self._single_calculate(gen, ref, calculate_ratio=self.calculate_ratio, **kwargs)
-                    for gen, ref in zip(generated_texts, reference_texts)
+                    for gen, ref in zip(generated_items, reference_items)
                 ]
             )
 
-        elif isinstance(generated_texts, pd.Series) and isinstance(reference_texts, pd.Series):
-            return generated_texts.combine(
-                reference_texts,
+        elif isinstance(generated_items, pd.Series) and isinstance(reference_items, pd.Series):
+            return generated_items.combine(
+                reference_items,
                 lambda g, r: self._single_calculate(
                     g, r, calculate_ratio=self.calculate_ratio, **kwargs
                 ),
@@ -322,11 +322,11 @@ class LevenshteinDistance(BaseMetric):
         else:
             return [
                 self._single_calculate(gen, ref, calculate_ratio=self.calculate_ratio, **kwargs)
-                for gen, ref in zip(generated_texts, reference_texts)
+                for gen, ref in zip(generated_items, reference_items)
             ]
 
 
-class SequenceMatcherSimilarity(BaseMetric):
+class SequenceMatcherSimilarity(TextualMetric):
     """
     This class calculates similarity ratio between texts using the ratio() method from difflib.SequenceMatcher,
     which returns a float in the range [0, 1] indicating how similar the sequences are.
@@ -340,61 +340,61 @@ class SequenceMatcherSimilarity(BaseMetric):
 
     def _single_calculate(
         self,
-        generated_text: str,
-        reference_text: str,
+        generated_item: str,
+        reference_item: str,
         **kwargs: Any,
     ) -> float:
         """
         Calculate the SequenceMatcher Similarity ratio for a pair of generated and reference texts.
 
-        :param generated_text: The generated text to evaluate
-        :type generated_text: str
-        :param reference_text: The reference text to compare against
-        :type reference_text: str
+        :param generated_item: The generated text to evaluate
+        :type generated_item: str
+        :param reference_item: The reference text to compare against
+        :type reference_item: str
         :param kwargs: Additional parameters for SequenceMatcher
         :type kwargs: Any
         :return: The SequenceMatcher Similarity ratio
         :rtype: float
         """
 
-        s_matcher = SequenceMatcher(None, generated_text, reference_text, **kwargs)
+        s_matcher = SequenceMatcher(None, generated_item, reference_item, **kwargs)
 
         return s_matcher.ratio()
 
     def _batch_calculate(
         self,
-        generated_texts: Iterable | np.ndarray | pd.Series,
-        reference_texts: Iterable | np.ndarray | pd.Series,
+        generated_items: Iterable | np.ndarray | pd.Series,
+        reference_items: Iterable | np.ndarray | pd.Series,
         **kwargs: Any,
     ) -> np.ndarray | pd.Series | list[float]:
         """
         Calculate SequenceMatcher Similarity for a batch of generated and reference texts.
 
-        :param generated_texts: Generated texts
-        :type generated_texts: Iterable | np.ndarray | pd.Series
-        :param reference_texts: Reference texts
-        :type reference_texts: Iterable | np.ndarray | pd.Series
+        :param generated_items: Generated texts
+        :type generated_items: Iterable | np.ndarray | pd.Series
+        :param reference_items: Reference texts
+        :type reference_items: Iterable | np.ndarray | pd.Series
         :param kwargs: Additional parameters for SequenceMatcher
         :type kwargs: Any
         :return: A list, numpy array, or pandas Series of SequenceMatcher Similarity ratios
         :rtype: np.ndarray | pd.Series | list[float]
         """
 
-        if isinstance(generated_texts, np.ndarray) and isinstance(reference_texts, np.ndarray):
+        if isinstance(generated_items, np.ndarray) and isinstance(reference_items, np.ndarray):
             return np.array(
                 [
                     self._single_calculate(gen, ref, **kwargs)
-                    for gen, ref in zip(generated_texts, reference_texts)
+                    for gen, ref in zip(generated_items, reference_items)
                 ]
             )
 
-        elif isinstance(generated_texts, pd.Series) and isinstance(reference_texts, pd.Series):
-            return generated_texts.combine(
-                reference_texts, lambda g, r: self._single_calculate(g, r, **kwargs)
+        elif isinstance(generated_items, pd.Series) and isinstance(reference_items, pd.Series):
+            return generated_items.combine(
+                reference_items, lambda g, r: self._single_calculate(g, r, **kwargs)
             )
 
         else:
             return [
                 self._single_calculate(gen, ref, **kwargs)
-                for gen, ref in zip(generated_texts, reference_texts)
+                for gen, ref in zip(generated_items, reference_items)
             ]

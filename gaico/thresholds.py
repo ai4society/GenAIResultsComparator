@@ -2,14 +2,25 @@ from typing import Any, Dict, List, Optional, TypeAlias
 
 # Default threshold for each metric
 DEFAULT_THRESHOLD: Dict[str, float] = {
+    # Textual
     "BLEU": 0.5,
     "ROUGE": 0.5,
-    "JSD": 0.5,
+    "JSD": 0.5,  # JSDivergence for text
     "BERTScore": 0.5,
     "Jaccard": 0.5,
     "Cosine": 0.5,
     "Levenshtein": 0.5,
     "SequenceMatcher": 0.5,
+    # Structured
+    "ActionSequenceDiff": 0.5,
+    "TimeSeriesElementDiff": 0.5,
+    "TimeSeriesDTW": 0.5,
+    # Image
+    "SSIM": 0.5,  # TODO
+    "PSNR": 0.5,  # TODO
+    # Audio
+    "AudioSNR": 0.5,  # TODO
+    "SpectrogramDistance": 0.5,  # TODO
 }
 
 # Type alias for results with scores and thresholds

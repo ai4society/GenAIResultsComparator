@@ -23,6 +23,7 @@ classifiers = [
   "Operating System :: OS Independent",
 ]
 dependencies = [
+  "dtaidistance>=2.3.13",
   "levenshtein>=0.23.0", # Oct 2023
   "matplotlib>=3.7.5", # Feb 2024
   "numpy>=1.26", # Jun 2025
@@ -69,7 +70,7 @@ jsd = [
 
 [dependency-groups]
 dev = [
-  "gaico[bertscore,jsd,cosine]",
+  "gaico[jsd,cosine,bertscore]",
   "build>=1.2.2.post1",
   "flake8>=7.2.0",
   "hypothesis>=6.131.17",
