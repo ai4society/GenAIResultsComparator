@@ -200,12 +200,12 @@ The `calculate()` method takes two main parameters:
 
 ## Installation
 
+> [!IMPORTANT]
+> We strongly recommend using a [Python virtual environment](https://docs.python.org/3/tutorial/venv.html) to manage dependencies and avoid conflicts with other packages.
+
 <!-- INSTALLATION_STANDARD_INTRO_START -->
 
 GAICo can be installed using pip.
-
-> [!IMPORTANT]
-> We strongly recommend using a [Python virtual environment](https://docs.python.org/3/tutorial/venv.html) to manage dependencies and avoid conflicts with other packages.
 
 <!-- INSTALLATION_STANDARD_INTRO_END -->
 
@@ -264,8 +264,7 @@ New notebooks created in this session should automatically use the `gaico-env` P
 
 ### Optional Installations
 
-> [!NOTE]
-> The default `pip install gaico` is lightweight. Some metrics require extra dependencies, which you can install as needed.
+The default `pip install gaico` is lightweight. Some metrics require extra dependencies, which you can install as needed.
 
 <!-- INSTALLATION_OPTIONAL_INTRO_END -->
 

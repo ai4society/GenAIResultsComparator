@@ -77,9 +77,6 @@ For more detailed examples, please refer to our Jupyter Notebooks in the [`examp
 
 GAICo can be installed using pip.
 
-> [!IMPORTANT]
-> We strongly recommend using a [Python virtual environment](https://docs.python.org/3/tutorial/venv.html) to manage dependencies and avoid conflicts with other packages.
-
 - **Create and activate a virtual environment** (e.g., named `gaico-env`):
 
   ```shell
@@ -122,8 +119,7 @@ New notebooks created in this session should automatically use the `gaico-env` P
 
 ### Optional Installations
 
-> [!NOTE]
-> The default `pip install gaico` is lightweight. Some metrics require extra dependencies, which you can install as needed.
+The default `pip install gaico` is lightweight. Some metrics require extra dependencies, which you can install as needed.
 
 - To include the **JSDivergence** metric (requires SciPy and NLTK):
   ```shell
