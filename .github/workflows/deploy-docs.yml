@@ -27,7 +27,7 @@ jobs:
           # This will install GAICo in editable mode AND its dev dependencies
           pip install -e ".[dev]"
           # Then install MkDocs and its plugins
-          pip install mkdocs mkdocs-material mkdocstrings mkdocstrings-python mkdocs-macros-plugin
+          pip install mkdocs mkdocs-material mkdocstrings mkdocstrings-python mkdocs-macros-plugin markdown-callouts
 
       - name: Build MkDocs site
         run: mkdocs build --verbose # Use --strict to fail on warnings
