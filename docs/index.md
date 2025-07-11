@@ -1,13 +1,15 @@
 # Welcome to GAICo
 
 <figure markdown="span">
-  <img src="https://raw.githubusercontent.com/ai4society/GenAIResultsComparator/refs/heads/main/quickstart.gif" alt="GIF Showing GAICo's Quickstart" style="display: block; margin: auto; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+  <img src="https://raw.githubusercontent.com/ai4society/GenAIResultsComparator/refs/heads/main/docs/misc/quickstart.gif" alt="GIF Showing GAICo's Quickstart" style="display: block; margin: auto; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
   <figcaption><em>GAICo Quickstart Demonstration</em></figcaption>
 </figure>
 
 {{ readme("BADGES") }}
 
 {{ readme("TAGLINE") }}
+
+[Check out our latest release updates!](https://ai4society.github.io/projects/GenAIResultsComparator/news){ .md-button }
 
 {{ readme("DESCRIPTION_FULL") }}
 

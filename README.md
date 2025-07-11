@@ -30,6 +30,15 @@ Important Links:
 
 - PyPI: [pypi.org/project/gaico/](https://pypi.org/project/gaico/)
 
+## News
+
+This section summarizes the major releases of the GAICo library, highlighting key features and providing quick start examples.
+
+| Release Name | Date      | More Info                                                                                                     |
+| :----------- | :-------- | :------------------------------------------------------------------------------------------------------------ |
+| 0.2.0        | July 2025 | [Release Notes for 0.2.0](https://ai4society.github.io/projects/GenAIResultsComparator/news/#020-july-2025) |
+| 0.1.5        | June 2025 | [Release Notes for 0.1.5](https://ai4society.github.io/projects/GenAIResultsComparator/news/#015-june-2025) |
+
 ## Quick Start
 
 GAICo makes it easy to evaluate and compare LLM outputs. The following python (Jupyter) notebooks showcase different usecases:
@@ -46,7 +55,7 @@ GAICo makes it easy to evaluate and compare LLM outputs. The following python (J
 > [!TIP]
 > For more, detailed and runnable, examples, check out all our Jupyter Notebooks in the [`examples/`](examples/) folder. You can run them directly in Google Colab!
 
-## Streamlined Workflow with _`Experiment`_
+### Streamlined Workflow with _`Experiment`_
 
 For a more integrated approach to comparing multiple models, applying thresholds, generating plots, and creating CSV reports, the `Experiment` class offers a convenient abstraction.
 

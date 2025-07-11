@@ -43,6 +43,7 @@ plugins:
 nav:
   - Home: index.md
   - Quick Start: quickstart.md
+  - News: news.md
   - API Reference:
     - 'Overview': api/metrics/index.md
     - 'The Experiment Class': api/experiment.md
@@ -83,3 +84,4 @@ markdown_extensions:
   - attr_list
   - md_in_html
   - pymdownx.blocks.caption
+  - github-callouts
