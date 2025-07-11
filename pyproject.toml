@@ -67,6 +67,10 @@ jsd = [
   "nltk>=3.9.1",
   "scipy>=1.15.3",
 ]
+audio = [
+    "scipy>=1.10.0",
+    "soundfile>=0.12.0",
+]
 
 [dependency-groups]
 dev = [

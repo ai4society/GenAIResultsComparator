@@ -13,7 +13,7 @@ from gaico.metrics import (
     SequenceMatcherSimilarity,
 )
 
-from .metrics.audio import AudioSNRNormalized, SpectrogramDistance
+from .metrics.audio import AudioSNRNormalized, AudioSpectrogramDistance
 from .metrics.base import BaseMetric
 from .metrics.image import PSNRNormalized, SSIMNormalized
 from .metrics.structured import PlanningJaccard, PlanningLCS, TimeSeriesDTW, TimeSeriesElementDiff
@@ -41,7 +41,7 @@ REGISTERED_METRICS: Dict[str, type[BaseMetric]] = {
     "SSIM": SSIMNormalized,
     "PSNR": PSNRNormalized,
     "AudioSNR": AudioSNRNormalized,
-    "SpectrogramDistance": SpectrogramDistance,
+    "AudioSpectrogramDistance": AudioSpectrogramDistance,
 }
 DEFAULT_METRICS_TO_RUN = [
     "Jaccard",
