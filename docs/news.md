@@ -12,14 +12,13 @@ This release significantly expands GAICo's capabilities by introducing specializ
   - **Automated Planning:** Added `PlanningLCS` and `PlanningJaccard` for analyzing planning sequences.
   - **Time-Series:** Introduced metrics like `TimeSeriesElementDiff` and `TimeSeriesDTW` for evaluating time-series data.
 
-### Quick Start Example (0.2.0):
+### Quick Start Example:
 
 This example demonstrates using the `Experiment` class with a mix of general and specialized metrics.
 
 ```python
 from gaico import Experiment
 
-# Initialize Experiment with references for different data types
 exp = Experiment(
     llm_responses={
         "Model A": "t1:1, t2:2, t3:3, t4:4, t5:3, t6:2",
@@ -37,8 +36,8 @@ results_df = exp.compare(
 ```
 
 <figure markdown="span">
-  <img src="https://raw.githubusercontent.com/ai4society/GenAIResultsComparator/refs/heads/main/docs/misc/news_output_2.png" alt="Quick Start Example Output" style="display: block; margin: auto; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
-  <figcaption><em>GAICo Quick Start Example Output</em></figcaption>
+  ![Quick Start Example Output](https://raw.githubusercontent.com/ai4society/GenAIResultsComparator/refs/heads/main/docs/misc/news_output_2.png){ width="600" }
+  <figcaption><em>GAICo v0.2.0 Quick Start Example Output</em></figcaption>
 </figure>
 
 ---
@@ -54,7 +53,7 @@ This initial release of GAICo focused on providing a solid foundation for compar
 - **Basic Visualizations:** Enabled the creation of bar charts and radar plots for visualizing metric scores.
 - **Extensible Architecture:** Designed for easy addition of new metrics.
 
-### Quick Start Example (0.1.5):
+### Quick Start Example:
 
 This example showcases the basic usage of the `Experiment` class for comparing general text responses.
 
@@ -84,6 +83,6 @@ results_df = exp.compare(
 ```
 
 <figure markdown="span">
-  <img src="https://raw.githubusercontent.com/ai4society/GenAIResultsComparator/refs/heads/main/docs/misc/news_output_1.png" alt="Quick Start Example Output" style="display: block; margin: auto; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
-  <figcaption><em>GAICo Quick Start Example Output</em></figcaption>
+  ![Quick Start Example Output](https://raw.githubusercontent.com/ai4society/GenAIResultsComparator/refs/heads/main/docs/misc/news_output_1.png){ width="600" }
+  <figcaption><em>GAICo v0.1.5 Quick Start Example Output</em></figcaption>
 </figure>

@@ -34,10 +34,10 @@ Important Links:
 
 This section summarizes the major releases of the GAICo library, highlighting key features and providing quick start examples.
 
-| Release Name | Date      | More Info                                                                                                     |
-| :----------- | :-------- | :------------------------------------------------------------------------------------------------------------ |
-| 0.2.0        | July 2025 | [Release Notes for 0.2.0](https://ai4society.github.io/projects/GenAIResultsComparator/news/#020-july-2025) |
-| 0.1.5        | June 2025 | [Release Notes for 0.1.5](https://ai4society.github.io/projects/GenAIResultsComparator/news/#015-june-2025) |
+| Release Name | Date      | More Info                                                                                             |
+| :----------- | :-------- | :---------------------------------------------------------------------------------------------------- |
+| 0.2.0        | July 2025 | [Details for 0.2.0](https://ai4society.github.io/projects/GenAIResultsComparator/news/#020-july-2025) |
+| 0.1.5        | June 2025 | [Details for 0.1.5](https://ai4society.github.io/projects/GenAIResultsComparator/news/#015-june-2025) |
 
 ## Quick Start
 

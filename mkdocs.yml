@@ -42,8 +42,8 @@ plugins:
       module_name: project_macros
 nav:
   - Home: index.md
-  - Quick Start: quickstart.md
   - News: news.md
+  - Quick Start: quickstart.md
   - API Reference:
       - "Overview": api/metrics/index.md
       - "The Experiment Class": api/experiment.md
