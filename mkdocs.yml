@@ -45,27 +45,27 @@ nav:
   - Quick Start: quickstart.md
   - News: news.md
   - API Reference:
-    - 'Overview': api/metrics/index.md
-    - 'The Experiment Class': api/experiment.md
-    - 'Structured Metrics':
-      - 'Planning': api/metrics/planning.md
-      - 'Time Series': api/metrics/timeseries.md
-    - 'Textual Metrics':
-      - 'N-gram': api/metrics/ngram_metrics.md
-      - 'Semantic Similarity': api/metrics/semantic_similarity_metrics.md
-      - 'Text Similarity': api/metrics/text_similarity_metrics.md
-    - 'Multimedia Metrics':
-      - 'Image': api/metrics/image.md
-      - 'Audio': api/metrics/audio.md
-    - 'BaseMetric': api/metrics/base.md
-    - 'Utilities': api/utils.md
-    - 'Thresholds Module': api/thresholds_module.md
-    - 'Visualize Module': api/visualize_module.md
+      - "Overview": api/metrics/index.md
+      - "The Experiment Class": api/experiment.md
+      - "Structured Metrics":
+          - "Planning": api/metrics/planning.md
+          - "Time Series": api/metrics/timeseries.md
+      - "Textual Metrics":
+          - "N-gram": api/metrics/ngram_metrics.md
+          - "Semantic Similarity": api/metrics/semantic_similarity_metrics.md
+          - "Text Similarity": api/metrics/text_similarity_metrics.md
+      - "Multimedia Metrics":
+          - "Image": api/metrics/image.md
+          - "Audio": api/metrics/audio.md
+      - "BaseMetric": api/metrics/base.md
+      - "Utilities": api/utils.md
+      - "Thresholds Module": api/thresholds_module.md
+      - "Visualize Module": api/visualize_module.md
   - User Guide:
-    - 'The Experiment Class': user_guide/experiment_class.md
-    - 'Using Metrics Directly': user_guide/direct_metrics.md
-    - 'Working with Thresholds': user_guide/thresholds.md
-    - 'Visualization': user_guide/visualization.md
+      - "The Experiment Class": user_guide/experiment_class.md
+      - "Using Metrics Directly": user_guide/direct_metrics.md
+      - "Working with Thresholds": user_guide/thresholds.md
+      - "Visualization": user_guide/visualization.md
   - Examples: examples.md
   - FAQ: faq.md
   - Contributing: contributing.md
