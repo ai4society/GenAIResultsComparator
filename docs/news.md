@@ -2,7 +2,7 @@
 
 This page details the major releases of the GAICo library, highlighting key features and providing quick start examples.
 
-## 0.2.0 - July 2025
+## v0.2.0 - July 2025
 
 This release significantly expands GAICo's capabilities by introducing specialized metrics for structured data: automated planning and time series.
 
@@ -42,7 +42,7 @@ results_df = exp.compare(
 
 ---
 
-## 0.1.5 - June 2025
+## v0.1.5 - June 2025
 
 This initial release of GAICo focused on providing a solid foundation for comparing general text outputs from LLMs, including core similarity metrics, the `Experiment` class, and basic visualization tools.
 
