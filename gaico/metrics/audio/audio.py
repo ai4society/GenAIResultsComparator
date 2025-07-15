@@ -1,6 +1,8 @@
-from abc import ABC
+from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Optional
 import warnings
+import os
+
 import numpy as np
 import pandas as pd
 
@@ -27,50 +29,254 @@ __audio_deps_available__ = _audio_deps_available
 class AudioMetric(BaseMetric, ABC):
     """
     Abstract base class for metrics that operate on audio data.
-    Input can be various audio representations (e.g., np.array waveform, audio path).
+
+    This class provides a common framework for audio metrics, including
+    handling for various input types (file paths, numpy arrays), audio loading,
+    resampling, and ensuring consistent signal lengths for comparison.
     """
 
     def __init__(self, sample_rate: Optional[int] = None, **kwargs: Any):
         """
         Initialize the AudioMetric base class.
 
-        :param sample_rate: Target sample rate for audio processing. If None, uses native sample rate.
-        :type sample_rate: Optional[int]
-        :param kwargs: Additional keyword arguments
-        :type kwargs: Any
+        Parameters
+        ----------
+        sample_rate : int, optional
+            Target sample rate for audio processing. If provided, all audio will be
+            resampled to this rate. If None, the native sample rate of the
+            reference audio is used. Defaults to None.
+        kwargs : Any
+            Additional keyword arguments.
+
+        Raises
+        ------
+        ImportError
+            If required audio dependencies (scipy, soundfile) are not installed.
         """
+        if not __audio_deps_available__:
+            raise ImportError(
+                "Audio processing dependencies (scipy, soundfile) not installed. "
+                "Please install them with: pip install scipy soundfile"
+            )
         super().__init__()
         self.sample_rate = sample_rate
 
     def calculate(
         self,
         generated: Any,
-        reference: Optional[Any],
+        reference: Optional[Any] = None,
         **kwargs: Any,
     ) -> Any:
         """
-        Override the base calculate method to handle single audio numpy arrays correctly.
+        Calculate the audio metric for given generated and reference inputs.
+
+        This method overrides the base `calculate` to intelligently handle
+        audio-specific data types like numpy arrays, which the base class
+        might misinterpret. It routes single items, batches of arrays, and
+        other formats to the appropriate internal calculation methods.
+
+        Parameters
+        ----------
+        generated : Any
+            The generated audio to evaluate. Can be a file path (str), a 1D numpy
+            array (single signal), a 2D numpy array (batch of signals), or a
+            list/Series of paths or arrays.
+        reference : Any, optional
+            The reference audio to compare against. Format requirements are the
+            same as for `generated`. If None, the generated audio is used as its
+            own reference, typically resulting in a perfect score.
+        kwargs : Any
+            Additional keyword arguments passed to the specific metric's
+            calculation logic.
+
+        Returns
+        -------
+        Any
+            The calculated score. This is typically a float for single inputs or a
+            list/array/Series of floats for batch inputs.
         """
-        # For audio, if the input is not a list/tuple/Series, treat it as a single item.
-        # This prevents single audio arrays from being iterated over by the base method.
-        if not isinstance(generated, (list, tuple, pd.Series)):
+
+        # Helper to determine if an input is a valid audio type (path, array, list, or series).
+        def is_valid_audio_type(item: Any) -> bool:
+            return isinstance(item, (str, np.ndarray, list, pd.Series, tuple))
+
+        # Check if the input type is fundamentally unsupported.
+        # This catches invalid types like dictionaries before any other logic.
+        if not is_valid_audio_type(generated):
+            # This will call _load_audio with the invalid type, which correctly raises TypeError.
             return self._single_calculate(generated, reference, **kwargs)
 
-        # For all other cases (lists of files, etc.), use the default batch logic.
+        # Helper to determine if an input is a single audio entity (path or 1D array).
+        def is_single_audio_item(item: Any) -> bool:
+            return isinstance(item, str) or (isinstance(item, np.ndarray) and item.ndim == 1)
+
+        # Case 1: The `generated` input is clearly a single audio item.
+        if is_single_audio_item(generated):
+            actual_ref = reference
+            if reference is None:
+                warnings.warn(
+                    "Reference audio not provided. Using the generated audio as reference.",
+                    UserWarning,
+                )
+                actual_ref = generated
+            # Directly call _single_calculate to ensure exceptions are raised correctly.
+            return self._single_calculate(generated, actual_ref, **kwargs)
+
+        # Case 2: `generated` is a 2D numpy array, which is always a batch.
+        if isinstance(generated, np.ndarray) and generated.ndim == 2:
+            ref_list = reference
+            if ref_list is None:
+                warnings.warn(
+                    "Reference audio not provided. Using the first generated audio as reference.",
+                    UserWarning,
+                )
+                ref_list = [generated[0]] * len(generated)
+            elif isinstance(ref_list, np.ndarray) and ref_list.ndim == 1:
+                ref_list = [ref_list] * len(generated)
+            return self._batch_calculate(generated, ref_list, **kwargs)
+
+        # Case 3: `generated` is a list/series containing numpy arrays. BaseMetric will fail. Handle it here.
+        is_batch_of_numpy = False
+        if isinstance(generated, (list, pd.Series)) and len(generated) > 0:
+            first_item = generated[0] if isinstance(generated, list) else generated.iloc[0]
+            if isinstance(first_item, np.ndarray):
+                is_batch_of_numpy = True
+
+        if is_batch_of_numpy:
+            ref_list = reference
+            if ref_list is None:
+                print(
+                    "Warning: Reference is missing or effectively empty. Using the first element of `generated` as reference."
+                )
+                first_item = generated[0] if isinstance(generated, list) else generated.iloc[0]
+                ref_list = [first_item] * len(generated)
+            elif isinstance(ref_list, np.ndarray) and ref_list.ndim == 1:
+                ref_list = [ref_list] * len(generated)
+
+            return self._batch_calculate(generated, ref_list, **kwargs)
+
+        # For all other cases (e.g., list of file paths), the parent logic is correct.
         return super().calculate(generated, reference, **kwargs)
+
+    @abstractmethod
+    def _single_calculate(self, generated_item: Any, reference_item: Any, **kwargs: Any) -> float:
+        """
+        (Internal) Calculate the metric for a single pair of items.
+
+        This method must be implemented by all concrete subclasses. It defines
+        the core logic for comparing one generated audio item to one reference
+        audio item. It should raise exceptions on failure (e.g.,
+        FileNotFoundError, TypeError) rather than handling them.
+
+        Parameters
+        ----------
+        generated_item : Any
+            A single generated audio item (e.g., file path or numpy array).
+        reference_item : Any
+            A single reference audio item.
+        kwargs : Any
+            Metric-specific keyword arguments.
+
+        Returns
+        -------
+        float
+            The calculated score for the single pair.
+        """
+        pass
+
+    def _batch_calculate(
+        self,
+        generated_items: Iterable,
+        reference_items: Iterable,
+        **kwargs: Any,
+    ) -> List[float] | np.ndarray | pd.Series:
+        """
+        (Internal) Calculate the metric for a batch of items.
+
+        This default implementation iterates over the generated and reference
+        items, calling `_single_calculate` for each pair. It handles errors
+        gracefully by issuing a warning and assigning a score of 0.0 for any
+        pair that fails, allowing the batch processing to continue.
+
+        Parameters
+        ----------
+        generated_items : Iterable
+            An iterable of generated audio items.
+        reference_items : Iterable
+            An iterable of reference audio items.
+        kwargs : Any
+            Metric-specific keyword arguments.
+
+        Returns
+        -------
+        List[float] | np.ndarray | pd.Series
+            A collection of scores, with the type matching the input `generated_items`
+            (defaulting to list).
+        """
+        results = []
+        for gen, ref in zip(generated_items, reference_items):
+            try:
+                score = self._single_calculate(gen, ref, **kwargs)
+                results.append(score)
+            except Exception as e:
+                warnings.warn(f"Error processing audio item: {str(e)}. Setting score to 0.0")
+                results.append(0.0)
+
+        if isinstance(generated_items, np.ndarray):
+            return np.array(results, dtype=float)
+        if isinstance(generated_items, pd.Series):
+            return pd.Series(results, index=generated_items.index, dtype=float)
+        return results
 
     def _load_audio(self, audio_input: Any) -> tuple[np.ndarray, int]:
         """
-        Load audio from various input formats.
+        Load audio from various input formats into a mono numpy array.
 
-        :param audio_input: The audio input (numpy array, file path, or list/tuple of samples)
-        :type audio_input: Any
-        :return: Tuple of (audio_array, sample_rate)
-        :rtype: tuple[np.ndarray, int]
-        :raises TypeError: If audio input type is not supported
-        :raises ValueError: If audio is empty or invalid
-        :raises FileNotFoundError: If audio file path doesn't exist
+        Parameters
+        ----------
+        audio_input : Any
+            The audio input to load. Supported types are:
+            - str: Path to an audio file.
+            - np.ndarray: A 1D or 2D numpy array. 2D is averaged to mono.
+            - list, tuple: A sequence of numbers representing a waveform.
+
+        Returns
+        -------
+        tuple[np.ndarray, int]
+            A tuple containing:
+            - np.ndarray: The loaded audio signal as a 1D float32 numpy array.
+            - int: The sample rate of the loaded audio.
+
+        Raises
+        ------
+        ImportError
+            If `soundfile` is required but not installed.
+        FileNotFoundError
+            If `audio_input` is a path that does not exist.
+        ValueError
+            If the audio file or array is empty or malformed.
+        TypeError
+            If `audio_input` is of an unsupported type.
         """
+        if isinstance(audio_input, str):
+            if not _soundfile:
+                raise ImportError("soundfile is required to load audio files")
+            if not os.path.exists(audio_input):
+                raise FileNotFoundError(f"Audio file not found or is invalid: {audio_input}")
+            try:
+                audio, sr = _soundfile.read(audio_input, dtype="float32")
+                if audio.size == 0:
+                    raise ValueError(f"Audio file '{audio_input}' is empty")
+            except Exception as e:
+                raise ValueError(f"Error loading audio file '{audio_input}': {str(e)}") from e
+
+            if audio.ndim == 2:
+                audio = np.mean(audio, axis=1)
+            if self.sample_rate and sr != self.sample_rate:
+                audio = self._resample_audio(audio, sr, self.sample_rate)
+                sr = self.sample_rate
+            return audio.astype(np.float32), sr
+
         if isinstance(audio_input, np.ndarray):
             if audio_input.size == 0:
                 raise ValueError("Audio array is empty")
@@ -78,54 +284,18 @@ class AudioMetric(BaseMetric, ABC):
                 raise ValueError(
                     f"Audio array has too many dimensions: {audio_input.ndim}. Expected 1D or 2D."
                 )
-            # If stereo, convert to mono
             if audio_input.ndim == 2:
                 audio_input = np.mean(audio_input, axis=0)
             return audio_input.astype(np.float32), self.sample_rate or 44100
 
-        elif isinstance(audio_input, (list, tuple)):
+        if isinstance(audio_input, (list, tuple)):
             if len(audio_input) == 0:
                 raise ValueError("Audio input list/tuple is empty")
             return np.array(audio_input, dtype=np.float32), self.sample_rate or 44100
 
-        elif isinstance(audio_input, str):
-            # Load from file path
-            if not _soundfile:
-                raise ImportError("soundfile is required to load audio files")
-            try:
-                audio, sr = _soundfile.read(audio_input, dtype="float32")
-                if audio.size == 0:
-                    raise ValueError(f"Audio file '{audio_input}' is empty")
-
-                # If stereo, convert to mono
-                if audio.ndim == 2:
-                    audio = np.mean(audio, axis=1)
-
-                # Resample if needed
-                if self.sample_rate and sr != self.sample_rate:
-                    audio = self._resample_audio(audio, sr, self.sample_rate)
-                    sr = self.sample_rate
-
-                return audio.astype(np.float32), sr
-
-            except Exception as e:
-                # Check for soundfile-specific error first
-                if isinstance(e, _soundfile.LibsndfileError):
-                    if "No such file or directory" in str(e) or "System error" in str(e):
-                        raise FileNotFoundError(
-                            f"Audio file not found or is invalid: {audio_input}"
-                        ) from e
-                # Check for generic file not found error
-                if isinstance(e, FileNotFoundError):
-                    raise FileNotFoundError(f"Audio file not found: {audio_input}") from e
-
-                # Fallback for other errors
-                raise ValueError(f"Error loading audio file '{audio_input}': {str(e)}") from e
-        else:
-            raise TypeError(
-                f"Unsupported audio input type: {type(audio_input)}. "
-                f"Expected numpy array, list, tuple, or file path string."
-            )
+        raise TypeError(
+            f"Unsupported audio input type: {type(audio_input)}. Expected numpy array, list, tuple, or file path string."
+        )
 
     def _ensure_same_length(
         self, audio1: np.ndarray, audio2: np.ndarray
@@ -133,52 +303,69 @@ class AudioMetric(BaseMetric, ABC):
         """
         Ensure two audio arrays have the same length by truncating the longer one.
 
-        :param audio1: First audio array
-        :type audio1: np.ndarray
-        :param audio2: Second audio array
-        :type audio2: np.ndarray
-        :return: Tuple of audio arrays with same length
-        :rtype: tuple[np.ndarray, np.ndarray]
+        Parameters
+        ----------
+        audio1 : np.ndarray
+            The first audio signal.
+        audio2 : np.ndarray
+            The second audio signal.
+
+        Returns
+        -------
+        tuple[np.ndarray, np.ndarray]
+            A tuple containing the two audio signals, truncated to the same length.
+
+        Raises
+        ------
+        ValueError
+            If either audio signal has zero length after processing.
         """
         if len(audio1) == len(audio2):
             return audio1, audio2
-
         min_len = min(len(audio1), len(audio2))
         if min_len == 0:
-            raise ValueError("One or both audio arrays have zero length")
-
+            raise ValueError("One or both audio arrays have zero length after processing")
         return audio1[:min_len], audio2[:min_len]
 
     def _resample_audio(self, audio: np.ndarray, orig_sr: int, target_sr: int) -> np.ndarray:
-        """Resample audio using scipy if sample rates differ."""
+        """
+        Resample audio to a target sample rate using scipy.
+
+        Parameters
+        ----------
+        audio : np.ndarray
+            The input audio signal.
+        orig_sr : int
+            The original sample rate of the audio.
+        target_sr : int
+            The target sample rate to resample to.
+
+        Returns
+        -------
+        np.ndarray
+            The resampled audio signal.
+
+        Raises
+        ------
+        ImportError
+            If `scipy` is required for resampling but is not installed.
+        """
         if orig_sr == target_sr:
             return audio
-
         if not _scipy_signal:
             raise ImportError("Scipy is required for resampling.")
-
         num_samples = int(len(audio) * float(target_sr) / orig_sr)
-        resampled_audio = _scipy_signal.resample(audio, num_samples)
-        return resampled_audio.astype(np.float32)
+        return _scipy_signal.resample(audio, num_samples).astype(np.float32)
 
 
 class AudioSNRNormalized(AudioMetric):
     """
-    Normalized Signal-to-Noise Ratio (SNR) metric for audio comparison.
+    Calculates a normalized Signal-to-Noise Ratio (SNR) between two audio signals.
 
-    This metric calculates the SNR between generated and reference audio signals,
-    then normalizes it to a 0-1 range for consistency with other GAICo metrics.
-
-    The SNR is calculated as: 20 * log10(RMS_signal / RMS_noise)
-    where noise = generated - reference
-
-    Normalization maps SNR values to [0, 1] using linear scaling with clipping.
-    Higher scores indicate better quality (less noise).
-
-    Attributes:
-        snr_min (float): Minimum expected SNR value for normalization (maps to 0)
-        snr_max (float): Maximum expected SNR value for normalization (maps to 1)
-        epsilon (float): Small value to prevent division by zero
+    The metric computes the standard SNR in decibels (dB) and then scales this
+    value to a normalized range of [0, 1]. A score of 1.0 indicates identical
+    signals (infinite SNR), while a score of 0.0 indicates high levels of noise
+    or distortion, at or below the configured `snr_min` threshold.
     """
 
     def __init__(
@@ -192,175 +379,88 @@ class AudioSNRNormalized(AudioMetric):
         """
         Initialize the AudioSNRNormalized metric.
 
-        :param snr_min: Minimum expected SNR value in dB for normalization (maps to 0).
-                        Default -20 dB represents very noisy audio.
-        :type snr_min: float
-        :param snr_max: Maximum expected SNR value in dB for normalization (maps to 1).
-                        Default 40 dB represents very clean audio.
-        :type snr_max: float
-        :param epsilon: Small value to prevent division by zero in SNR calculation
-        :type epsilon: float
-        :param sample_rate: Target sample rate for audio processing. If None, uses native sample rate.
-        :type sample_rate: Optional[int]
-        :param kwargs: Additional parameters passed to parent class
-        :type kwargs: Any
-        :raises ImportError: If audio processing dependencies are not installed
-        """
-        super().__init__(sample_rate=sample_rate, **kwargs)
-        if not _audio_deps_available:
-            raise ImportError(
-                "Audio processing dependencies (scipy, soundfile) are not installed. "
-                "Please install them with: pip install 'gaico[audio]'"
-            )
+        Parameters
+        ----------
+        snr_min : float, optional
+            The minimum SNR (in dB) that maps to a normalized score of 0.0.
+            Defaults to -20.0.
+        snr_max : float, optional
+            The maximum SNR (in dB) that maps to a normalized score of 1.0.
+            Defaults to 40.0.
+        epsilon : float, optional
+            A small value added to power calculations to prevent division by zero.
+            Defaults to 1e-10.
+        sample_rate : int, optional
+            Target sample rate for audio processing. Defaults to None.
+        kwargs : Any
+            Additional keyword arguments.
 
+        Raises
+        ------
+        ValueError
+            If `snr_min` is not less than `snr_max`.
+        """
+
+        super().__init__(sample_rate=sample_rate, **kwargs)
         if snr_min >= snr_max:
             raise ValueError(f"snr_min ({snr_min}) must be less than snr_max ({snr_max})")
-
         self.snr_min = snr_min
         self.snr_max = snr_max
         self.epsilon = epsilon
 
-    def _calculate_snr(self, signal: np.ndarray, noise: np.ndarray) -> float:
-        """
-        Calculate SNR in dB between signal and noise.
+    def get_name(self) -> str:
+        return "AudioSNR"
 
-        :param signal: Reference signal array
-        :type signal: np.ndarray
-        :param noise: Noise array (typically generated - reference)
-        :type noise: np.ndarray
-        :return: SNR value in decibels
-        :rtype: float
-        """
-        signal_power = np.mean(signal**2) + self.epsilon
-        noise_power = np.mean(noise**2) + self.epsilon
-
-        # If noise is essentially zero, return max SNR
-        if noise_power <= self.epsilon:
-            return self.snr_max
-
-        snr_db = 10 * np.log10(signal_power / noise_power)
-        return float(snr_db)
-
-    def _normalize_snr(self, snr_db: float) -> float:
-        """
-        Normalize SNR from dB to [0, 1] range.
-
-        :param snr_db: SNR value in decibels
-        :type snr_db: float
-        :return: Normalized SNR score between 0 and 1
-        :rtype: float
-        """
-        # Linear normalization with clipping
-        normalized = (snr_db - self.snr_min) / (self.snr_max - self.snr_min)
-        return float(np.clip(normalized, 0.0, 1.0))
+    def get_description(self) -> str:
+        return "Signal-to-Noise Ratio (SNR) metric for audio, normalized to [0,1]"
 
     def _single_calculate(self, generated_item: Any, reference_item: Any, **kwargs: Any) -> float:
         """
         Calculate normalized SNR for a single pair of audio signals.
 
-        :param generated_item: The generated audio (numpy array, file path, or list)
-        :type generated_item: Any
-        :param reference_item: The reference audio (numpy array, file path, or list)
-        :type reference_item: Any
-        :param kwargs: Additional keyword arguments (not used)
-        :type kwargs: Any
-        :return: Normalized SNR score between 0 and 1
-        :rtype: float
-        :raises ValueError: If audio cannot be loaded or processed
-        :raises TypeError: If audio input type is not supported
+        The method loads the audio, ensures sample rates and lengths match,
+        computes the SNR in dB, and normalizes it to the [0, 1] range.
+
+        Parameters
+        ----------
+        generated_item : Any
+            The generated audio signal (e.g., path or numpy array).
+        reference_item : Any
+            The reference audio signal.
+        kwargs : Any
+            Additional keyword arguments (not used).
+
+        Returns
+        -------
+        float
+            The normalized SNR score, between 0.0 and 1.0.
         """
-        try:
-            # Load audio
-            gen_audio, gen_sr = self._load_audio(generated_item)
-            ref_audio, ref_sr = self._load_audio(reference_item)
+        gen_audio, gen_sr = self._load_audio(generated_item)
+        ref_audio, ref_sr = self._load_audio(reference_item)
 
-            # Resample if necessary
-            if self.sample_rate and gen_sr != self.sample_rate:
-                gen_audio = self._resample_audio(gen_audio, gen_sr, self.sample_rate)
-                gen_sr = self.sample_rate
-            if self.sample_rate and ref_sr != self.sample_rate:
-                ref_audio = self._resample_audio(ref_audio, ref_sr, self.sample_rate)
-                ref_sr = self.sample_rate
+        if gen_sr != ref_sr:
+            warnings.warn(
+                f"Sample rates differ (generated: {gen_sr}, reference: {ref_sr}). Resampling generated audio to match reference rate {ref_sr} Hz."
+            )
+            gen_audio = self._resample_audio(gen_audio, orig_sr=gen_sr, target_sr=ref_sr)
 
-            if gen_sr != ref_sr:
-                warnings.warn(
-                    f"Sample rates differ (generated: {gen_sr}, reference: {ref_sr}). "
-                    f"Resampling generated audio to match reference rate {ref_sr} Hz."
-                )
-                gen_audio = self._resample_audio(gen_audio, orig_sr=gen_sr, target_sr=ref_sr)
-
-            # Ensure same length
-            gen_audio, ref_audio = self._ensure_same_length(gen_audio, ref_audio)
-
-            # Calculate noise as difference
-            noise = gen_audio - ref_audio
-
-            # Calculate SNR
-            snr_db = self._calculate_snr(ref_audio, noise)
-
-            # Normalize to [0, 1]
-            return self._normalize_snr(snr_db)
-
-        except (ValueError, TypeError):
-            raise
-        except FileNotFoundError:
-            raise
-        except Exception as e:
-            raise ValueError(f"Error calculating audio SNR: {str(e)}")
-
-    def _batch_calculate(
-        self,
-        generated_items: Iterable | np.ndarray | pd.Series,
-        reference_items: Iterable | np.ndarray | pd.Series,
-        **kwargs: Any,
-    ) -> List[float] | np.ndarray | pd.Series:
-        """
-        Calculate normalized SNR for a batch of audio signals.
-
-        :param generated_items: Iterable of generated audio items
-        :type generated_items: Iterable | np.ndarray | pd.Series
-        :param reference_items: Iterable of reference audio items
-        :type reference_items: Iterable | np.ndarray | pd.Series
-        :param kwargs: Additional keyword arguments passed to _single_calculate
-        :type kwargs: Any
-        :return: List, array, or Series of normalized SNR scores
-        :rtype: List[float] | np.ndarray | pd.Series
-        :raises ValueError: If input lengths don't match
-        """
-        results = []
-        for gen, ref in zip(generated_items, reference_items):
-            try:
-                score = self._single_calculate(gen, ref, **kwargs)
-                results.append(score)
-            except Exception as e:
-                import warnings
-
-                warnings.warn(f"Error processing audio item: {str(e)}. Setting score to 0.0")
-                results.append(0.0)
-
-        if isinstance(generated_items, np.ndarray):
-            return np.array(results, dtype=float)
-        if isinstance(generated_items, pd.Series):
-            return pd.Series(results, index=generated_items.index, dtype=float)
-        return results
+        gen_audio, ref_audio = self._ensure_same_length(gen_audio, ref_audio)
+        noise = gen_audio - ref_audio
+        signal_power = np.mean(np.square(ref_audio)) + self.epsilon
+        noise_power = np.mean(np.square(noise)) + self.epsilon
+        snr_db = 10 * np.log10(signal_power / noise_power)
+        normalized = (snr_db - self.snr_min) / (self.snr_max - self.snr_min)
+        return float(np.clip(normalized, 0.0, 1.0))
 
 
 class AudioSpectrogramDistance(AudioMetric):
     """
-    Spectrogram-based distance metric for audio comparison.
+    Calculates similarity based on the distance between audio spectrograms.
 
-    This metric computes spectrograms of audio signals and calculates
-    the distance between them using various distance measures. The distance
-    is then converted to a similarity score in the range [0, 1].
-
-    Spectrograms capture the frequency content of audio over time, making
-    this metric suitable for comparing timbral and spectral characteristics.
-
-    Attributes:
-        n_fft (int): FFT window size for spectrogram computation
-        hop_length (int): Number of samples between successive frames
-        distance_type (str): Type of distance metric to use
-        window (str): Window function for STFT
+    This metric is effective for capturing differences in frequency content
+    (timbre, harmonics) over time. It computes the Short-Time Fourier Transform
+    (STFT) for both signals, calculates a distance between the resulting
+    spectrograms, and converts this distance to a similarity score from 0 to 1.
     """
 
     def __init__(
@@ -373,222 +473,161 @@ class AudioSpectrogramDistance(AudioMetric):
         **kwargs: Any,
     ):
         """
-        Initialize the SpectrogramDistance metric.
+        Initialize the AudioSpectrogramDistance metric.
 
-        :param n_fft: FFT window size for spectrogram. Larger values give better
-                    frequency resolution but worse time resolution.
-        :type n_fft: int
-        :param hop_length: Number of samples between successive frames. Smaller
-                        values give better time resolution.
-        :type hop_length: int
-        :param distance_type: Type of distance metric. Options: 'euclidean', 'cosine', 'correlation'
-        :type distance_type: str
-        :param window: Window function for STFT. Options include 'hann', 'hamming', 'blackman'
-        :type window: str
-        :param sample_rate: Target sample rate for audio processing
-        :type sample_rate: Optional[int]
-        :param kwargs: Additional parameters passed to parent class
-        :type kwargs: Any
-        :raises ImportError: If audio processing dependencies are not installed
-        :raises ValueError: If distance_type is not supported
+        Parameters
+        ----------
+        n_fft : int, optional
+            The length of the FFT window, determining frequency resolution.
+            Defaults to 2048.
+        hop_length : int, optional
+            The number of samples between successive FFT windows, determining
+            time resolution. Defaults to 512.
+        distance_type : str, optional
+            The type of distance to calculate between spectrograms.
+            Options: "euclidean", "cosine", "correlation". Defaults to "euclidean".
+        window : str, optional
+            The window function to apply to each FFT frame.
+            Defaults to "hann".
+        sample_rate : int, optional
+            Target sample rate for audio processing. Defaults to None.
+        kwargs : Any
+            Additional keyword arguments.
+
+        Raises
+        ------
+        ValueError
+            If an unsupported `distance_type` is provided.
         """
         super().__init__(sample_rate=sample_rate, **kwargs)
-        if not _audio_deps_available:
-            raise ImportError(
-                "Audio processing dependencies (scipy) are not installed. "
-                "Please install them with: pip install 'gaico[audio]'"
-            )
-
         valid_distances = ["euclidean", "cosine", "correlation"]
         if distance_type not in valid_distances:
             raise ValueError(
                 f"Invalid distance_type '{distance_type}'. Must be one of: {valid_distances}"
             )
-
         self.n_fft = n_fft
         self.hop_length = hop_length
         self.distance_type = distance_type
         self.window = window
 
-    def _compute_spectrogram(self, audio: np.ndarray) -> np.ndarray:
+    def get_name(self) -> str:
+        return f"AudioSpectrogramDistance_{self.distance_type}"
+
+    def get_description(self) -> str:
+        return f"Spectrogram-based distance metric for audio using {self.distance_type} distance"
+
+    def _compute_spectrogram(self, audio: np.ndarray, sr: int) -> np.ndarray:
         """
-        Compute magnitude spectrogram of audio signal.
+        Compute the magnitude spectrogram for an audio signal.
 
-        :param audio: Audio signal array
-        :type audio: np.ndarray
-        :return: Magnitude spectrogram (frequency x time)
-        :rtype: np.ndarray
-        :raises ValueError: If spectrogram computation fails
+        Parameters
+        ----------
+        audio : np.ndarray
+            The 1D audio signal.
+        sr : int
+            The sample rate of the audio.
+
+        Returns
+        -------
+        np.ndarray
+            The magnitude spectrogram as a 2D numpy array.
+
+        Raises
+        ------
+        ImportError
+            If `scipy` is required but not installed.
+        ValueError
+            If the audio signal is too short for the given `n_fft`.
         """
-        try:
-            if not _scipy_signal:
-                raise ImportError("Scipy is required for STFT computation.")
+        if not _scipy_signal:
+            raise ImportError("Scipy is required for spectrogram computation.")
 
-            nperseg = min(self.n_fft, len(audio))
-            noverlap = min(self.n_fft - self.hop_length, nperseg - 1)
-
-            f, t, Zxx = _scipy_signal.stft(
-                audio,
-                fs=self.sample_rate or 44100,
-                window=self.window,
-                nperseg=nperseg,
-                noverlap=noverlap,
+        if len(audio) < self.n_fft:
+            raise ValueError(
+                f"Audio signal is too short ({len(audio)} samples) for the given n_fft ({self.n_fft})."
             )
-            return np.abs(Zxx)
-        except Exception as e:
-            raise ValueError(f"Failed to compute spectrogram: {str(e)}")
+        _, _, Zxx = _scipy_signal.stft(
+            audio,
+            fs=sr,
+            window=self.window,
+            nperseg=self.n_fft,
+            noverlap=self.n_fft - self.hop_length,
+        )
+        return np.abs(Zxx)
 
     def _calculate_distance(self, spec1: np.ndarray, spec2: np.ndarray) -> float:
         """
-        Calculate distance between two spectrograms.
+        Calculate the distance between two spectrograms.
 
-        :param spec1: First spectrogram
-        :type spec1: np.ndarray
-        :param spec2: Second spectrogram
-        :type spec2: np.ndarray
-        :return: Distance value (lower means more similar)
-        :rtype: float
+        Parameters
+        ----------
+        spec1 : np.ndarray
+            The first spectrogram.
+        spec2 : np.ndarray
+            The second spectrogram.
+
+        Returns
+        -------
+        float
+            The calculated distance.
         """
-        # Ensure same shape
-        min_freq_bins = min(spec1.shape[0], spec2.shape[0])
         min_frames = min(spec1.shape[1], spec2.shape[1])
-        if min_frames == 0 or min_freq_bins == 0:
-            raise ValueError("One or both spectrograms have zero frames or frequency bins")
-
-        spec1 = spec1[:min_freq_bins, :min_frames]
-        spec2 = spec2[:min_freq_bins, :min_frames]
+        spec1 = spec1[:, :min_frames]
+        spec2 = spec2[:, :min_frames]
+        spec1_flat = spec1.flatten()
+        spec2_flat = spec2.flatten()
 
         if self.distance_type == "euclidean":
-            distance = np.sqrt(np.mean((spec1 - spec2) ** 2))
-            # Normalize by average magnitude to avoid scale issues
-            norm_factor = (np.mean(spec1) + np.mean(spec2)) / 2 + 1e-10
-            return distance / norm_factor
-
+            dist = np.linalg.norm(spec1_flat - spec2_flat)
+            norm_factor = (np.linalg.norm(spec1_flat) + np.linalg.norm(spec2_flat)) / 2 + 1e-10
+            return dist / norm_factor
         elif self.distance_type == "cosine":
-            # Flatten and compute cosine distance
-            spec1_flat = spec1.flatten()
-            spec2_flat = spec2.flatten()
-
             norm1 = np.linalg.norm(spec1_flat)
             norm2 = np.linalg.norm(spec2_flat)
-
-            if norm1 == 0 or norm2 == 0:
-                return 1.0
-
-            cosine_sim = np.dot(spec1_flat, spec2_flat) / (norm1 * norm2)
-            cosine_sim = np.clip(cosine_sim, -1.0, 1.0)
-            return 1.0 - cosine_sim
-
-        elif self.distance_type == "correlation":
-            spec1_flat = spec1.flatten()
-            spec2_flat = spec2.flatten()
-
-            spec1_centered = spec1_flat - np.mean(spec1_flat)
-            spec2_centered = spec2_flat - np.mean(spec2_flat)
-
-            norm1 = np.linalg.norm(spec1_centered)
-            norm2 = np.linalg.norm(spec2_centered)
-
             if norm1 == 0 or norm2 == 0:
                 return 0.0 if norm1 == norm2 else 1.0
-
-            correlation = np.dot(spec1_centered, spec2_centered) / (norm1 * norm2)
-            correlation = np.clip(correlation, -1.0, 1.0)
-            return 1.0 - correlation
-        return 0.0  # Default case, should not happen
+            sim = np.dot(spec1_flat, spec2_flat) / (norm1 * norm2)
+            return 1.0 - np.clip(sim, -1.0, 1.0)
+        elif self.distance_type == "correlation":
+            if np.std(spec1_flat) == 0 or np.std(spec2_flat) == 0:
+                return 0.0 if np.array_equal(spec1_flat, spec2_flat) else 1.0
+            corr = np.corrcoef(spec1_flat, spec2_flat)[0, 1]
+            return 1.0 - np.clip(corr, -1.0, 1.0)
+        return 1.0
 
     def _single_calculate(self, generated_item: Any, reference_item: Any, **kwargs: Any) -> float:
         """
         Calculate spectrogram distance for a single pair of audio signals.
 
-        :param generated_item: The generated audio
-        :type generated_item: Any
-        :param reference_item: The reference audio
-        :type reference_item: Any
-        :param kwargs: Additional keyword arguments (not used)
-        :type kwargs: Any
-        :return: Similarity score between 0 and 1 (1 = identical)
-        :rtype: float
-        :raises ValueError: If audio cannot be loaded or processed
-        :raises TypeError: If audio input type is not supported
+        The method computes spectrograms for both audio items, calculates the
+        specified distance between them, and converts this distance to a
+        similarity score between 0 and 1.
+
+        Parameters
+        ----------
+        generated_item : Any
+            The generated audio signal (e.g., path or numpy array).
+        reference_item : Any
+            The reference audio signal.
+        kwargs : Any
+            Additional keyword arguments (not used).
+
+        Returns
+        -------
+        float
+            The spectrogram-based similarity score, between 0.0 and 1.0.
         """
-        try:
-            # Load audio
-            gen_audio, gen_sr = self._load_audio(generated_item)
-            ref_audio, ref_sr = self._load_audio(reference_item)
+        gen_audio, gen_sr = self._load_audio(generated_item)
+        ref_audio, ref_sr = self._load_audio(reference_item)
 
-            # Ensure audio is long enough for STFT
-            if len(gen_audio) < self.n_fft or len(ref_audio) < self.n_fft:
-                raise ValueError(
-                    f"Audio signal is too short for the given n_fft ({self.n_fft}). "
-                    f"Signal length must be >= n_fft."
-                )
+        if gen_sr != ref_sr:
+            warnings.warn(
+                f"Sample rates differ (generated: {gen_sr}, reference: {ref_sr}). Resampling generated audio to match reference rate {ref_sr} Hz."
+            )
+            gen_audio = self._resample_audio(gen_audio, orig_sr=gen_sr, target_sr=ref_sr)
 
-            # Resample if necessary
-            if self.sample_rate and gen_sr != self.sample_rate:
-                gen_audio = self._resample_audio(gen_audio, gen_sr, self.sample_rate)
-                gen_sr = self.sample_rate
-            if self.sample_rate and ref_sr != self.sample_rate:
-                ref_audio = self._resample_audio(ref_audio, ref_sr, self.sample_rate)
-                ref_sr = self.sample_rate
-
-            if gen_sr != ref_sr:
-                warnings.warn(
-                    f"Sample rates differ (generated: {gen_sr}, reference: {ref_sr}). "
-                    f"Resampling generated audio to match reference rate {ref_sr} Hz."
-                )
-                gen_audio = self._resample_audio(gen_audio, orig_sr=gen_sr, target_sr=ref_sr)
-
-            # Compute spectrograms
-            gen_spec = self._compute_spectrogram(gen_audio)
-            ref_spec = self._compute_spectrogram(ref_audio)
-
-            # Calculate distance
-            distance = self._calculate_distance(gen_spec, ref_spec)
-
-            # Convert distance to similarity using exponential decay
-            # This maps distance [0, inf) to similarity (1, 0]
-            similarity = np.exp(-distance)
-            return float(np.clip(similarity, 0.0, 1.0))
-
-        except (ValueError, TypeError):
-            raise
-        except Exception as e:
-            raise ValueError(f"Error calculating spectrogram distance: {str(e)}")
-
-    def _batch_calculate(
-        self,
-        generated_items: Iterable | np.ndarray | pd.Series,
-        reference_items: Iterable | np.ndarray | pd.Series,
-        **kwargs: Any,
-    ) -> List[float] | np.ndarray | pd.Series:
-        """
-        Calculate spectrogram distance for a batch of audio signals.
-
-        :param generated_items: Iterable of generated audio items
-        :type generated_items: Iterable | np.ndarray | pd.Series
-        :param reference_items: Iterable of reference audio items
-        :type reference_items: Iterable | np.ndarray | pd.Series
-        :param kwargs: Additional keyword arguments passed to _single_calculate
-        :type kwargs: Any
-        :return: List, array, or Series of similarity scores
-        :rtype: List[float] | np.ndarray | pd.Series
-        :raises ValueError: If input lengths don't match
-        """
-
-        results = []
-        for gen, ref in zip(generated_items, reference_items):
-            try:
-                score = self._single_calculate(gen, ref, **kwargs)
-                results.append(score)
-            except Exception as e:
-                import warnings
-
-                warnings.warn(f"Error processing spectrogram item: {str(e)}. Setting score to 0.0")
-                results.append(0.0)
-
-        if isinstance(generated_items, np.ndarray):
-            return np.array(results, dtype=float)
-        if isinstance(generated_items, pd.Series):
-            return pd.Series(results, index=generated_items.index, dtype=float)
-        return results
+        gen_spec = self._compute_spectrogram(gen_audio, gen_sr)
+        ref_spec = self._compute_spectrogram(ref_audio, ref_sr)
+        distance = self._calculate_distance(gen_spec, ref_spec)
+        similarity = np.exp(-distance)
+        return float(np.clip(similarity, 0.0, 1.0))

@@ -173,6 +173,147 @@ class TestAudioSNRNormalized:
             finally:
                 os.unlink(f.name)
 
+    def test_missing_reference_single_audio(self, snr_metric, test_signals):
+        """Test that missing reference uses the generated audio itself."""
+        signal = test_signals["clean"]
+
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
+            score = snr_metric.calculate(signal, reference=None)
+
+            # Should show warning
+            assert len(w) == 1
+            assert "Reference audio not provided" in str(w[0].message)
+            assert "Using the generated audio as reference" in str(w[0].message)
+
+        # Should return 1.0 when comparing with itself
+        assert score == 1.0
+
+    def test_missing_reference_batch_list(self, snr_metric, test_signals):
+        """Test that missing reference uses first item in batch for lists."""
+        batch = [test_signals["clean"], test_signals["low_noise"], test_signals["medium_noise"]]
+
+        # Capture stdout for warning message
+        import io
+        import sys
+
+        old_stdout = sys.stdout
+        sys.stdout = io.StringIO()
+
+        try:
+            scores = snr_metric.calculate(batch, reference=None)
+            output = sys.stdout.getvalue()
+        finally:
+            sys.stdout = old_stdout
+
+        # Should show warning about using first element
+        assert "Reference is missing or effectively empty" in output
+        assert "Using the first element of `generated` as reference" in output
+
+        # First should be 1.0 (compared with itself)
+        assert scores[0] == 1.0
+
+        # Others should be the same as comparing with first
+        expected_scores = snr_metric.calculate(batch, batch[0])
+        np.testing.assert_array_almost_equal(scores, expected_scores)
+
+    def test_missing_reference_batch_2d_numpy(self, snr_metric, test_signals):
+        """Test missing reference with 2D numpy array (batch)."""
+        # Create 2D array: each row is an audio signal
+        batch_2d = np.array(
+            [test_signals["clean"], test_signals["low_noise"], test_signals["medium_noise"]]
+        )
+
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
+            scores = snr_metric.calculate(batch_2d, reference=None)
+
+            # Should show warning
+            warning_messages = [str(warning.message) for warning in w]
+            assert any("Reference audio not provided" in msg for msg in warning_messages)
+            assert any(
+                "Using the first generated audio as reference" in msg for msg in warning_messages
+            )
+
+        # Should return numpy array
+        assert isinstance(scores, np.ndarray)
+        assert len(scores) == 3
+
+        # First should be 1.0
+        assert scores[0] == pytest.approx(1.0)
+
+        # Verify against manual calculation
+        expected_scores = snr_metric.calculate(batch_2d, batch_2d[0])
+        np.testing.assert_array_almost_equal(scores, expected_scores)
+
+    def test_missing_reference_empty_input(self, snr_metric):
+        """Test error handling for empty input with no reference."""
+        with pytest.raises(
+            ValueError, match="`reference` is missing and cannot be derived from `generated`"
+        ):
+            snr_metric.calculate([], reference=None)
+
+    def test_missing_reference_pandas_series(self, snr_metric, test_signals):
+        """Test missing reference with pandas Series."""
+        import pandas as pd
+
+        series_data = pd.Series(
+            [test_signals["clean"], test_signals["low_noise"], test_signals["medium_noise"]],
+            index=["clean", "low_noise", "medium_noise"],
+        )
+
+        # Capture stdout for warning message
+        import io
+        import sys
+
+        old_stdout = sys.stdout
+        sys.stdout = io.StringIO()
+
+        try:
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore", FutureWarning)  # Ignore pandas warnings
+                scores = snr_metric.calculate(series_data, reference=None)
+            output = sys.stdout.getvalue()
+        finally:
+            sys.stdout = old_stdout
+
+        # Should show warning
+        assert "Reference is missing or effectively empty" in output
+
+        # Should return pandas Series
+        assert isinstance(scores, pd.Series)
+        assert len(scores) == 3
+
+        # First should be 1.0
+        assert scores.iloc[0] == pytest.approx(1.0)
+
+    def test_missing_reference_single_batch_item(self, snr_metric, test_signals):
+        """Test missing reference with single item in batch."""
+        single_item_batch = [test_signals["clean"]]
+
+        # Capture stdout for warning message
+        import io
+        import sys
+
+        old_stdout = sys.stdout
+        sys.stdout = io.StringIO()
+
+        try:
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")  # Ignore processing warnings
+                scores = snr_metric.calculate(single_item_batch, reference=None)
+            output = sys.stdout.getvalue()
+        finally:
+            sys.stdout = old_stdout
+
+        # Should show warning
+        assert "Reference is missing or effectively empty" in output
+
+        # Should return list with single perfect score
+        assert isinstance(scores, list)
+        assert len(scores) == 1
+        assert scores[0] == pytest.approx(1.0)
+
 
 class TestSpectrogramDistance:
     @pytest.fixture(scope="class")
@@ -294,6 +435,145 @@ class TestSpectrogramDistance:
         score = metric.calculate(constant1, constant2)
         assert isinstance(score, float)
 
+    def test_missing_reference_single_audio(self, spec_metric, test_signals):
+        """Test that missing reference uses the generated audio itself."""
+        signal = test_signals["f_440"]
+
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
+            score = spec_metric.calculate(signal, reference=None)
+
+            # Should show warning
+            assert len(w) == 1
+            assert "Reference audio not provided" in str(w[0].message)
+            assert "Using the generated audio as reference" in str(w[0].message)
+
+        # Should return 1.0 when comparing with itself
+        assert score == pytest.approx(1.0, abs=1e-5)
+
+    def test_missing_reference_batch_list(self, spec_metric, test_signals):
+        """Test that missing reference uses first item in batch for lists."""
+        batch = [test_signals["f_440"], test_signals["f_880"], test_signals["complex"]]
+
+        # Capture stdout for warning message
+        import io
+        import sys
+
+        old_stdout = sys.stdout
+        sys.stdout = io.StringIO()
+
+        try:
+            scores = spec_metric.calculate(batch, reference=None)
+            output = sys.stdout.getvalue()
+        finally:
+            sys.stdout = old_stdout
+
+        # Should show warning about using first element
+        assert "Reference is missing or effectively empty" in output
+        assert "Using the first element of `generated` as reference" in output
+
+        # First should be 1.0 (compared with itself)
+        assert scores[0] == pytest.approx(1.0, abs=1e-5)
+
+        # Others should be the same as comparing with first
+        expected_scores = spec_metric.calculate(batch, batch[0])
+        np.testing.assert_array_almost_equal(scores, expected_scores)
+
+    def test_missing_reference_batch_2d_numpy(self, spec_metric, test_signals):
+        """Test missing reference with 2D numpy array (batch)."""
+        # Create 2D array: each row is an audio signal
+        batch_2d = np.array([test_signals["f_440"], test_signals["f_880"], test_signals["complex"]])
+
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
+            scores = spec_metric.calculate(batch_2d, reference=None)
+
+            # Should show warning
+            warning_messages = [str(warning.message) for warning in w]
+            assert any("Reference audio not provided" in msg for msg in warning_messages)
+            assert any(
+                "Using the first generated audio as reference" in msg for msg in warning_messages
+            )
+
+        # Should return numpy array
+        assert isinstance(scores, np.ndarray)
+        assert len(scores) == 3
+
+        # First should be 1.0
+        assert scores[0] == pytest.approx(1.0, abs=1e-5)
+
+        # Verify against manual calculation
+        expected_scores = spec_metric.calculate(batch_2d, batch_2d[0])
+        np.testing.assert_array_almost_equal(scores, expected_scores)
+
+    def test_missing_reference_empty_input(self, spec_metric):
+        """Test error handling for empty input with no reference."""
+        with pytest.raises(
+            ValueError, match="`reference` is missing and cannot be derived from `generated`"
+        ):
+            spec_metric.calculate([], reference=None)
+
+    def test_missing_reference_pandas_series(self, spec_metric, test_signals):
+        """Test missing reference with pandas Series."""
+        import pandas as pd
+
+        series_data = pd.Series(
+            [test_signals["f_440"], test_signals["f_880"], test_signals["complex"]],
+            index=["f_440", "f_880", "complex"],
+        )
+
+        # Capture stdout for warning message
+        import io
+        import sys
+
+        old_stdout = sys.stdout
+        sys.stdout = io.StringIO()
+
+        try:
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore", FutureWarning)  # Ignore pandas warnings
+                scores = spec_metric.calculate(series_data, reference=None)
+            output = sys.stdout.getvalue()
+        finally:
+            sys.stdout = old_stdout
+
+        # Should show warning
+        assert "Reference is missing or effectively empty" in output
+
+        # Should return pandas Series
+        assert isinstance(scores, pd.Series)
+        assert len(scores) == 3
+
+        # First should be 1.0
+        assert scores.iloc[0] == pytest.approx(1.0, abs=1e-5)
+
+    def test_missing_reference_single_batch_item(self, spec_metric, test_signals):
+        """Test missing reference with single item in batch."""
+        single_item_batch = [test_signals["f_440"]]
+
+        # Capture stdout for warning message
+        import io
+        import sys
+
+        old_stdout = sys.stdout
+        sys.stdout = io.StringIO()
+
+        try:
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")  # Ignore processing warnings
+                scores = spec_metric.calculate(single_item_batch, reference=None)
+            output = sys.stdout.getvalue()
+        finally:
+            sys.stdout = old_stdout
+
+        # Should show warning
+        assert "Reference is missing or effectively empty" in output
+
+        # Should return list with single perfect score
+        assert isinstance(scores, list)
+        assert len(scores) == 1
+        assert scores[0] == pytest.approx(1.0, abs=1e-5)
+
 
 # Test for missing dependencies
 def test_import_error_handling():
@@ -302,9 +582,9 @@ def test_import_error_handling():
     # so we mock the availability flag
     import gaico.metrics.audio.audio as audio_module
 
-    original_flag = audio_module._audio_deps_available
+    original_flag = audio_module.__audio_deps_available__
     try:
-        audio_module._audio_deps_available = False
+        audio_module.__audio_deps_available__ = False
 
         with pytest.raises(ImportError, match="Audio processing dependencies"):
             AudioSNRNormalized()
@@ -313,4 +593,4 @@ def test_import_error_handling():
             AudioSpectrogramDistance()
 
     finally:
-        audio_module._audio_deps_available = original_flag
+        audio_module.__audio_deps_available__ = original_flag

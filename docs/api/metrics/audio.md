@@ -8,53 +8,48 @@ The `AudioSNRNormalized` metric provides a normalized Signal-to-Noise Ratio (SNR
 
 ### Input Format
 
-The metric accepts various audio input formats, providing flexibility for different use cases:
+The metric accepts various audio input formats, providing flexibility for different use cases. It intelligently handles both single-item and batch comparisons.
 
-- **NumPy Arrays**: Direct audio waveform data as `np.ndarray` (mono or stereo)
-- **File Paths**: String paths to audio files (`.wav`, `.mp3`, `.flac`, etc.)
-- **Python Lists/Tuples**: Raw audio samples as Python sequences
-- **Mixed Formats**: Generated and reference can use different input formats
+- **Single Item Formats**:
+  - **NumPy Array**: A 1D `np.ndarray` representing a mono audio waveform.
+  - **File Path**: A string path to an audio file (e.g., `.wav`, `.flac`).
+- **Batch Item Formats**:
+  - **List/Tuple/Pandas Series**: An iterable where each element is a single audio item (either a path or a 1D array).
+  - **2D NumPy Array**: An array where each row is treated as a separate audio signal.
+- **Mixed Formats**: Generated and reference inputs can use different formats (e.g., comparing a file path to a NumPy array).
+- **Audio Preprocessing**:
+  - **Stereo to Mono**: Stereo signals (2D arrays or files) are automatically converted to mono by averaging the channels.
+  - **Resampling**: If sample rates differ, the generated audio is resampled to match the reference audio's rate.
 
-**Example Input Formats**:
-```python
-# NumPy array (recommended for programmatic use)
-audio_array = np.array([0.1, 0.2, -0.1, 0.3, ...], dtype=np.float32)
+### Error Handling
 
-# File path (convenient for stored audio)
-audio_file = "/path/to/audio.wav"
+The metric is designed to be robust and will raise specific errors for invalid inputs:
 
-# Python list (simple but less efficient)
-audio_list = [0.1, 0.2, -0.1, 0.3, 0.0, -0.2]
-
-# Stereo audio (automatically converted to mono)
-stereo_audio = np.array([[0.1, 0.15], [0.2, 0.25], ...])  # Shape: (samples, 2)
-```
+- `FileNotFoundError`: If a string path to an audio file does not exist.
+- `TypeError`: If an unsupported data type (e.g., a dictionary) is provided as input.
+- `ValueError`: If an audio array or list is empty, or if an audio file cannot be read.
 
 ### Calculation
 
 The AudioSNRNormalized metric follows a multi-step process to ensure robust and meaningful comparisons:
 
 1.  **Audio Loading and Preprocessing**:
-   - Load audio from various input formats using `soundfile`
-   - Convert stereo audio to mono using mean averaging: `mono = np.mean(stereo, axis=1)`
-   - Handle sample rate mismatches through resampling using scipy.signal.resample
-   - Ensure both signals have the same length by truncating to the shorter duration
+    - Load audio from the specified input format (path, array, etc.).
+    - If audio is stereo, convert it to mono by averaging the channels.
+    - If sample rates differ, resample the generated audio to match the reference rate.
+    - Ensure both signals have the same length by truncating the longer one.
 
-2. **Noise Calculation**:
-   - Compute noise as the difference between generated and reference signals: `noise = generated - reference`
-   - This treats the reference as the "clean" signal and generated as "noisy"
+2.  **Noise Calculation**:
+    - Compute noise as the element-wise difference between the signals: `noise = generated - reference`.
 
-3. **SNR Computation**:
-   - Calculate signal power: `signal_power = np.mean(reference²) + epsilon`
-   - Calculate noise power: `noise_power = np.mean(noise²) + epsilon`
-   - Compute SNR in decibels: `SNR_dB = 10 * log₁₀(signal_power / noise_power)`
-   - Apply epsilon (default 1e-10) to prevent division by zero
+3.  **SNR Computation**:
+    - Calculate the power of the reference signal and the noise signal.
+    - Compute the SNR in decibels (dB): `SNR_dB = 10 * log₁₀(signal_power / noise_power)`.
+    - An epsilon value is added to prevent division by zero.
 
-4. **Normalization**:
-   - Map SNR from decibel range to [0, 1] using linear scaling with clipping
-   - Formula: `normalized_score = (SNR_dB - SNR_min) / (SNR_max - SNR_min)`
-   - Default range: SNR_min = -20 dB (very noisy), SNR_max = 40 dB (very clean)
-   - Apply clipping: `score = max(0.0, min(1.0, normalized_score))`
+4.  **Normalization**:
+    - Linearly scale the SNR (dB) to a [0, 1] range using configurable `snr_min` and `snr_max` values.
+    - Clip the final score to ensure it falls strictly within the [0, 1] range.
 
 ### Usage
 
@@ -110,11 +105,11 @@ The `AudioSpectrogramDistance` metric evaluates audio similarity by comparing sp
 
 ### Input Format
 
-The metric accepts the same diverse input formats as `AudioSNRNormalized`, with additional considerations for spectral analysis:
+The metric accepts the same diverse input formats as `AudioSNRNormalized` (file paths, NumPy arrays, lists, etc.) and follows the same preprocessing and error handling logic. Additional considerations for spectral analysis include:
 
-- **Audio Duration**: Longer audio clips provide more reliable spectral analysis
-- **Sample Rate Consistency**: While automatic resampling is supported, consistent sample rates yield better results
-- **Minimum Length**: Very short audio clips (< 100 samples) may produce unreliable spectrograms
+- **Audio Duration**: Longer audio clips provide more reliable spectral analysis.
+- **Sample Rate Consistency**: While automatic resampling is supported, providing signals with consistent sample rates yields the most accurate results.
+- **Minimum Length**: Very short audio clips (e.g., shorter than the `n_fft` size) will raise a `ValueError` as a reliable spectrogram cannot be computed.
 
 **Recommended Input Characteristics**:
 ```python
@@ -134,29 +129,20 @@ sample_rates = {
 
 The AudioSpectrogramDistance metric employs Short-Time Fourier Transform (STFT) analysis followed by distance computation:
 
-1. **Spectrogram Computation**:
-   - Apply STFT using scipy.signal.stft with configurable parameters
-   - Default window: Hann window (n_fft=2048 samples ≈ 46ms at 44.1kHz)
-   - Default hop length: 512 samples (75% overlap, good time-frequency resolution)
-   - Extract magnitude spectrogram: `magnitude = |STFT(audio)|`
+1.  **Spectrogram Computation**:
+    - Check if `scipy` is available, raising an `ImportError` if not.
+    - Apply STFT using `scipy.signal.stft` with configurable parameters (`n_fft`, `hop_length`, `window`).
+    - Extract the magnitude spectrogram: `magnitude = |STFT(audio)|`.
 
-2. **Temporal Alignment**:
-   - Ensure spectrograms have matching time dimensions by truncating to shorter length
-   - Handle edge case where one spectrogram is empty (zero frames)
+2.  **Temporal Alignment**:
+    - Ensure spectrograms have matching time dimensions by truncating the longer one to match the shorter one.
 
-3. **Distance Calculation** (configurable via `distance_type`):
+3.  **Distance Calculation** (configurable via `distance_type`):
 
-   **Euclidean Distance** (default):
-   - Compute normalized mean squared difference: `distance = sqrt(mean((spec1 - spec2)²))`
-   - Normalize by average magnitude to handle scale differences
-   - Good for overall spectral energy comparison
+    **Euclidean Distance** (default):
+    - Computes the Euclidean distance between the flattened spectrograms and normalizes it by the average magnitude to handle scale differences.
 
-   **Cosine Distance**:
-   - Flatten spectrograms and compute cosine similarity: `cos_sim = dot(spec1, spec2) / (||spec1|| × ||spec2||)`
-   - Convert to distance: `distance = 1 - cos_sim`
-   - Effective for comparing spectral patterns regardless of overall energy
-
-   **Correlation Distance**:
+    **Cosine Distance**:
    - Compute normalized cross-correlation after mean removal
    - Formula: `correlation = dot(spec1_centered, spec2_centered) / (||spec1_centered|| × ||spec2_centered||)`
    - Distance: `distance = 1 - correlation`
