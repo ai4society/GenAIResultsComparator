@@ -1,3 +1,3 @@
-from .audio import AudioSNRNormalized, SpectrogramDistance
+from .audio import AudioSNRNormalized, AudioSpectrogramDistance
 
-__all__ = ["AudioSNRNormalized", "SpectrogramDistance"]
+__all__ = ["AudioSNRNormalized", "AudioSpectrogramDistance"]
