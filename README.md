@@ -34,10 +34,10 @@ Important Links:
 
 This section summarizes the major releases of the GAICo library, highlighting key features and providing quick start examples.
 
-| Release Name | Date      | Summary of Changes                                                      | More Info                                                                                              |
-| :----------- | :-------- | :---------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------- |
-| v0.2.0       | July 2025 | Added time-series & planning metrics.                                   | [Details for v0.2.0](https://ai4society.github.io/projects/GenAIResultsComparator/news/#020-july-2025) |
-| v0.1.5       | June 2025 | Initial release: core text metrics, `Experiment` class, visualizations. | [Details for v0.1.5](https://ai4society.github.io/projects/GenAIResultsComparator/news/#015-june-2025) |
+| Release Name | Date      | Summary of Changes                                                           | More Info                                                                                              |
+| :----------- | :-------- | :--------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------- |
+| v0.2.0       | July 2025 | Added specialized text metrics: time-series & automated planning.            | [Details for v0.2.0](https://ai4society.github.io/projects/GenAIResultsComparator/news/#020-july-2025) |
+| v0.1.5       | June 2025 | Initial release: generic text metrics, `Experiment` class, & visualizations. | [Details for v0.1.5](https://ai4society.github.io/projects/GenAIResultsComparator/news/#015-june-2025) |
 
 ## Quick Start
 
