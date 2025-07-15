@@ -96,12 +96,30 @@ class PlanningSequenceMetric(StructuredOutputMetric, ABC):
 
 class TimeSeriesDataMetric(StructuredOutputMetric, ABC):
     """
-    Abstract base class for metrics evaluating time-series data,
-    which can be textual or structured.
+    Abstract base class for metrics evaluating time-series data, which can be textual or structured.
     """
 
-    def __init__(self, **kwargs: Any):
+    def __init__(self, normalize: bool = False, **kwargs: Any):
+        """
+        Initialize the TimeSeriesDataMetric.
+
+        :param normalize: If True, applies min-max normalization to the series values to scale them to a [0, 1] range before comparison.
+            Defaults to False.
+        :type normalize: bool
+        """
         super().__init__(**kwargs)
+        self.normalize = normalize
+
+    @staticmethod
+    def _normalize_series_values(values: np.ndarray) -> np.ndarray:
+        """Min-max normalizes a numpy array of values to [0, 1]."""
+        if values.size == 0:
+            return values
+        min_val = values.min()
+        max_val = values.max()
+        if max_val == min_val:
+            return np.zeros_like(values, dtype=float)
+        return (values - min_val) / (max_val - min_val)
 
 
 class PlanningLCS(PlanningSequenceMetric):
@@ -287,20 +305,52 @@ class TimeSeriesElementDiff(TimeSeriesDataMetric):
     e.g., "t1:70, t2:72, t3:75".
     """
 
-    def __init__(self, key_to_value_weight_ratio: float = 2.0, **kwargs: Any):
+    def __init__(
+        self,
+        key_to_value_weight_ratio: float = 2.0,
+        normalize: bool = False,
+        **kwargs: Any,
+    ):
         """
         Initialize the TimeSeriesElementDiff metric.
 
-        :param key_to_value_weight_ratio: The weight of a key match relative to a perfect value match.
-                                          For example, a ratio of 2 means a key match is worth twice as much
-                                          as a value match. Defaults to 2.0.
+        :param key_to_value_weight_ratio: The weight of a key match relative to a perfect value match. For example, a ratio of 2 means a key match is worth twice as much as a value match. Defaults to 2.0.
         :type key_to_value_weight_ratio: float
+        :param normalize: If True, applies min-max normalization to each series' values before comparison. Defaults to False.
+        :type normalize: bool
         """
-        super().__init__(**kwargs)
+        super().__init__(normalize=normalize, **kwargs)
         if key_to_value_weight_ratio <= 0:
             raise ValueError("key_to_value_weight_ratio must be positive.")
         self.key_weight = key_to_value_weight_ratio
         self.value_weight = 1.0
+
+    def _normalize_dict_values(self, d: Dict[str, List[float]]) -> Dict[str, List[float]]:
+        """Normalizes all values within the dictionary structure."""
+        if not any(d.values()):
+            return d
+
+        # Create a flat list of all values and a corresponding metadata list
+        # to reconstruct the dictionary later.
+        items_meta = []
+        original_values_flat = []
+        for key, val_list in d.items():
+            for i, val in enumerate(val_list):
+                items_meta.append((key, i))
+                original_values_flat.append(val)
+
+        if not original_values_flat:
+            return d
+
+        # Normalize all values from the series together
+        normalized_values_flat = self._normalize_series_values(np.array(original_values_flat))
+
+        # Reconstruct the dictionary with normalized values
+        new_dict = {key: [0.0] * len(val_list) for key, val_list in d.items()}
+        for i, (key, list_idx) in enumerate(items_meta):
+            new_dict[key][list_idx] = normalized_values_flat[i]
+
+        return new_dict
 
     def _parse_time_series(self, text_series: str) -> Dict[str, List[float]]:
         """
@@ -362,6 +412,10 @@ class TimeSeriesElementDiff(TimeSeriesDataMetric):
         """
         gen_dict = self._parse_time_series(str(generated_item))
         ref_dict = self._parse_time_series(str(reference_item))
+
+        if self.normalize:
+            gen_dict = self._normalize_dict_values(gen_dict)
+            ref_dict = self._normalize_dict_values(ref_dict)
 
         if not any(gen_dict.values()) and not any(ref_dict.values()):
             return 1.0
@@ -466,7 +520,12 @@ class TimeSeriesDTW(TimeSeriesDataMetric):
     e.g., "t1:70, 72, t3:75". Non-numeric parts will be ignored with a warning.
     """
 
-    def __init__(self, similarity_method: str = "reciprocal", **kwargs: Any):
+    def __init__(
+        self,
+        similarity_method: str = "reciprocal",
+        normalize: bool = False,
+        **kwargs: Any,
+    ):
         """
         Initialize the TimeSeriesDTW metric.
 
@@ -474,11 +533,13 @@ class TimeSeriesDTW(TimeSeriesDataMetric):
         Options: 'reciprocal' (default, 1/(1+d)), 'exponential', 'gaussian'.
         The 'exponential' and 'gaussian' methods use `dtaidistance` and are most effective in batch mode.
         In single calculation mode, they will fall back to 'reciprocal' with a warning.
+        :param normalize: If True, applies min-max normalization to each series' values before comparison. Defaults to False.
+        :type normalize: bool
         :param kwargs: Additional keyword arguments to be passed to the `dtaidistance.dtw.distance` function.
         :raises ImportError: If the `dtaidistance` package is not installed.
         :raises ValueError: If an unsupported similarity_method is provided.
         """
-        super().__init__()
+        super().__init__(normalize=normalize, **kwargs)
         if not __dtw_deps_available__:
             raise ImportError("dtaidistance is not installed. Please ensure it is installed.")
 
@@ -518,7 +579,11 @@ class TimeSeriesDTW(TimeSeriesDataMetric):
                 warnings.warn(
                     f"Warning: Could not parse value '{value_str}' from item '{item_str}' in time series. Skipping."
                 )
-        return np.array(values, dtype=float)
+
+        values_arr = np.array(values, dtype=float)
+        if self.normalize:
+            return self._normalize_series_values(values_arr)
+        return values_arr
 
     def _single_calculate(self, generated_item: str, reference_item: str, **kwargs: Any) -> float:
         """
